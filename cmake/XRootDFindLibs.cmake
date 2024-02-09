@@ -4,7 +4,7 @@
 
 find_package( XRootD REQUIRED )
 
-find_package( ceph REQUIRED )
+# find_package( ceph REQUIRED )
 
 if( ENABLE_TESTS )
   find_package( CPPUnit )

@@ -22,12 +22,11 @@
 // or submit itself to any jurisdiction.
 //------------------------------------------------------------------------------
 
-#include "XrdCeph/XrdCephPosix.hh"
-#include "XrdCeph/XrdBlackholeOssDir.hh"
+#include "XrdBlackhole/XrdBlackholeOssDir.hh"
 #include "XrdSys/XrdSysError.hh"
 #include "XrdOuc/XrdOucTrace.hh"
 
-// extern XrdSysError XrdCephEroute;
+// extern XrdSysError XrdBlackholeEroute;
 
 XrdBlackholeOssDir::XrdBlackholeOssDir(XrdBlackholeOss *bhOss) : m_dirp(0), m_bhOss(bhOss) {}
 
@@ -40,7 +39,7 @@ int XrdBlackholeOssDir::Opendir(const char *path, XrdOucEnv &env) {
     }
     return XrdOssOK;
   } catch (std::exception &e) {
-    XrdCephEroute.Say("opendir : invalid syntax in file parameters");
+    XrdBlackholeEroute.Say("opendir : invalid syntax in file parameters");
     return -EINVAL;
   }
   */

@@ -33,9 +33,9 @@
 #include "XrdOuc/XrdOucStream.hh"
 #include "XrdOuc/XrdOucName2Name.hh"
 #include "XrdVersion.hh"
-#include "XrdCeph/XrdBlackholeOss.hh"
-#include "XrdCeph/XrdBlackholeOssDir.hh"
-#include "XrdCeph/XrdBlackholeOssFile.hh"
+#include "XrdBlackhole/XrdBlackholeOss.hh"
+#include "XrdBlackhole/XrdBlackholeOssDir.hh"
+#include "XrdBlackhole/XrdBlackholeOssFile.hh"
 
 XrdVERSIONINFO(XrdOssGetStorageSystem, XrdBlackholeOss);
 
@@ -43,37 +43,33 @@ XrdSysError XrdBlackholeEroute(0);
 XrdOucTrace XrdBlackholeTrace(&XrdBlackholeEroute);
 
 /// timestamp output for logging messages
-static std::string ts() {
-    std::time_t t = std::time(nullptr);
-    char mbstr[50];
-    std::strftime(mbstr, sizeof(mbstr), "%y%m%d %H:%M:%S ", std::localtime(&t));
-    return std::string(mbstr);
-}
+// static std::string ts() {
+//     std::time_t t = std::time(nullptr);
+//     char mbstr[50];
+//     std::strftime(mbstr, sizeof(mbstr), "%y%m%d %H:%M:%S ", std::localtime(&t));
+//     return std::string(mbstr);
+// }
 
 // log wrapping function to be used by ceph_posix interface
 char g_logstring[1024];
-static void logwrapper(char *format, va_list argp) {
-  vsnprintf(g_logstring, 1024, format, argp);
-  XrdBlackholeEroute.Say(ts().c_str(), g_logstring);
-}
+//static void logwrapper(char *format, va_list argp) {
+//  vsnprintf(g_logstring, 1024, format, argp);
+//  XrdBlackholeEroute.Say(ts().c_str(), g_logstring);
+//}
+
+//static void logwrapper(char* format, ...) {
+//  if (0 == g_logfunc) return;
+//  va_list arg;
+//  va_start(arg, format);
+//  (*g_logfunc)(format, arg);
+//  va_end(arg);
+//}
 
 
 
 /// converts a logical filename to physical one if needed
 void m_translateFileName(std::string &physName, std::string logName){
-  if (0 != g_namelib) {
-    char physCName[MAXPATHLEN+1];
-    int retc = g_namelib->lfn2pfn(logName.c_str(), physCName, sizeof(physCName));
-    if (retc) {
-      XrdBlackholeEroute.Say(__FUNCTION__, " - failed to translate '", logName.c_str(), "' using namelib plugin, using it as is");
-      physName = logName;
-    } else {
-      XrdBlackholeEroute.Say(__FUNCTION__, " - translated '", logName.c_str(), "' to '", physCName, "'");
-      physName = physCName;
-    }
-  } else {
-    physName = logName;
-  }
+  physName = logName;
 }
 
 /**
@@ -99,7 +95,7 @@ ssize_t getNumericAttr(const char* const path, const char* attrName, const int m
     return -ENOMEM;
   }
 
-  ssize_t attrLen = ceph_posix_getxattr((XrdOucEnv*)NULL, path, attrName, attrValue, maxAttrLen);
+  ssize_t attrLen = 0; // ceph_posix_getxattr((XrdOucEnv*)NULL, path, attrName, attrValue, maxAttrLen);
 
   if (attrLen <= 0) {
     retval = -EINVAL;
@@ -128,7 +124,7 @@ extern "C"
     // Do the herald thing
     XrdBlackholeEroute.SetPrefix("ceph_");
     XrdBlackholeEroute.logger(lp);
-    XrdBlackholeEroute.Say("++++++ CERN/IT-DSS XrdCeph");
+    XrdBlackholeEroute.Say("++++++ CERN/IT-DSS XrdBlackhole");
     return new XrdBlackholeOss(config_fn, XrdBlackholeEroute);
   }
 }
@@ -203,7 +199,18 @@ int XrdBlackholeOss::Stat(const char* path,
                   struct stat* buff,
                   int opts,
                   XrdOucEnv* env) {
-  return -ENOTSUP;   
+  XrdBlackholeEroute.Say(__FUNCTION__, " path = ", path);
+
+ // XRootD assumes an 'offline' file if st_dev and st_ino 
+  // are zero. Set to non-zero (meaningful) values to avoid this 
+  //buff->st_dev = 1;
+  //buff->st_ino = 1;
+  //buff->st_mtime = 0;
+  //buff->st_ctime = 0;
+  //buff->st_mode = 0666 | S_IFREG;
+  return 0;
+
+
 }
 
 
@@ -245,7 +252,9 @@ int formatStatLSResponse(char *buff, int &blen, const char* cgroup, long long to
 int XrdBlackholeOss::StatLS(XrdOucEnv &env, const char *path, char *buff, int &blen)
 {
 
-  long long usedSpace, totalSpace, freeSpace;
+  long long usedSpace = 0;
+  long long totalSpace = 0;
+  long long freeSpace = 0;
 
 
   freeSpace = totalSpace - usedSpace;
@@ -274,6 +283,9 @@ XrdOssDF* XrdBlackholeOss::newDir(const char *tident) {
 }
 
 XrdOssDF* XrdBlackholeOss::newFile(const char *tident) {
+  // std::string name = *tident;
+  // logwrapper((char*)"%s", name.c_str());
+
   return new XrdBlackholeOssFile(this);
 }
 

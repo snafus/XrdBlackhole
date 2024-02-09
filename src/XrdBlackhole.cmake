@@ -24,7 +24,11 @@ add_library(
 target_link_libraries(
   ${LIB_XRD_BLACKHOLE}
   ${XROOTD_LIBRARIES}  
-  XrdBlackholePosix )
+)
+#target_link_libraries(
+#  ${LIB_XRD_BLACKHOLE}
+#  ${XROOTD_LIBRARIES}  
+#  XrdBlackholePosix )
 
 set_target_properties(
   ${LIB_XRD_BLACKHOLE}
@@ -44,8 +48,12 @@ add_library(
 
 target_link_libraries(
   ${LIB_XRD_BLACKHOLE_XATTR}
-  ${XROOTD_LIBRARIES}  
-  XrdBlackholePosix )
+  ${XROOTD_LIBRARIES}  )
+
+#target_link_libraries(
+#  ${LIB_XRD_BLACKHOLE_XATTR}
+#  ${XROOTD_LIBRARIES}  
+#  XrdBlackholePosix )
 
 set_target_properties(
   ${LIB_XRD_BLACKHOLE_XATTR}
@@ -57,5 +65,8 @@ set_target_properties(
 # Install
 #-------------------------------------------------------------------------------
 install(
-  TARGETS ${LIB_XRD_BLACKHOLE} ${LIB_XRD_BLACKHOLE_XATTR} XrdBlackholePosix
+  TARGETS ${LIB_XRD_BLACKHOLE} ${LIB_XRD_BLACKHOLE_XATTR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+#install(
+#  TARGETS ${LIB_XRD_BLACKHOLE} ${LIB_XRD_BLACKHOLE_XATTR} XrdBlackholePosix
+#  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )

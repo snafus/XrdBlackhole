@@ -26,6 +26,7 @@
 #define __XRD_BLACKHOLE_OSS_DIR_HH__
 
 #include "XrdOss/XrdOss.hh"
+#include "XrdBlackhole/XrdBlackholeOss.hh"
 
 //------------------------------------------------------------------------------
 //! This class implements XrdOssDF interface for usage with a CEPH storage.
@@ -55,7 +56,7 @@ class XrdBlackholeOssDir : public XrdOssDF {
 
 public:
 
-  XrdBlackholeOssDir(XrdBlackholeOss *cephoss);
+  XrdBlackholeOssDir(XrdBlackholeOss *bhoss);
   virtual ~XrdBlackholeOssDir() {};
   virtual int Opendir(const char *, XrdOucEnv &);
   virtual int Readdir(char *buff, int blen);
