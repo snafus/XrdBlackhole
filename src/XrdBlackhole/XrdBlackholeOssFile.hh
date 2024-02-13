@@ -28,6 +28,9 @@
 #include "XrdOss/XrdOss.hh"
 #include "XrdBlackhole/XrdBlackholeOss.hh"
 
+#include <chrono>
+
+
 //------------------------------------------------------------------------------
 //! This class implements XrdOssDF interface for usage with a CEPH storage.
 //!
@@ -71,7 +74,14 @@ public:
 private:
 
   int m_fd;
+  std::string m_path; 
   XrdBlackholeOss *m_bhOss;
+
+  std::chrono::high_resolution_clock::time_point m_start;
+  std::chrono::high_resolution_clock::time_point m_end;
+
+  ssize_t m_writeBytesAIO{0};
+  ssize_t m_writeBytes{0};
 
 };
 

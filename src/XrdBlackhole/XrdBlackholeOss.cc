@@ -50,6 +50,8 @@ XrdOucTrace XrdBlackholeTrace(&XrdBlackholeEroute);
 //     return std::string(mbstr);
 // }
 
+BlackholeFS g_blackholeFS;
+
 // log wrapping function to be used by ceph_posix interface
 char g_logstring[1024];
 //static void logwrapper(char *format, va_list argp) {
@@ -155,7 +157,24 @@ int XrdBlackholeOss::Configure(const char *configfn, XrdSysError &Eroute) {
      // Now start reading records until eof.
      char *var;
      while((var = Config.GetMyFirstWord())) {
-     }
+      // start loop over vars 
+        if (!strncmp(var, "blackhole.writespeedMiBps", 25)) {
+         var = Config.GetWord();
+         if (var) {
+           unsigned long value = strtoul(var, 0, 10);
+           if ((value > 0) && (value < INT_MAX)){
+             m_writespeedMiBs = value;
+           } else {
+             Eroute.Emsg("Config", "Invalid value for blackhole.writespeedMiBps:", var);
+           }
+         } else {
+           Eroute.Emsg("Config", "Missing value for blackhole.writespeedMiBps in config file");
+           return 1; 
+         }
+       }
+
+
+     } // end config read loop
      // Now check if any errors occured during file i/o
      int retc = Config.LastError();
      if (retc) {
@@ -200,14 +219,19 @@ int XrdBlackholeOss::Stat(const char* path,
                   int opts,
                   XrdOucEnv* env) {
   XrdBlackholeEroute.Say(__FUNCTION__, " path = ", path);
+  if (g_blackholeFS.exists(path)) {
+    // XRootD assumes an 'offline' file if st_dev and st_ino 
+    // are zero. Set to non-zero (meaningful) values to avoid this 
+    auto stub = g_blackholeFS.getStub(path);
+    *buff = stub->m_stat;
 
- // XRootD assumes an 'offline' file if st_dev and st_ino 
-  // are zero. Set to non-zero (meaningful) values to avoid this 
-  //buff->st_dev = 1;
-  //buff->st_ino = 1;
-  //buff->st_mtime = 0;
-  //buff->st_ctime = 0;
-  //buff->st_mode = 0666 | S_IFREG;
+      XrdBlackholeEroute.Say(__FUNCTION__, " Stat response ", 
+              std::to_string(stub->m_size).c_str());
+
+  } else {
+    return -ENOENT; // #TBD
+  }
+
   return 0;
 
 
@@ -275,7 +299,8 @@ int XrdBlackholeOss::Truncate (const char* path,
 }
 
 int XrdBlackholeOss::Unlink(const char *path, int Opts, XrdOucEnv *env) {
-  return -ENOTSUP; 
+  int rc = g_blackholeFS.unlink(path);
+  return rc; 
 }
 
 XrdOssDF* XrdBlackholeOss::newDir(const char *tident) {
@@ -283,9 +308,9 @@ XrdOssDF* XrdBlackholeOss::newDir(const char *tident) {
 }
 
 XrdOssDF* XrdBlackholeOss::newFile(const char *tident) {
-  // std::string name = *tident;
+  std::string name = std::to_string(*tident);
   // logwrapper((char*)"%s", name.c_str());
-
+  XrdBlackholeEroute.Say("newFile: ", name.c_str());
   return new XrdBlackholeOssFile(this);
 }
 

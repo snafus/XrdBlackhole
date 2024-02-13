@@ -19,6 +19,7 @@ add_library(
   XrdBlackhole/XrdBlackholeOss.cc       XrdBlackhole/XrdBlackholeOss.hh
   XrdBlackhole/XrdBlackholeOssFile.cc   XrdBlackhole/XrdBlackholeOssFile.hh
   XrdBlackhole/XrdBlackholeOssDir.cc    XrdBlackhole/XrdBlackholeOssDir.hh
+  XrdBlackhole/BlackholeFS.cc        XrdBlackhole/BlackholeFS.hh
   )
 
 target_link_libraries(

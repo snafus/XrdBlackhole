@@ -30,6 +30,22 @@
 #include "XrdSys/XrdSysError.hh"
 #include "XrdOuc/XrdOucTrace.hh"
 
+#include <map>
+#include <thread>
+#include <mutex>
+
+#include <sys/stat.h>
+#include <sys/errno.h>
+#include <fcntl.h>
+#include <sstream>
+#include <iomanip>
+#include <ctime>
+
+#include "XrdBlackhole/BlackholeFS.hh"
+extern BlackholeFS g_blackholeFS;
+
+#define BUFLOG(x) {std::unique_lock<std::mutex>cephbuf_iolock; std::stringstream _bs;  _bs << x; std::clog << _bs.str() << std::endl;}
+
 
 //------------------------------------------------------------------------------
 //! This class implements XrdOss interface for usage with a CEPH storage.
@@ -76,7 +92,11 @@ public:
   virtual XrdOssDF *newFile(const char *tident);
 
 
+  inline unsigned long writespeedMiBs() const {return m_writespeedMiBs;}
+
   private:
+
+  unsigned long m_writespeedMiBs{0};
 
 };
 

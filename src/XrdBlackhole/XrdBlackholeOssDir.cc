@@ -26,11 +26,12 @@
 #include "XrdSys/XrdSysError.hh"
 #include "XrdOuc/XrdOucTrace.hh"
 
-// extern XrdSysError XrdBlackholeEroute;
+extern XrdSysError XrdBlackholeEroute;
 
 XrdBlackholeOssDir::XrdBlackholeOssDir(XrdBlackholeOss *bhOss) : m_dirp(0), m_bhOss(bhOss) {}
 
 int XrdBlackholeOssDir::Opendir(const char *path, XrdOucEnv &env) {
+  XrdBlackholeEroute.Say(__FILE__,__FUNCTION__);
   /*
    try {
     m_dirp = ceph_posix_opendir(&env, path);
@@ -48,10 +49,13 @@ int XrdBlackholeOssDir::Opendir(const char *path, XrdOucEnv &env) {
 
 int XrdBlackholeOssDir::Close(long long *retsz) {
  // ceph_posix_closedir(m_dirp);
+   XrdBlackholeEroute.Say(__FILE__,__FUNCTION__);
   return XrdOssOK;
 }
 
 int XrdBlackholeOssDir::Readdir(char *buff, int blen) {
  // return ceph_posix_readdir(m_dirp, buff, blen);
+   XrdBlackholeEroute.Say(__FILE__,__FUNCTION__);
+
   return -ENOTSUP;
 }
