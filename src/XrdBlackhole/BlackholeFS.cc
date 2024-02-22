@@ -72,7 +72,7 @@ extern XrdSysError XrdBlackholeEroute;
       stub->m_fd = tmp;
       stub->m_size = 0;
       stub->m_flags = flags;
-      stub->m_mode = mode;     
+      stub->m_mode = mode;  
       return tmp;
     }
 
@@ -88,3 +88,55 @@ extern XrdSysError XrdBlackholeEroute;
       stub->m_isOpen =false; 
       stub->m_isOpenWrite = false;
     } // close
+
+
+void BlackholeFS::create_defaults(const std::string & path) {
+    // lock as updating the fd value
+    std::unique_lock<std::mutex> lock(m_mutexFD);
+      unsigned long long tmp = ++m_fd_last; 
+      auto stub = new Stub;
+      stub->m_isOpen = false;
+      stub->m_isOpenWrite = false;
+      stub->m_fd = tmp;
+      stub->m_flags = 0;
+      stub->m_mode = 0;     
+      stub->m_special = true;
+      stub->m_readtype = "zeros";
+      
+    stub->m_size = 1024*1024;
+    stub->m_stat.st_size = 1024*1024;
+      m_files.insert ( std::pair<std::string, Stub*>(path+"/testfile_zeros_1MiB", stub) );
+    std::clog << "Creating: " << path+"/testfile_zeros_1MiB" << std::endl;
+
+    stub = new Stub;
+      stub->m_isOpen = false;
+      stub->m_isOpenWrite = false;
+      stub->m_fd = tmp;
+      stub->m_flags = 0;
+      stub->m_mode = 0;     
+      stub->m_special = true;
+      stub->m_readtype = "zeros";
+      
+    stub->m_size = 1024*1024*1024;
+    stub->m_stat.st_size = 1024*1024*1024;
+      m_files.insert ( std::pair<std::string, Stub*>(path+"/testfile_zeros_1GiB", stub) );
+    std::clog << "Creating: " << path+"/testfile_zeros_1GiB" << std::endl;
+
+
+    stub = new Stub;
+      stub->m_isOpen = false;
+      stub->m_isOpenWrite = false;
+      stub->m_fd = tmp;
+      stub->m_flags = 0;
+      stub->m_mode = 0;     
+      stub->m_special = true;
+      stub->m_readtype = "zeros";
+      
+    stub->m_size = 10737418240;
+    stub->m_stat.st_size = 10737418240;
+      m_files.insert ( std::pair<std::string, Stub*>(path+"/testfile_zeros_10GiB", stub) );
+    std::clog << "Creating: " << path+"/testfile_zeros_10GiB" << std::endl;
+
+
+} 
+

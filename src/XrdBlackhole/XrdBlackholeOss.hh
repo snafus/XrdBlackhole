@@ -97,7 +97,7 @@ public:
   private:
 
   unsigned long m_writespeedMiBs{0};
-
+  std::string m_defaultspath{"/"};
 };
 
 #endif /* __BLACKHOLE_OSS_HH__ */

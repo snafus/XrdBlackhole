@@ -74,7 +74,9 @@ public:
 private:
 
   int m_fd;
+  Stub * m_stub {nullptr};
   std::string m_path; 
+  size_t m_size {0};
   XrdBlackholeOss *m_bhOss;
 
   std::chrono::high_resolution_clock::time_point m_start;

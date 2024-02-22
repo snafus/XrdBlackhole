@@ -9,6 +9,7 @@
 #include <map>
 #include <thread>
 #include <mutex>
+#include <string>
 
 #include <sys/stat.h>
 #include <sys/errno.h>
@@ -20,13 +21,18 @@ struct Stub {
   bool m_isOpenWrite;  
   int m_flags;
   int m_mode;
-  ssize_t m_size;
+  unsigned long long m_size;
   struct stat m_stat; 
   int m_fd;
+  bool m_special {false};
+  std::string m_readtype {"zeros"};
+  std::map<std::string, std::string> m_checksums; 
 };
 
 class BlackholeFS {
   public:
+    BlackholeFS(){};
+    ~BlackholeFS() {m_files.clear();}
     bool exists(const std::string& fname);
 
     Stub * getStub(const std::string& fname);
@@ -37,11 +43,13 @@ class BlackholeFS {
 
     void close(const std::string& fname);
 
+    void create_defaults(const std::string & path); //! allow for a default set of files for reading ... 
 
   private:
     std::map<std::string, Stub*>  m_files; 
     unsigned long long m_fd_last = 0;
     std::mutex m_mutexFD;  // Declare a mutex
+
 
 };
 

@@ -173,6 +173,22 @@ int XrdBlackholeOss::Configure(const char *configfn, XrdSysError &Eroute) {
          }
        }
 
+        if (!strncmp(var, "blackhole.defaultspath", 22)) {
+         var = Config.GetWord();
+        Eroute.Emsg("Config", "create_defaults", var);
+         if (var) {
+            // Warn in case parameters were givne
+           char parms[1040];
+           if (!Config.GetRest(parms, sizeof(parms)) || parms[0]) {
+             Eroute.Emsg("Config", "defaultspath parameters will be ignored");
+           }
+          //  m_defaultspath = std::to_string(*var);
+          m_defaultspath = var; 
+          g_blackholeFS.create_defaults(m_defaultspath);
+         }
+        }
+
+
 
      } // end config read loop
      // Now check if any errors occured during file i/o
