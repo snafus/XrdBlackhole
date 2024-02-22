@@ -50,8 +50,10 @@ int XrdBlackholeOssFile::Close(long long *retsz) {
         << "Write: " << m_writeBytes << ", WriteAIO:" << m_writeBytesAIO
   );
   auto stub = g_blackholeFS.getStub(m_path);
-  stub->m_size = m_writeBytes + m_writeBytesAIO;
-  stub->m_stat.st_size = stub->m_size;
+  if (stub->m_isOpenWrite) {
+    stub->m_size = m_writeBytes + m_writeBytesAIO;
+    stub->m_stat.st_size = stub->m_size;
+  }
 
   g_blackholeFS.close(m_path);
   m_stub = nullptr;
@@ -80,6 +82,7 @@ ssize_t XrdBlackholeOssFile::Read(void *buff, off_t offset, size_t blen) {
   }
 
   size_t bytesremaining = min(blen, m_size - offset);
+  memset(buff, 0, bytesremaining);
   //#FIXME; optimise
   // for (size_t i =0; i<bytesremaining; ++i) {
   //   ((char*)buff)[i] = 0;
