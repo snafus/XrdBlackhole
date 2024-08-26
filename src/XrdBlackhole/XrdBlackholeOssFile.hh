@@ -84,6 +84,8 @@ private:
 
   ssize_t m_writeBytesAIO{0};
   ssize_t m_writeBytes{0};
+  ssize_t m_readBytesAIO{0};
+  ssize_t m_readBytes{0};
 
 };
 

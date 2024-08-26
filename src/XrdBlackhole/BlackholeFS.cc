@@ -1,4 +1,5 @@
 #include "BlackholeFS.hh"
+#include <vector> 
 
 extern XrdSysError XrdBlackholeEroute;
 
@@ -72,7 +73,8 @@ extern XrdSysError XrdBlackholeEroute;
       stub->m_fd = tmp;
       stub->m_size = 0;
       stub->m_flags = flags;
-      stub->m_mode = mode;  
+      stub->m_mode = mode;
+      stub->m_stat.st_size = 0;
       return tmp;
     }
 
@@ -92,50 +94,52 @@ extern XrdSysError XrdBlackholeEroute;
 
 void BlackholeFS::create_defaults(const std::string & path) {
     // lock as updating the fd value
+
+    struct Testfile {
+        Testfile() {}
+        Testfile(const std::string & n, size_t s, const std::string &t = "zeros"):
+          name(n), size(s), type(t) {
+        }
+        std::string name;
+        size_t size;
+        std::string type;
+    };
+
+    constexpr size_t GiB = 1024*1024*1024;
+
+    std::vector<Testfile> testfiles; 
+    testfiles.push_back(Testfile("testfile_zeros_1MiB", 1024*1024, "zeros"));
+    testfiles.push_back(Testfile("testfile_zeros_100MiB", 100*1024*1024, "zeros"));
+    testfiles.push_back(Testfile("testfile_zeros_1GiB", 1*GiB, "zeros"));
+    testfiles.push_back(Testfile("testfile_zeros_100GiB", 100*GiB, "zeros"));
+    for (int i =0; i<100; ++i) {
+        char str[7];
+        snprintf (str, 7, "%03d", i);
+        testfiles.push_back(Testfile("testfile_zeros_100GiB_"+std::string(str), 100*GiB, "zeros"));
+        testfiles.push_back(Testfile("testfile_zeros_10GiB_"+std::string(str),  10*GiB, "zeros"));
+    }
+
+
     std::unique_lock<std::mutex> lock(m_mutexFD);
-      unsigned long long tmp = ++m_fd_last; 
-      auto stub = new Stub;
-      stub->m_isOpen = false;
-      stub->m_isOpenWrite = false;
-      stub->m_fd = tmp;
-      stub->m_flags = 0;
-      stub->m_mode = 0;     
-      stub->m_special = true;
-      stub->m_readtype = "zeros";
-      
-    stub->m_size = 1024*1024;
-    stub->m_stat.st_size = 1024*1024;
-      m_files.insert ( std::pair<std::string, Stub*>(path+"/testfile_zeros_1MiB", stub) );
-    std::clog << "Creating: " << path+"/testfile_zeros_1MiB" << std::endl;
 
-    stub = new Stub;
-      stub->m_isOpen = false;
-      stub->m_isOpenWrite = false;
-      stub->m_fd = tmp;
-      stub->m_flags = 0;
-      stub->m_mode = 0;     
-      stub->m_special = true;
-      stub->m_readtype = "zeros";
-      
-    stub->m_size = 1024*1024*1024;
-    stub->m_stat.st_size = 1024*1024*1024;
-      m_files.insert ( std::pair<std::string, Stub*>(path+"/testfile_zeros_1GiB", stub) );
-    std::clog << "Creating: " << path+"/testfile_zeros_1GiB" << std::endl;
+    for (auto & tf: testfiles) {
+        unsigned long long tmp = ++m_fd_last; 
+        Stub* stub = new Stub;
+        stub->m_isOpen = false;
+        stub->m_isOpenWrite = false;
+        stub->m_fd = tmp;
+        stub->m_flags = 0;
+        stub->m_mode = 0;     
+        stub->m_special = true;
 
 
-    stub = new Stub;
-      stub->m_isOpen = false;
-      stub->m_isOpenWrite = false;
-      stub->m_fd = tmp;
-      stub->m_flags = 0;
-      stub->m_mode = 0;     
-      stub->m_special = true;
-      stub->m_readtype = "zeros";
-      
-    stub->m_size = 10737418240;
-    stub->m_stat.st_size = 10737418240;
-      m_files.insert ( std::pair<std::string, Stub*>(path+"/testfile_zeros_10GiB", stub) );
-    std::clog << "Creating: " << path+"/testfile_zeros_10GiB" << std::endl;
+        stub->m_readtype = tf.type;
+        stub->m_size = tf.size;
+        stub->m_stat.st_size = tf.size;
+        m_files.insert ( std::pair<std::string, Stub*>(path+"/"+tf.name, stub) );
+        std::clog << "BlackholeFS: Creating: " << path+"/"+tf.name << std::endl;
+    }
+
 
 
 } 

@@ -66,6 +66,7 @@ ssize_t XrdBlackholeOssFile::Read(off_t offset, size_t blen) {
       XrdBlackholeEroute.Say("No stub file");
     return -EINVAL; 
   }
+  BUFLOG("Read off,blen"); 
 
   return XrdOssOK;
 }
@@ -80,13 +81,16 @@ ssize_t XrdBlackholeOssFile::Read(void *buff, off_t offset, size_t blen) {
     auto stub = g_blackholeFS.getStub(m_path);
     m_size = stub->m_size;
   }
+    size_t bytesremaining = min(blen, m_size - offset);
 
-  size_t bytesremaining = min(blen, m_size - offset);
+    BUFLOG("Read:  " << m_path << " " << m_size << " read: " << bytesremaining << " Total sofar: " << m_readBytes);
+
   memset(buff, 0, bytesremaining);
   //#FIXME; optimise
   // for (size_t i =0; i<bytesremaining; ++i) {
   //   ((char*)buff)[i] = 0;
   // }
+  m_readBytes += bytesremaining;
   return bytesremaining;
 
 }
@@ -125,6 +129,8 @@ int XrdBlackholeOssFile::Fstat(struct stat *buf) {
     std::string pointerString = std::to_string(reinterpret_cast<uintptr_t>(g_blackholeFS.getStub(m_path)));
   *buf = g_blackholeFS.getStub(m_path)->m_stat;
 
+  BUFLOG("Fstat:  " << m_path << " size: " << buf->st_size);
+
   buf->st_mode = 0666 | S_IFREG;
   return XrdOssOK;
 
@@ -138,6 +144,9 @@ ssize_t XrdBlackholeOssFile::Write(const void *buff, off_t offset, size_t blen) 
     std::this_thread::sleep_for(delay*1ms);
   }
   m_writeBytes += blen;
+  g_blackholeFS.getStub(m_path)->m_stat.st_size = m_writeBytes;
+  g_blackholeFS.getStub(m_path)->m_size = m_writeBytes;
+
   return blen;
 }
 
@@ -159,6 +168,8 @@ int XrdBlackholeOssFile::Write(XrdSfsAio *aiop) {
   aiop->doneWrite(); 
 
   m_writeBytesAIO += rc;
+  g_blackholeFS.getStub(m_path)->m_stat.st_size = m_writeBytes;
+  g_blackholeFS.getStub(m_path)->m_size = m_writeBytes;
 
   std::string s = " AIOwrite: " + std::to_string(rc) + " " + std::to_string(off);
   XrdBlackholeEroute.Say(__FUNCTION__, s.c_str());
