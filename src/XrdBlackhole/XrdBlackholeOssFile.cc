@@ -81,7 +81,7 @@ ssize_t XrdBlackholeOssFile::Read(void *buff, off_t offset, size_t blen) {
     m_size = stub->m_size;
   }
 
-  size_t bytesremaining = min(blen, m_size - offset);
+  size_t bytesremaining = std::min(blen, m_size - offset);
   memset(buff, 0, bytesremaining);
   //#FIXME; optimise
   // for (size_t i =0; i<bytesremaining; ++i) {
