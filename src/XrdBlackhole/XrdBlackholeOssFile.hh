@@ -32,24 +32,14 @@
 
 
 //------------------------------------------------------------------------------
-//! This class implements XrdOssDF interface for usage with a CEPH storage.
+//! XrdOssDF implementation for the blackhole storage backend.
 //!
-//! This plugin is able to use any pool of ceph with any userId.
-//! There are several ways to provide the pool and userId to be used for a given
-//! operation. Here is the ordered list of possibilities.
-//! First one defined wins :
-//!   - the path can be prepended with userId and pool. Syntax is :
-//!       [[userId@]pool:]<actual path>
-//!   - the XrdOucEnv parameter, when existing, can have 'cephUserId' and/or
-//!     'cephPool' entries
-//!   - the ofs.osslib directive can provide an argument with format :
-//!       [userID@]pool
-//!   - default are 'admin' and 'default' for userId and pool respectively
+//! Writes are discarded after optionally sleeping to simulate a configured
+//! write speed. The total bytes written are tracked so that the file appears
+//! with the correct size after close.
 //!
-//! Note that the definition of a default via the ofs.osslib directive may
-//! clash with one used in a ofs.xattrlib directive. In case both directives
-//! have a default and they are different, the behavior is not defined.
-//! In case one of the two only has a default, it will be applied for both plugins.
+//! Reads return a zero-filled buffer up to the file's registered size.
+//! AIO reads and vectored reads are not supported.
 //------------------------------------------------------------------------------
 
 class XrdBlackholeOssFile : public XrdOssDF {
@@ -75,7 +65,7 @@ private:
 
   int m_fd;
   Stub * m_stub {nullptr};
-  std::string m_path; 
+  std::string m_path;
   size_t m_size {0};
   XrdBlackholeOss *m_bhOss;
 

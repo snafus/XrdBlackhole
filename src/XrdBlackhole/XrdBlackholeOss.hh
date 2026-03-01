@@ -33,40 +33,36 @@
 #include <map>
 #include <thread>
 #include <mutex>
+#include <sstream>
 
 #include <sys/stat.h>
 #include <sys/errno.h>
 #include <fcntl.h>
-#include <sstream>
-#include <iomanip>
-#include <ctime>
 
 #include "XrdBlackhole/BlackholeFS.hh"
 extern BlackholeFS g_blackholeFS;
 
-#define BUFLOG(x) {std::unique_lock<std::mutex>cephbuf_iolock; std::stringstream _bs;  _bs << x; std::clog << _bs.str() << std::endl;}
+// Mutex protecting std::clog output in the BUFLOG macro.
+extern std::mutex g_buflog_mutex;
+#define BUFLOG(x) { std::unique_lock<std::mutex> _lock(g_buflog_mutex); \
+                    std::stringstream _bs; _bs << x; \
+                    std::clog << _bs.str() << std::endl; }
 
 
 //------------------------------------------------------------------------------
-//! This class implements XrdOss interface for usage with a CEPH storage.
-//! It should be loaded via the ofs.osslib directive.
+//! XrdOss plugin that provides a blackhole storage backend.
 //!
-//! This plugin is able to use any pool of ceph with any userId.
-//! There are several ways to provide the pool and userId to be used for a given
-//! operation. Here is the ordered list of possibilities.
-//! First one defined wins :
-//!   - the path can be prepended with userId and pool. Syntax is :
-//!       [[userId@]pool:]<actual path>
-//!   - the XrdOucEnv parameter, when existing, can have 'cephUserId' and/or
-//!     'cephPool' entries
-//!   - the ofs.osslib directive can provide an argument with format :
-//!       [userID@]pool
-//!   - default are 'admin' and 'default' for userId and pool respectively
+//! Writes are accepted and silently discarded — no data is ever persisted to
+//! disk. An optional write-speed throttle can be configured to simulate a
+//! target storage throughput. The plugin should be loaded via the
+//! ofs.osslib directive:
 //!
-//! Note that the definition of a default via the ofs.osslib directive may
-//! clash with one used in a ofs.xattrlib directive. In case both directives
-//! have a default and they are different, the behavior is not defined.
-//! In case one of the two only has a default, it will be applied for both plugins.
+//!   ofs.osslib /path/to/libXrdBlackhole-<N>.so
+//!
+//! Supported configuration directives:
+//!   blackhole.writespeedMiBps <N>   Throttle writes to N MiB/s (optional).
+//!   blackhole.defaultspath    <path> Pre-seed the in-memory filesystem with
+//!                                   test files of fixed sizes at <path>.
 //------------------------------------------------------------------------------
 
 class XrdBlackholeOss : public XrdOss {
@@ -84,21 +80,18 @@ public:
   virtual int     Rename(const char *, const char *, XrdOucEnv *eP1=0, XrdOucEnv *eP2=0);
   virtual int     Stat(const char *, struct stat *, int opts=0, XrdOucEnv *eP=0);
   virtual int     StatFS(const char *path, char *buff, int &blen, XrdOucEnv *eP=0);
-  virtual int     StatLS(XrdOucEnv &env, const char *path, char *buff, int &blen);  
+  virtual int     StatLS(XrdOucEnv &env, const char *path, char *buff, int &blen);
   virtual int     StatVS(XrdOssVSInfo *sP, const char *sname=0, int updt=0);
   virtual int     Truncate(const char *, unsigned long long, XrdOucEnv *eP=0);
   virtual int     Unlink(const char *path, int Opts=0, XrdOucEnv *eP=0);
   virtual XrdOssDF *newDir(const char *tident);
   virtual XrdOssDF *newFile(const char *tident);
 
-
   inline unsigned long writespeedMiBs() const {return m_writespeedMiBs;}
 
-  private:
-
+private:
   unsigned long m_writespeedMiBs{0};
   std::string m_defaultspath{"/"};
 };
 
 #endif /* __BLACKHOLE_OSS_HH__ */
-

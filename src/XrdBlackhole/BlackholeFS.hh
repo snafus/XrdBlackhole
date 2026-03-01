@@ -48,7 +48,7 @@ class BlackholeFS {
   private:
     std::map<std::string, Stub*>  m_files; 
     unsigned long long m_fd_last = 0;
-    std::mutex m_mutexFD;  // Declare a mutex
+    std::mutex m_mutexFD;
 
 
 };
