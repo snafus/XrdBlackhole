@@ -69,6 +69,7 @@ if( XRDHTTP_INCLUDE_DIR )
 
   target_link_libraries(
     ${LIB_XRD_BLACKHOLE_METRICS}
+    ${LIB_XRD_BLACKHOLE}
     ${XROOTD_LIBRARIES} )
 
   set_target_properties(

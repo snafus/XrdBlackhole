@@ -24,7 +24,8 @@ WORKDIR /src
 COPY . /src
 
 RUN mkdir build && cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo && \
-    cmake --build build
+    cmake --build build && \
+    echo "=== Built libraries ===" && ls build/src/libXrdBlackhole*.so
 
 RUN mkdir -p /usr/lib64/xrootd && \
     ln -s /src/build/src/libXrdBlackhole-5.so       /usr/lib64/xrootd/libXrdBlackhole-5.so && \
