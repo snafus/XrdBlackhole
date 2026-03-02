@@ -66,29 +66,25 @@ XrdBlackholeOss::~XrdBlackholeOss() {
   g_statsManager.logSummary();
 }
 
-// ---------------------------------------------------------------------------
-// Directive dispatch table.
-//
-// Each row maps a config keyword to the handler method that parses it.
-// To add a new directive, append one row here and implement the method.
-// The catch-all at the bottom of the parse loop warns on unknown blackhole.*
-// tokens, so no other change to Configure() is needed.
-// ---------------------------------------------------------------------------
-namespace {
+int XrdBlackholeOss::Configure(const char *configfn, XrdSysError &Eroute) {
+  // -------------------------------------------------------------------------
+  // Directive dispatch table.
+  //
+  // Each row maps a config keyword to the handler method that parses it.
+  // Defined inside the member function so that pointers to private methods
+  // are accessible. To add a new directive, append one row here and implement
+  // the corresponding cfg_<name>() method.
+  // -------------------------------------------------------------------------
   struct Directive {
     const char *name;
     bool (XrdBlackholeOss::*parse)(XrdOucStream &, XrdSysError &);
   };
-
   static const Directive k_directives[] = {
     { "blackhole.writespeedMiBps", &XrdBlackholeOss::cfg_writespeedMiBps },
     { "blackhole.defaultspath",    &XrdBlackholeOss::cfg_defaultspath    },
     { "blackhole.readtype",        &XrdBlackholeOss::cfg_readtype        },
   };
   static const int k_nDirectives = sizeof(k_directives) / sizeof(k_directives[0]);
-} // namespace
-
-int XrdBlackholeOss::Configure(const char *configfn, XrdSysError &Eroute) {
   int NoGo = 0;
   XrdOucEnv myEnv;
   XrdOucStream Config(&Eroute, getenv("XRDINSTANCE"), &myEnv, "=====> ");
