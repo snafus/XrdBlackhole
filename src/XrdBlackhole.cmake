@@ -13,7 +13,6 @@ add_library(
   XrdBlackhole/XrdBlackholeOssFile.cc   XrdBlackhole/XrdBlackholeOssFile.hh
   XrdBlackhole/XrdBlackholeOssDir.cc    XrdBlackhole/XrdBlackholeOssDir.hh
   XrdBlackhole/XrdBlackholeStats.cc     XrdBlackhole/XrdBlackholeStats.hh
-  XrdBlackhole/XrdBlackholeMetrics.cc   XrdBlackhole/XrdBlackholeMetrics.hh
   XrdBlackhole/BlackholeFS.cc           XrdBlackhole/BlackholeFS.hh
   )
 
@@ -47,6 +46,44 @@ set_target_properties(
   PROPERTIES
   INTERFACE_LINK_LIBRARIES ""
   LINK_INTERFACE_LIBRARIES "" )
+
+#-------------------------------------------------------------------------------
+# The XrdBlackholeMetrics module (optional — requires XrdHttp headers)
+#-------------------------------------------------------------------------------
+find_path( XRDHTTP_INCLUDE_DIR XrdHttp/XrdHttpExtHandler.hh
+           HINTS ${XROOTD_INCLUDE_DIR} )
+
+if( XRDHTTP_INCLUDE_DIR )
+  message( STATUS "XrdHttp headers found — building XrdBlackholeMetrics" )
+
+  set( LIB_XRD_BLACKHOLE_METRICS XrdBlackholeMetrics-${PLUGIN_VERSION} )
+
+  add_library(
+    ${LIB_XRD_BLACKHOLE_METRICS}
+    MODULE
+    XrdBlackhole/XrdBlackholeMetrics.cc   XrdBlackhole/XrdBlackholeMetrics.hh )
+
+  target_include_directories(
+    ${LIB_XRD_BLACKHOLE_METRICS}
+    PRIVATE ${XRDHTTP_INCLUDE_DIR} )
+
+  target_link_libraries(
+    ${LIB_XRD_BLACKHOLE_METRICS}
+    ${XROOTD_LIBRARIES} )
+
+  set_target_properties(
+    ${LIB_XRD_BLACKHOLE_METRICS}
+    PROPERTIES
+    INTERFACE_LINK_LIBRARIES ""
+    LINK_INTERFACE_LIBRARIES "" )
+
+  install(
+    TARGETS ${LIB_XRD_BLACKHOLE_METRICS}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+
+else()
+  message( STATUS "XrdHttp headers not found — skipping XrdBlackholeMetrics" )
+endif()
 
 #-------------------------------------------------------------------------------
 # Install
