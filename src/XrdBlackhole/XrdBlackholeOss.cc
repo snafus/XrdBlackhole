@@ -66,10 +66,33 @@ XrdBlackholeOss::~XrdBlackholeOss() {
   g_statsManager.logSummary();
 }
 
+// ---------------------------------------------------------------------------
+// Directive dispatch table.
+//
+// Each row maps a config keyword to the handler method that parses it.
+// To add a new directive, append one row here and implement the method.
+// The catch-all at the bottom of the parse loop warns on unknown blackhole.*
+// tokens, so no other change to Configure() is needed.
+// ---------------------------------------------------------------------------
+namespace {
+  struct Directive {
+    const char *name;
+    bool (XrdBlackholeOss::*parse)(XrdOucStream &, XrdSysError &);
+  };
+
+  static const Directive k_directives[] = {
+    { "blackhole.writespeedMiBps", &XrdBlackholeOss::cfg_writespeedMiBps },
+    { "blackhole.defaultspath",    &XrdBlackholeOss::cfg_defaultspath    },
+    { "blackhole.readtype",        &XrdBlackholeOss::cfg_readtype        },
+  };
+  static const int k_nDirectives = sizeof(k_directives) / sizeof(k_directives[0]);
+} // namespace
+
 int XrdBlackholeOss::Configure(const char *configfn, XrdSysError &Eroute) {
   int NoGo = 0;
   XrdOucEnv myEnv;
   XrdOucStream Config(&Eroute, getenv("XRDINSTANCE"), &myEnv, "=====> ");
+
   // Disable POSC (Persist-On-Successful-Close): nothing is ever persisted.
   XrdOucEnv::Export("XRDXROOTD_NOPOSC", "1");
 
@@ -80,73 +103,96 @@ int XrdBlackholeOss::Configure(const char *configfn, XrdSysError &Eroute) {
       return 1;
     }
     Config.Attach(cfgFD);
-    char *var;
+
+    const char *var;
     while ((var = Config.GetMyFirstWord())) {
-
-      if (!strcmp(var, "blackhole.writespeedMiBps")) {
-        var = Config.GetWord();
-        if (!var) {
-          Eroute.Emsg("Config", "Missing value for blackhole.writespeedMiBps");
-          return 1;
+      // Walk the dispatch table looking for a matching directive name.
+      bool matched = false;
+      for (int i = 0; i < k_nDirectives; ++i) {
+        if (!strcmp(var, k_directives[i].name)) {
+          if (!(this->*k_directives[i].parse)(Config, Eroute)) NoGo = 1;
+          matched = true;
+          break;
         }
-        char *endp = nullptr;
-        unsigned long value = strtoul(var, &endp, 10);
-        if (endp == var || *endp != '\0') {
-          Eroute.Emsg("Config", "Non-numeric value for blackhole.writespeedMiBps:", var);
-        } else if (value >= static_cast<unsigned long>(INT_MAX)) {
-          Eroute.Emsg("Config", "Value too large for blackhole.writespeedMiBps:", var);
-        } else {
-          m_writespeedMiBs = value;  // 0 means unlimited
-        }
-
-      } else if (!strcmp(var, "blackhole.defaultspath")) {
-        var = Config.GetWord();
-        if (!var) {
-          Eroute.Emsg("Config", "Missing value for blackhole.defaultspath");
-          return 1;
-        }
-        char rest[1040];
-        if (!Config.GetRest(rest, sizeof(rest)) || rest[0]) {
-          Eroute.Emsg("Config", "blackhole.defaultspath: extra tokens will be ignored");
-        }
-        m_defaultspath = var;
-        g_blackholeFS.create_defaults(m_defaultspath);
-
-      } else if (!strcmp(var, "blackhole.readtype")) {
-        var = Config.GetWord();
-        if (!var) {
-          Eroute.Emsg("Config", "Missing value for blackhole.readtype");
-          return 1;
-        }
-        if (strcmp(var, "zeros") != 0) {
-          Eroute.Emsg("Config", "Unknown readtype (only 'zeros' is supported):", var);
-        } else {
-          m_readtype = var;
-        }
-
-      } else if (!strncmp(var, "blackhole.", 10)) {
-        // Catch-all for unrecognised blackhole.* directives.
-        Eroute.Emsg("Config", "Unknown directive (ignored):", var);
       }
+      // Warn on unrecognised blackhole.* tokens; ignore all other namespaces.
+      if (!matched && !strncmp(var, "blackhole.", 10))
+        Eroute.Emsg("Config", "Unknown directive (ignored):", var);
     }
 
     int retc = Config.LastError();
-    if (retc) {
-      NoGo = Eroute.Emsg("Config", -retc, "read config file", configfn);
-    }
+    if (retc) NoGo = Eroute.Emsg("Config", -retc, "read config file", configfn);
     Config.Close();
   }
 
-  // Log effective configuration so operators can verify what was parsed.
-  std::ostringstream summary;
-  summary << "Configured:"
-          << " writespeedMiBps=" << (m_writespeedMiBs == 0 ? "unlimited"
-                                                            : std::to_string(m_writespeedMiBs))
-          << " defaultspath="    << (m_defaultspath.empty() ? "(none)" : m_defaultspath)
-          << " readtype="        << m_readtype;
-  Eroute.Say(summary.str().c_str());
-
+  logConfig(Eroute);
   return NoGo;
+}
+
+// ---------------------------------------------------------------------------
+// Directive handlers
+// ---------------------------------------------------------------------------
+
+bool XrdBlackholeOss::cfg_writespeedMiBps(XrdOucStream &cfg, XrdSysError &Eroute) {
+  const char *val = cfg.GetWord();
+  if (!val) {
+    Eroute.Emsg("Config", "blackhole.writespeedMiBps: missing value");
+    return false;
+  }
+  char *endp = nullptr;
+  unsigned long value = strtoul(val, &endp, 10);
+  if (endp == val || *endp != '\0') {
+    Eroute.Emsg("Config", "blackhole.writespeedMiBps: non-numeric value:", val);
+    return false;
+  }
+  if (value >= static_cast<unsigned long>(INT_MAX)) {
+    Eroute.Emsg("Config", "blackhole.writespeedMiBps: value too large:", val);
+    return false;
+  }
+  m_writespeedMiBs = value;  // 0 = unlimited
+  return true;
+}
+
+bool XrdBlackholeOss::cfg_defaultspath(XrdOucStream &cfg, XrdSysError &Eroute) {
+  const char *val = cfg.GetWord();
+  if (!val) {
+    Eroute.Emsg("Config", "blackhole.defaultspath: missing value");
+    return false;
+  }
+  char rest[1040];
+  if (!cfg.GetRest(rest, sizeof(rest)) || rest[0])
+    Eroute.Emsg("Config", "blackhole.defaultspath: extra tokens ignored");
+  m_defaultspath = val;
+  g_blackholeFS.create_defaults(m_defaultspath);
+  return true;
+}
+
+bool XrdBlackholeOss::cfg_readtype(XrdOucStream &cfg, XrdSysError &Eroute) {
+  const char *val = cfg.GetWord();
+  if (!val) {
+    Eroute.Emsg("Config", "blackhole.readtype: missing value");
+    return false;
+  }
+  if (strcmp(val, "zeros") != 0) {
+    Eroute.Emsg("Config", "blackhole.readtype: unknown type (only 'zeros' supported):", val);
+    return false;
+  }
+  m_readtype = val;
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Configuration summary
+// ---------------------------------------------------------------------------
+
+void XrdBlackholeOss::logConfig(XrdSysError &Eroute) const {
+  std::ostringstream oss;
+  oss << "Configured:"
+      << " writespeedMiBps=" << (m_writespeedMiBs == 0 ? "unlimited"
+                                                        : std::to_string(m_writespeedMiBs))
+      << " defaultspath="    << (m_defaultspath.empty() ? "(none)" : m_defaultspath)
+      << " readtype="        << m_readtype;
+  Eroute.Say(oss.str().c_str());
 }
 
 int XrdBlackholeOss::Chmod(const char *path, mode_t mode, XrdOucEnv *envP) {

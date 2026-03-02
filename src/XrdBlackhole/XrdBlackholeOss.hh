@@ -100,9 +100,33 @@ public:
   inline unsigned long writespeedMiBs() const { return m_writespeedMiBs; }
 
 private:
+  // ---------------------------------------------------------------------------
+  // Configuration state — one member per supported directive.
+  // ---------------------------------------------------------------------------
   unsigned long m_writespeedMiBs{0};  ///< 0 = unlimited
   std::string   m_defaultspath{""};   ///< Empty = no pre-seeded files
   std::string   m_readtype{"zeros"};  ///< Read pattern for pre-seeded files
+
+  // ---------------------------------------------------------------------------
+  // Per-directive handlers — called by Configure() via the dispatch table.
+  //
+  // Each method reads its value(s) from `cfg`, stores the result in the
+  // corresponding member, and returns true on success or false on a fatal
+  // parse error (which causes Configure() to return non-zero).
+  //
+  // To add a new directive:
+  //   1. Add a member above for the parsed value.
+  //   2. Declare a handler here: bool cfg_<name>(XrdOucStream&, XrdSysError&);
+  //   3. Implement it in XrdBlackholeOss.cc following the existing examples.
+  //   4. Add one row to the k_directives table in Configure().
+  //   5. Add the directive to the logConfig() summary.
+  // ---------------------------------------------------------------------------
+  bool cfg_writespeedMiBps(XrdOucStream &, XrdSysError &);
+  bool cfg_defaultspath   (XrdOucStream &, XrdSysError &);
+  bool cfg_readtype       (XrdOucStream &, XrdSysError &);
+
+  /// Log the effective configuration after parsing completes.
+  void logConfig(XrdSysError &) const;
 };
 
 #endif /* __BLACKHOLE_OSS_HH__ */
