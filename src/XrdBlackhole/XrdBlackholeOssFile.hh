@@ -27,9 +27,9 @@
 
 #include "XrdOss/XrdOss.hh"
 #include "XrdBlackhole/XrdBlackholeOss.hh"
+#include "XrdBlackhole/XrdBlackholeStats.hh"
 
 #include <chrono>
-
 
 //------------------------------------------------------------------------------
 //! XrdOssDF implementation for the blackhole storage backend.
@@ -40,13 +40,16 @@
 //!
 //! Reads return a zero-filled buffer up to the file's registered size.
 //! AIO reads and vectored reads are not supported.
+//!
+//! Per-transfer statistics are accumulated during the Open→Close lifecycle
+//! and submitted to XrdBlackholeStatsManager on close.
 //------------------------------------------------------------------------------
 
 class XrdBlackholeOssFile : public XrdOssDF {
 
 public:
 
-  XrdBlackholeOssFile(XrdBlackholeOss *cephoss);
+  XrdBlackholeOssFile(XrdBlackholeOss *bhoss);
   virtual ~XrdBlackholeOssFile() {};
   virtual int Open(const char *path, int flags, mode_t mode, XrdOucEnv &env);
   virtual int Close(long long *retsz=0);
@@ -63,18 +66,24 @@ public:
 
 private:
 
-  int m_fd;
-  Stub * m_stub {nullptr};
-  std::string m_path;
-  size_t m_size {0};
+  int          m_fd;
+  Stub        *m_stub {nullptr};
+  std::string  m_path;
+  size_t       m_size {0};
   XrdBlackholeOss *m_bhOss;
 
+  // Timing — high-resolution clock for throttle / duration calculations.
   std::chrono::high_resolution_clock::time_point m_start;
   std::chrono::high_resolution_clock::time_point m_end;
 
-  ssize_t m_writeBytesAIO{0};
+  // Byte counters — kept separately so the stub size update in Close() has
+  // direct access without going through TransferStats.
   ssize_t m_writeBytes{0};
+  ssize_t m_writeBytesAIO{0};
+  ssize_t m_readBytes{0};
 
+  // Per-transfer statistics submitted to g_statsManager on close.
+  TransferStats m_stats;
 };
 
 #endif /* __XRD_BLACKHOLE_OSS_FILE_HH__ */

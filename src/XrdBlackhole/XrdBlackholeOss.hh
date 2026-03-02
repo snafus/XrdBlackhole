@@ -26,27 +26,34 @@
 #define __BLACKHOLE_OSS_HH__
 
 #include <string>
+#include <sstream>
+
 #include <XrdOss/XrdOss.hh>
 #include "XrdSys/XrdSysError.hh"
 #include "XrdOuc/XrdOucTrace.hh"
-
-#include <map>
-#include <thread>
-#include <mutex>
-#include <sstream>
 
 #include <sys/stat.h>
 #include <sys/errno.h>
 #include <fcntl.h>
 
 #include "XrdBlackhole/BlackholeFS.hh"
-extern BlackholeFS g_blackholeFS;
+#include "XrdBlackhole/XrdBlackholeStats.hh"
 
-// Mutex protecting std::clog output in the BUFLOG macro.
-extern std::mutex g_buflog_mutex;
-#define BUFLOG(x) { std::unique_lock<std::mutex> _lock(g_buflog_mutex); \
-                    std::stringstream _bs; _bs << x; \
-                    std::clog << _bs.str() << std::endl; }
+extern BlackholeFS       g_blackholeFS;
+extern XrdSysError       XrdBlackholeEroute;
+extern XrdOucTrace       XrdBlackholeTrace;
+
+//------------------------------------------------------------------------------
+// Trace bits for XrdBlackholeTrace.What
+//   Enable with: xrootd.trace all  (or set the bit programmatically)
+//------------------------------------------------------------------------------
+#define BHTRACE_IO  0x0001  ///< Per-operation I/O tracing (open/read/write/close)
+
+/// Gate a trace message on the BHTRACE_IO bit.  Usage: BHTRACE("key=" << val)
+#define BHTRACE(x) \
+  if (XrdBlackholeTrace.What & BHTRACE_IO) { \
+    std::ostringstream _bh_oss; _bh_oss << x; \
+    XrdBlackholeEroute.Say(_bh_oss.str().c_str()); }
 
 
 //------------------------------------------------------------------------------
@@ -60,9 +67,12 @@ extern std::mutex g_buflog_mutex;
 //!   ofs.osslib /path/to/libXrdBlackhole-<N>.so
 //!
 //! Supported configuration directives:
-//!   blackhole.writespeedMiBps <N>   Throttle writes to N MiB/s (optional).
+//!   blackhole.writespeedMiBps <N>   Throttle writes to N MiB/s.
+//!                                   Set to 0 (the default) for unlimited.
 //!   blackhole.defaultspath    <path> Pre-seed the in-memory filesystem with
 //!                                   test files of fixed sizes at <path>.
+//!   blackhole.readtype        <type> Read pattern for pre-seeded files.
+//!                                   Currently only "zeros" is implemented.
 //------------------------------------------------------------------------------
 
 class XrdBlackholeOss : public XrdOss {
@@ -87,11 +97,12 @@ public:
   virtual XrdOssDF *newDir(const char *tident);
   virtual XrdOssDF *newFile(const char *tident);
 
-  inline unsigned long writespeedMiBs() const {return m_writespeedMiBs;}
+  inline unsigned long writespeedMiBs() const { return m_writespeedMiBs; }
 
 private:
-  unsigned long m_writespeedMiBs{0};
-  std::string m_defaultspath{"/"};
+  unsigned long m_writespeedMiBs{0};  ///< 0 = unlimited
+  std::string   m_defaultspath{""};   ///< Empty = no pre-seeded files
+  std::string   m_readtype{"zeros"};  ///< Read pattern for pre-seeded files
 };
 
 #endif /* __BLACKHOLE_OSS_HH__ */

@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <sstream>
 #include <fcntl.h>
 #include <limits.h>
 #include "XrdOuc/XrdOucEnv.hh"
@@ -39,8 +40,6 @@ XrdVERSIONINFO(XrdOssGetStorageSystem, XrdBlackholeOss);
 
 XrdSysError XrdBlackholeEroute(0);
 XrdOucTrace XrdBlackholeTrace(&XrdBlackholeEroute);
-
-std::mutex g_buflog_mutex;
 
 BlackholeFS g_blackholeFS;
 
@@ -64,58 +63,90 @@ XrdBlackholeOss::XrdBlackholeOss(const char *configfn, XrdSysError &Eroute) {
 }
 
 XrdBlackholeOss::~XrdBlackholeOss() {
+  g_statsManager.logSummary();
 }
 
 int XrdBlackholeOss::Configure(const char *configfn, XrdSysError &Eroute) {
-   int NoGo = 0;
-   XrdOucEnv myEnv;
-   XrdOucStream Config(&Eroute, getenv("XRDINSTANCE"), &myEnv, "=====> ");
-   // Disable POSC (Persist-On-Successful-Close): nothing is ever persisted.
-   XrdOucEnv::Export("XRDXROOTD_NOPOSC", "1");
-   if (configfn && *configfn) {
-     int cfgFD;
-     if ((cfgFD = open(configfn, O_RDONLY, 0)) < 0) {
-       Eroute.Emsg("Config", errno, "open config file", configfn);
-       return 1;
-     }
-     Config.Attach(cfgFD);
-     char *var;
-     while((var = Config.GetMyFirstWord())) {
-        if (!strncmp(var, "blackhole.writespeedMiBps", 25)) {
-         var = Config.GetWord();
-         if (var) {
-           unsigned long value = strtoul(var, 0, 10);
-           if ((value > 0) && (value < INT_MAX)){
-             m_writespeedMiBs = value;
-           } else {
-             Eroute.Emsg("Config", "Invalid value for blackhole.writespeedMiBps:", var);
-           }
-         } else {
-           Eroute.Emsg("Config", "Missing value for blackhole.writespeedMiBps in config file");
-           return 1;
-         }
-       }
+  int NoGo = 0;
+  XrdOucEnv myEnv;
+  XrdOucStream Config(&Eroute, getenv("XRDINSTANCE"), &myEnv, "=====> ");
+  // Disable POSC (Persist-On-Successful-Close): nothing is ever persisted.
+  XrdOucEnv::Export("XRDXROOTD_NOPOSC", "1");
 
-        if (!strncmp(var, "blackhole.defaultspath", 22)) {
-         var = Config.GetWord();
-         Eroute.Emsg("Config", "create_defaults", var);
-         if (var) {
-           char parms[1040];
-           if (!Config.GetRest(parms, sizeof(parms)) || parms[0]) {
-             Eroute.Emsg("Config", "defaultspath parameters will be ignored");
-           }
-           m_defaultspath = var;
-           g_blackholeFS.create_defaults(m_defaultspath);
-         }
+  if (configfn && *configfn) {
+    int cfgFD;
+    if ((cfgFD = open(configfn, O_RDONLY, 0)) < 0) {
+      Eroute.Emsg("Config", errno, "open config file", configfn);
+      return 1;
+    }
+    Config.Attach(cfgFD);
+    char *var;
+    while ((var = Config.GetMyFirstWord())) {
+
+      if (!strcmp(var, "blackhole.writespeedMiBps")) {
+        var = Config.GetWord();
+        if (!var) {
+          Eroute.Emsg("Config", "Missing value for blackhole.writespeedMiBps");
+          return 1;
         }
-     }
-     int retc = Config.LastError();
-     if (retc) {
-       NoGo = Eroute.Emsg("Config", -retc, "read config file", configfn);
-     }
-     Config.Close();
-   }
-   return NoGo;
+        char *endp = nullptr;
+        unsigned long value = strtoul(var, &endp, 10);
+        if (endp == var || *endp != '\0') {
+          Eroute.Emsg("Config", "Non-numeric value for blackhole.writespeedMiBps:", var);
+        } else if (value >= static_cast<unsigned long>(INT_MAX)) {
+          Eroute.Emsg("Config", "Value too large for blackhole.writespeedMiBps:", var);
+        } else {
+          m_writespeedMiBs = value;  // 0 means unlimited
+        }
+
+      } else if (!strcmp(var, "blackhole.defaultspath")) {
+        var = Config.GetWord();
+        if (!var) {
+          Eroute.Emsg("Config", "Missing value for blackhole.defaultspath");
+          return 1;
+        }
+        char rest[1040];
+        if (!Config.GetRest(rest, sizeof(rest)) || rest[0]) {
+          Eroute.Emsg("Config", "blackhole.defaultspath: extra tokens will be ignored");
+        }
+        m_defaultspath = var;
+        g_blackholeFS.create_defaults(m_defaultspath);
+
+      } else if (!strcmp(var, "blackhole.readtype")) {
+        var = Config.GetWord();
+        if (!var) {
+          Eroute.Emsg("Config", "Missing value for blackhole.readtype");
+          return 1;
+        }
+        if (strcmp(var, "zeros") != 0) {
+          Eroute.Emsg("Config", "Unknown readtype (only 'zeros' is supported):", var);
+        } else {
+          m_readtype = var;
+        }
+
+      } else if (!strncmp(var, "blackhole.", 10)) {
+        // Catch-all for unrecognised blackhole.* directives.
+        Eroute.Emsg("Config", "Unknown directive (ignored):", var);
+      }
+    }
+
+    int retc = Config.LastError();
+    if (retc) {
+      NoGo = Eroute.Emsg("Config", -retc, "read config file", configfn);
+    }
+    Config.Close();
+  }
+
+  // Log effective configuration so operators can verify what was parsed.
+  std::ostringstream summary;
+  summary << "Configured:"
+          << " writespeedMiBps=" << (m_writespeedMiBs == 0 ? "unlimited"
+                                                            : std::to_string(m_writespeedMiBs))
+          << " defaultspath="    << (m_defaultspath.empty() ? "(none)" : m_defaultspath)
+          << " readtype="        << m_readtype;
+  Eroute.Say(summary.str().c_str());
+
+  return NoGo;
 }
 
 int XrdBlackholeOss::Chmod(const char *path, mode_t mode, XrdOucEnv *envP) {
@@ -151,15 +182,10 @@ int XrdBlackholeOss::Stat(const char* path,
                   struct stat* buff,
                   int opts,
                   XrdOucEnv* env) {
-  XrdBlackholeEroute.Say(__FUNCTION__, " path = ", path);
-  if (g_blackholeFS.exists(path)) {
-    auto stub = g_blackholeFS.getStub(path);
-    *buff = stub->m_stat;
-    XrdBlackholeEroute.Say(__FUNCTION__, " Stat response ",
-            std::to_string(stub->m_size).c_str());
-  } else {
-    return -ENOENT;
-  }
+  BHTRACE("Stat path=" << path);
+  if (!g_blackholeFS.exists(path)) return -ENOENT;
+  auto stub = g_blackholeFS.getStub(path);
+  *buff = stub->m_stat;
   return 0;
 }
 
@@ -192,12 +218,7 @@ int XrdBlackholeOss::StatLS(XrdOucEnv &env, const char *path, char *buff, int &b
   long long totalSpace = 0;
   long long freeSpace = totalSpace - usedSpace;
   blen = formatStatLSResponse(buff, blen,
-    path,
-    totalSpace,
-    usedSpace,
-    freeSpace,
-    totalSpace,
-    freeSpace);
+    path, totalSpace, usedSpace, freeSpace, totalSpace, freeSpace);
   return XrdOssOK;
 }
 
@@ -216,6 +237,6 @@ XrdOssDF* XrdBlackholeOss::newDir(const char *tident) {
 }
 
 XrdOssDF* XrdBlackholeOss::newFile(const char *tident) {
-  XrdBlackholeEroute.Say("newFile: ", tident);
+  BHTRACE("newFile tident=" << tident);
   return new XrdBlackholeOssFile(this);
 }
