@@ -43,6 +43,13 @@ void XrdBlackholeStatsManager::recordTransfer(const TransferStats& s) {
   if (s.bytes_read    > 0) { m_sum_read_MiBs  += read_MiBs;  m_read_transfers++;  }
 }
 
+XrdBlackholeStatsManager::Snapshot XrdBlackholeStatsManager::getSnapshot() const {
+  std::unique_lock<std::mutex> lock(m_mutex);
+  return {m_total_transfers, m_write_transfers, m_read_transfers,
+          m_total_bytes_written, m_total_bytes_read, m_total_errors,
+          m_sum_write_MiBs, m_sum_read_MiBs};
+}
+
 void XrdBlackholeStatsManager::logSummary() const {
   std::unique_lock<std::mutex> lock(m_mutex);
   double avg_write = m_write_transfers > 0 ? m_sum_write_MiBs / m_write_transfers : 0.0;

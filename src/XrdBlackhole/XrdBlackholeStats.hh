@@ -37,8 +37,27 @@ struct TransferStats {
 //------------------------------------------------------------------------------
 class XrdBlackholeStatsManager {
 public:
+  //----------------------------------------------------------------------------
+  //! Point-in-time snapshot of global aggregates.  Obtained atomically via
+  //! getSnapshot() so that callers (e.g. the Prometheus metrics handler) never
+  //! see a torn read across multiple fields.
+  //----------------------------------------------------------------------------
+  struct Snapshot {
+    uint64_t total_transfers{0};
+    uint64_t write_transfers{0};   ///< Transfers with at least one byte written
+    uint64_t read_transfers{0};    ///< Transfers with at least one byte read
+    int64_t  total_bytes_written{0};
+    int64_t  total_bytes_read{0};
+    uint64_t total_errors{0};
+    double   sum_write_MiBs{0.0};  ///< Sum of per-transfer write throughputs
+    double   sum_read_MiBs{0.0};   ///< Sum of per-transfer read throughputs
+  };
+
   /// Record a completed transfer: log its stats and update global aggregates.
   void recordTransfer(const TransferStats& stats);
+
+  /// Return a consistent point-in-time copy of all global aggregates.
+  Snapshot getSnapshot() const;
 
   /// Log a one-line summary of global aggregates. Called on server shutdown.
   void logSummary() const;
@@ -51,8 +70,8 @@ private:
   uint64_t m_total_errors{0};
   double   m_sum_write_MiBs{0.0};
   double   m_sum_read_MiBs{0.0};
-  uint64_t m_write_transfers{0};  ///< Transfers that wrote at least one byte
-  uint64_t m_read_transfers{0};   ///< Transfers that read at least one byte
+  uint64_t m_write_transfers{0};
+  uint64_t m_read_transfers{0};
 };
 
 extern XrdBlackholeStatsManager g_statsManager;
