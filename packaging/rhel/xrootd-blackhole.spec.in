@@ -66,16 +66,6 @@ BuildRequires: cppunit-devel
 BuildRequires: clang
 %endif
 
-#BuildRequires: xrootd-server-devel%{?_isa} = %{epoch}:%{version}-%{release}
-#BuildRequires: xrootd-private-devel%{?_isa} = %{epoch}:%{version}-%{release}
-#BuildRequires: xrootd-libs%{?_isa} = %{epoch}:%{version}-%{release}
-#BuildRequires: xrootd-server-libs%{?_isa} = %{epoch}:%{version}-%{release}
-#BuildRequires: xrootd-client-libs%{?_isa} = %{epoch}:%{version}-%{release}
-
-#Requires: xrootd-server-libs%{?_isa} = %{epoch}:%{version}-%{release}
-#Requires: xrootd-client-libs%{?_isa} = %{epoch}:%{version}-%{release}
-#Requires: xrootd-libs%{?_isa} = %{epoch}:%{version}-%{release}
-
 BuildRequires: xrootd-server-devel%{?_isa} >= 1:5.3.3
 BuildRequires: xrootd-private-devel%{?_isa} >= 1:5.3.3
 BuildRequires: xrootd-libs%{?_isa} >= 1:5.3.1
@@ -120,7 +110,7 @@ cmake  \
 %endif
       ../
 
-make -i VERBOSE=1 %{?_smp_mflags}
+make VERBOSE=1 %{?_smp_mflags}
 popd
 
 #-------------------------------------------------------------------------------
@@ -129,16 +119,10 @@ popd
 %install
 rm -rf $RPM_BUILD_ROOT
 
-#-------------------------------------------------------------------------------
-# Install 4.x.y
-#-------------------------------------------------------------------------------
 pushd xrootd-blackhole
-pushd  build
+pushd build
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
-
-# blackhole posix unversioned so
-# rm -f $RPM_BUILD_ROOT%{_libdir}/libXrdBlackholePosix.so
 
 
 %clean
