@@ -69,9 +69,13 @@ public:
 private:
 
   int          m_fd;
+  // NOTE: XRootD serialises all I/O operations on a single file handle —
+  // Close() is always called after all reads and writes have completed.
+  // Per-handle members therefore do not require additional locking beyond
+  // what the atomic counters below already provide.
   std::shared_ptr<Stub> m_stub;
   std::string  m_path;
-  size_t       m_size {0};
+  size_t       m_size {0};   ///< Cached stub size; set once in Open(), read-only thereafter
   XrdBlackholeOss *m_bhOss;
 
   // Timing — high-resolution clock for throttle / duration calculations.

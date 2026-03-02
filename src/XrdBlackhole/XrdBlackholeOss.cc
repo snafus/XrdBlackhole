@@ -256,11 +256,14 @@ int formatStatLSResponse(char *buff, int &blen, const char* cgroup, long long to
 
 int XrdBlackholeOss::StatLS(XrdOucEnv &env, const char *path, char *buff, int &blen)
 {
+  // Report effectively unlimited free space so that space-token-aware clients
+  // (FTS3, GFAL2) do not reject the endpoint as full.  1 PiB is large enough
+  // for any realistic benchmark while fitting safely in a long long.
+  static const long long kReportedSpace = 1LL * 1024 * 1024 * 1024 * 1024 * 1024; // 1 PiB
   long long usedSpace = 0;
-  long long totalSpace = 0;
-  long long freeSpace = totalSpace - usedSpace;
+  long long freeSpace = kReportedSpace;
   blen = formatStatLSResponse(buff, blen,
-    path, totalSpace, usedSpace, freeSpace, totalSpace, freeSpace);
+    path, kReportedSpace, usedSpace, freeSpace, kReportedSpace, freeSpace);
   return XrdOssOK;
 }
 

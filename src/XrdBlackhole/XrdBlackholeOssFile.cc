@@ -27,7 +27,9 @@ int XrdBlackholeOssFile::Open(const char *path, int flags, mode_t mode, XrdOucEn
   m_stub  = g_blackholeFS.getStub(m_path);
   m_start = std::chrono::high_resolution_clock::now();
 
-  // Reset per-transfer counters.
+  // Reset per-transfer counters and cache the stub size once so Read() never
+  // needs to write m_size from a hot path (eliminates the data-race risk on
+  // concurrent Read() calls).
   m_writeBytes    = 0;
   m_writeBytesAIO = 0;
   m_readBytes     = 0;
@@ -35,7 +37,7 @@ int XrdBlackholeOssFile::Open(const char *path, int flags, mode_t mode, XrdOucEn
   m_writeAioOps   = 0;
   m_readOps       = 0;
   m_errors        = 0;
-  m_size          = 0;
+  m_size          = m_stub ? m_stub->m_size : 0;
 
   // Initialise per-transfer stats.
   m_stats           = TransferStats{};
@@ -95,9 +97,6 @@ ssize_t XrdBlackholeOssFile::Read(void *buff, off_t offset, size_t blen) {
     m_errors++;
     return -EINVAL;
   }
-  if (m_size == 0) {
-    m_size = m_stub->m_size;
-  }
   // Guard against out-of-range offset to prevent size_t underflow.
   if (offset < 0 || static_cast<size_t>(offset) >= m_size) return 0;
   size_t n = std::min(blen, m_size - static_cast<size_t>(offset));
@@ -145,18 +144,20 @@ ssize_t XrdBlackholeOssFile::Write(const void *buff, off_t offset, size_t blen) 
 }
 
 int XrdBlackholeOssFile::Write(XrdSfsAio *aiop) {
-  ssize_t rc = aiop->sfsAio.aio_nbytes;
+  // aio_nbytes is size_t (unsigned); keep it unsigned to avoid ssize_t truncation
+  // for large (>SSIZE_MAX) write requests.
+  const size_t nbytes = aiop->sfsAio.aio_nbytes;
   if (m_bhOss->writespeedMiBs() > 0) {
     auto delay_us = static_cast<long long>(
-      static_cast<double>(rc) /
+      static_cast<double>(nbytes) /
       (static_cast<double>(m_bhOss->writespeedMiBs()) * 1024.0 * 1024.0) * 1e6);
     std::this_thread::sleep_for(std::chrono::microseconds(delay_us));
   }
-  aiop->Result = rc;
+  aiop->Result = static_cast<ssize_t>(nbytes);
   aiop->doneWrite();
-  m_writeBytesAIO += rc;
+  m_writeBytesAIO += static_cast<ssize_t>(nbytes);
   m_writeAioOps++;
-  BHTRACE("WriteAIO " << rc << " bytes @ " << aiop->sfsAio.aio_offset
+  BHTRACE("WriteAIO " << nbytes << " bytes @ " << aiop->sfsAio.aio_offset
                       << " path=" << m_path);
   return XrdOssOK;
 }

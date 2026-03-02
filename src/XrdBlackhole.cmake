@@ -1,13 +1,6 @@
 include_directories( ${XROOTD_INCLUDE_DIR} )
 include_directories( ${CMAKE_SOURCE_DIR}/src )
 
-
-#-------------------------------------------------------------------------------
-# XrdBlackholePosix library version
-#-------------------------------------------------------------------------------
-set( XRD_BLACKHOLE_POSIX_VERSION   0.0.1 )
-set( XRD_BLACKHOLE_POSIX_SOVERSION 0 )
-
 #-------------------------------------------------------------------------------
 # The XrdBlackhole module
 #-------------------------------------------------------------------------------
@@ -26,12 +19,8 @@ add_library(
 
 target_link_libraries(
   ${LIB_XRD_BLACKHOLE}
-  ${XROOTD_LIBRARIES}  
+  ${XROOTD_LIBRARIES}
 )
-#target_link_libraries(
-#  ${LIB_XRD_BLACKHOLE}
-#  ${XROOTD_LIBRARIES}  
-#  XrdBlackholePosix )
 
 set_target_properties(
   ${LIB_XRD_BLACKHOLE}
@@ -51,12 +40,7 @@ add_library(
 
 target_link_libraries(
   ${LIB_XRD_BLACKHOLE_XATTR}
-  ${XROOTD_LIBRARIES}  )
-
-#target_link_libraries(
-#  ${LIB_XRD_BLACKHOLE_XATTR}
-#  ${XROOTD_LIBRARIES}  
-#  XrdBlackholePosix )
+  ${XROOTD_LIBRARIES} )
 
 set_target_properties(
   ${LIB_XRD_BLACKHOLE_XATTR}
@@ -70,6 +54,3 @@ set_target_properties(
 install(
   TARGETS ${LIB_XRD_BLACKHOLE} ${LIB_XRD_BLACKHOLE_XATTR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
-#install(
-#  TARGETS ${LIB_XRD_BLACKHOLE} ${LIB_XRD_BLACKHOLE_XATTR} XrdBlackholePosix
-#  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
