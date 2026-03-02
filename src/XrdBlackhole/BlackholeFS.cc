@@ -1,5 +1,7 @@
 #include "BlackholeFS.hh"
 
+#include <memory>
+
 extern XrdSysError XrdBlackholeEroute;
 
 bool BlackholeFS::exists(const std::string& fname) {
@@ -7,7 +9,7 @@ bool BlackholeFS::exists(const std::string& fname) {
   return m_files.find(fname) != m_files.end();
 }
 
-Stub * BlackholeFS::getStub(const std::string& fname) {
+std::shared_ptr<Stub> BlackholeFS::getStub(const std::string& fname) {
   std::unique_lock<std::mutex> lock(m_mutexFD);
   auto citr = m_files.find(fname);
   if (citr == m_files.end()) return nullptr;
@@ -18,7 +20,6 @@ int BlackholeFS::unlink(const std::string& fname) {
   std::unique_lock<std::mutex> lock(m_mutexFD);
   auto citr = m_files.find(fname);
   if (citr == m_files.end()) return -ENOENT;
-  delete citr->second;
   m_files.erase(citr);
   return 0;
 }
@@ -34,7 +35,7 @@ int BlackholeFS::open(const std::string& fname, int flags, int mode) {
 
   auto citr = m_files.find(fname);
   bool fileExists = (citr != m_files.end());
-  Stub* stub = fileExists ? citr->second : nullptr;
+  Stub* stub = fileExists ? citr->second.get() : nullptr;
 
   if ((flags & O_ACCMODE) == O_RDONLY) {
     if (!fileExists) return -ENOENT;
@@ -49,7 +50,6 @@ int BlackholeFS::open(const std::string& fname, int flags, int mode) {
   // Access mode includes write.
   if (fileExists) {
     if (flags & O_TRUNC) {
-      delete citr->second;
       m_files.erase(citr);
     } else {
       if (flags & O_EXCL) return -EACCES;
@@ -59,7 +59,8 @@ int BlackholeFS::open(const std::string& fname, int flags, int mode) {
 
   // Either the file never existed or was just unlinked above.
   unsigned long long tmp = ++m_fd_last;
-  stub = new Stub;
+  auto stub_owned = std::make_shared<Stub>();
+  stub = stub_owned.get();
   stub->m_isOpen = true;
   stub->m_isOpenWrite = true;
   stub->m_fd = tmp;
@@ -70,7 +71,7 @@ int BlackholeFS::open(const std::string& fname, int flags, int mode) {
   // Use the assigned fd as a stable, unique inode number.
   stub->m_stat.st_dev = 1;
   stub->m_stat.st_ino = tmp;
-  m_files.insert({fname, stub});
+  m_files.insert({fname, stub_owned});
   return tmp;
 }
 
@@ -95,7 +96,7 @@ void BlackholeFS::create_defaults(const std::string & path) {
 
   for (const auto& spec : specs) {
     unsigned long long tmp = ++m_fd_last;
-    auto stub = new Stub;
+    auto stub = std::make_shared<Stub>();
     stub->m_isOpen = false;
     stub->m_isOpenWrite = false;
     stub->m_fd = tmp;
@@ -110,6 +111,6 @@ void BlackholeFS::create_defaults(const std::string & path) {
     stub->m_stat.st_ino = tmp;
     std::string fullpath = path + spec.suffix;
     m_files.insert({fullpath, stub});
-    std::clog << "Creating: " << fullpath << std::endl;
+    XrdBlackholeEroute.Say("blackhole: create_defaults: ", fullpath.c_str());
   }
 }

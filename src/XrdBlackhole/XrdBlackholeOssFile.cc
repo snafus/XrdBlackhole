@@ -13,8 +13,6 @@
 #include "XrdBlackhole/XrdBlackholeOssFile.hh"
 #include "XrdBlackhole/XrdBlackholeOss.hh"
 
-using namespace std::chrono_literals;
-
 XrdBlackholeOssFile::XrdBlackholeOssFile(XrdBlackholeOss *bhOss) : m_fd(-1), m_bhOss(bhOss) {}
 
 int XrdBlackholeOssFile::Open(const char *path, int flags, mode_t mode, XrdOucEnv &env) {
@@ -29,6 +27,16 @@ int XrdBlackholeOssFile::Open(const char *path, int flags, mode_t mode, XrdOucEn
   m_stub  = g_blackholeFS.getStub(m_path);
   m_start = std::chrono::high_resolution_clock::now();
 
+  // Reset per-transfer counters.
+  m_writeBytes    = 0;
+  m_writeBytesAIO = 0;
+  m_readBytes     = 0;
+  m_writeOps      = 0;
+  m_writeAioOps   = 0;
+  m_readOps       = 0;
+  m_errors        = 0;
+  m_size          = 0;
+
   // Initialise per-transfer stats.
   m_stats           = TransferStats{};
   m_stats.path      = path;
@@ -41,9 +49,8 @@ int XrdBlackholeOssFile::Open(const char *path, int flags, mode_t mode, XrdOucEn
 }
 
 int XrdBlackholeOssFile::Close(long long *retsz) {
-  if (!g_blackholeFS.exists(m_path)) {
+  if (!m_stub) {
     XrdBlackholeEroute.Emsg("Close", ENOENT, "closing unknown path", m_path.c_str());
-    m_stats.errors++;
     return -ENOENT;
   }
 
@@ -51,20 +58,24 @@ int XrdBlackholeOssFile::Close(long long *retsz) {
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(m_end - m_start);
 
   // Update the in-memory stub size from bytes written this session.
-  auto stub = g_blackholeFS.getStub(m_path);
-  if (stub->m_isOpenWrite) {
-    stub->m_size        = m_writeBytes + m_writeBytesAIO;
-    stub->m_stat.st_size = stub->m_size;
+  ssize_t wb = m_writeBytes + m_writeBytesAIO;
+  if (m_stub->m_isOpenWrite) {
+    m_stub->m_size        = wb;
+    m_stub->m_stat.st_size = wb;
   }
 
   // Finalise and submit transfer statistics.
   m_stats.duration_us   = duration.count();
-  m_stats.bytes_written = m_writeBytes + m_writeBytesAIO;
+  m_stats.bytes_written = wb;
   m_stats.bytes_read    = m_readBytes;
+  m_stats.write_ops     = m_writeOps;
+  m_stats.write_aio_ops = m_writeAioOps;
+  m_stats.read_ops      = m_readOps;
+  m_stats.errors        = m_errors;
   g_statsManager.recordTransfer(m_stats);
 
   g_blackholeFS.close(m_path);
-  m_stub = nullptr;
+  m_stub.reset();
   return XrdOssOK;
 }
 
@@ -72,7 +83,7 @@ int XrdBlackholeOssFile::Close(long long *retsz) {
 ssize_t XrdBlackholeOssFile::Read(off_t offset, size_t blen) {
   if (!m_stub) {
     XrdBlackholeEroute.Emsg("Read", EINVAL, "no open stub for", m_path.c_str());
-    m_stats.errors++;
+    m_errors++;
     return -EINVAL;
   }
   return XrdOssOK;
@@ -81,17 +92,19 @@ ssize_t XrdBlackholeOssFile::Read(off_t offset, size_t blen) {
 ssize_t XrdBlackholeOssFile::Read(void *buff, off_t offset, size_t blen) {
   if (!m_stub) {
     XrdBlackholeEroute.Emsg("Read", EINVAL, "no open stub for", m_path.c_str());
-    m_stats.errors++;
+    m_errors++;
     return -EINVAL;
   }
   if (m_size == 0) {
-    m_size = g_blackholeFS.getStub(m_path)->m_size;
+    m_size = m_stub->m_size;
   }
+  // Guard against out-of-range offset to prevent size_t underflow.
+  if (offset < 0 || static_cast<size_t>(offset) >= m_size) return 0;
   size_t n = std::min(blen, m_size - static_cast<size_t>(offset));
   memset(buff, 0, n);
 
   m_readBytes += n;
-  m_stats.read_ops++;
+  m_readOps++;
   BHTRACE("Read " << n << " bytes @ " << offset << " path=" << m_path);
   return n;
 }
@@ -109,36 +122,40 @@ ssize_t XrdBlackholeOssFile::ReadV(XrdOucIOVec *readV, int n) {
 }
 
 int XrdBlackholeOssFile::Fstat(struct stat *buf) {
-  if (!g_blackholeFS.exists(m_path)) {
-    XrdBlackholeEroute.Emsg("Fstat", ENOENT, "path not found", m_path.c_str());
+  if (!m_stub) {
+    XrdBlackholeEroute.Emsg("Fstat", ENOENT, "no open stub for", m_path.c_str());
     return -ENOENT;
   }
-  *buf = g_blackholeFS.getStub(m_path)->m_stat;
+  *buf = m_stub->m_stat;
   buf->st_mode = 0666 | S_IFREG;
   return XrdOssOK;
 }
 
 ssize_t XrdBlackholeOssFile::Write(const void *buff, off_t offset, size_t blen) {
   if (m_bhOss->writespeedMiBs() > 0) {
-    int delay = blen / (m_bhOss->writespeedMiBs() * 1024 * 1024) * 1000;
-    std::this_thread::sleep_for(delay * 1ms);
+    auto delay_us = static_cast<long long>(
+      static_cast<double>(blen) /
+      (static_cast<double>(m_bhOss->writespeedMiBs()) * 1024.0 * 1024.0) * 1e6);
+    std::this_thread::sleep_for(std::chrono::microseconds(delay_us));
   }
   m_writeBytes += blen;
-  m_stats.write_ops++;
+  m_writeOps++;
   BHTRACE("Write " << blen << " bytes @ " << offset << " path=" << m_path);
   return blen;
 }
 
 int XrdBlackholeOssFile::Write(XrdSfsAio *aiop) {
-  ssize_t rc  = aiop->sfsAio.aio_nbytes;
+  ssize_t rc = aiop->sfsAio.aio_nbytes;
   if (m_bhOss->writespeedMiBs() > 0) {
-    int delay = rc / (m_bhOss->writespeedMiBs() * 1024 * 1024) * 1000;
-    std::this_thread::sleep_for(delay * 1ms);
+    auto delay_us = static_cast<long long>(
+      static_cast<double>(rc) /
+      (static_cast<double>(m_bhOss->writespeedMiBs()) * 1024.0 * 1024.0) * 1e6);
+    std::this_thread::sleep_for(std::chrono::microseconds(delay_us));
   }
   aiop->Result = rc;
   aiop->doneWrite();
   m_writeBytesAIO += rc;
-  m_stats.write_aio_ops++;
+  m_writeAioOps++;
   BHTRACE("WriteAIO " << rc << " bytes @ " << aiop->sfsAio.aio_offset
                       << " path=" << m_path);
   return XrdOssOK;

@@ -183,8 +183,8 @@ int XrdBlackholeOss::Stat(const char* path,
                   int opts,
                   XrdOucEnv* env) {
   BHTRACE("Stat path=" << path);
-  if (!g_blackholeFS.exists(path)) return -ENOENT;
   auto stub = g_blackholeFS.getStub(path);
+  if (!stub) return -ENOENT;
   *buff = stub->m_stat;
   return 0;
 }

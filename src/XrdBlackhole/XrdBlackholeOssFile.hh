@@ -29,7 +29,9 @@
 #include "XrdBlackhole/XrdBlackholeOss.hh"
 #include "XrdBlackhole/XrdBlackholeStats.hh"
 
+#include <atomic>
 #include <chrono>
+#include <memory>
 
 //------------------------------------------------------------------------------
 //! XrdOssDF implementation for the blackhole storage backend.
@@ -67,7 +69,7 @@ public:
 private:
 
   int          m_fd;
-  Stub        *m_stub {nullptr};
+  std::shared_ptr<Stub> m_stub;
   std::string  m_path;
   size_t       m_size {0};
   XrdBlackholeOss *m_bhOss;
@@ -76,11 +78,15 @@ private:
   std::chrono::high_resolution_clock::time_point m_start;
   std::chrono::high_resolution_clock::time_point m_end;
 
-  // Byte counters — kept separately so the stub size update in Close() has
-  // direct access without going through TransferStats.
-  ssize_t m_writeBytes{0};
-  ssize_t m_writeBytesAIO{0};
-  ssize_t m_readBytes{0};
+  // Atomic byte/op counters — updated on every I/O call; may be called from
+  // concurrent threads on the same handle.  Read into TransferStats at Close().
+  std::atomic<ssize_t>   m_writeBytes{0};
+  std::atomic<ssize_t>   m_writeBytesAIO{0};
+  std::atomic<ssize_t>   m_readBytes{0};
+  std::atomic<uint32_t>  m_writeOps{0};
+  std::atomic<uint32_t>  m_writeAioOps{0};
+  std::atomic<uint32_t>  m_readOps{0};
+  std::atomic<uint32_t>  m_errors{0};
 
   // Per-transfer statistics submitted to g_statsManager on close.
   TransferStats m_stats;

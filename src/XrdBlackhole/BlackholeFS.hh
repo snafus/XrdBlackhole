@@ -7,7 +7,7 @@
 #include "XrdOuc/XrdOucTrace.hh"
 
 #include <map>
-#include <thread>
+#include <memory>
 #include <mutex>
 #include <string>
 
@@ -32,10 +32,10 @@ struct Stub {
 class BlackholeFS {
   public:
     BlackholeFS(){};
-    ~BlackholeFS() {m_files.clear();}
+    ~BlackholeFS() = default;
     bool exists(const std::string& fname);
 
-    Stub * getStub(const std::string& fname);
+    std::shared_ptr<Stub> getStub(const std::string& fname);
 
     int unlink(const std::string& fname);
 
@@ -46,7 +46,7 @@ class BlackholeFS {
     void create_defaults(const std::string & path); //! allow for a default set of files for reading ... 
 
   private:
-    std::map<std::string, Stub*>  m_files; 
+    std::map<std::string, std::shared_ptr<Stub>> m_files;
     unsigned long long m_fd_last = 0;
     std::mutex m_mutexFD;
 
