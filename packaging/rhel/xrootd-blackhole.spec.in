@@ -87,7 +87,7 @@ Requires: xrootd-client-libs%{?_isa} >= 1:5.3.3
 Requires: xrootd-libs%{?_isa} >= 1:5.3.3
 
 %description
-The xrootd-blackhole is an OSS layer plug-in for the XRootD server for perfmance
+The xrootd-blackhole is an OSS layer plug-in for the XRootD server for performance
 testing. Any data writing to this plugin will be lost forever.
 
 #-------------------------------------------------------------------------------
@@ -151,7 +151,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_libdir}/libXrdBlackhole-5.so
 %{_libdir}/libXrdBlackholeXattr-5.so
-%{_libdir}/libXrdBlackholePosix.so*
+%{_libdir}/libXrdBlackholeMetrics-5.so
 
 %if %{?_with_tests:1}%{!?_with_tests:0}
 %files tests
