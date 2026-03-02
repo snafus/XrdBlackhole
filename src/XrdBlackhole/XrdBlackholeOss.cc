@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string>
 #include <sstream>
+#include <cerrno>
 #include <fcntl.h>
 #include <limits.h>
 #include "XrdOuc/XrdOucEnv.hh"
@@ -136,12 +137,13 @@ bool XrdBlackholeOss::cfg_writespeedMiBps(XrdOucStream &cfg, XrdSysError &Eroute
     return false;
   }
   char *endp = nullptr;
+  errno = 0;
   unsigned long value = strtoul(val, &endp, 10);
   if (endp == val || *endp != '\0') {
     Eroute.Emsg("Config", "blackhole.writespeedMiBps: non-numeric value:", val);
     return false;
   }
-  if (value >= static_cast<unsigned long>(INT_MAX)) {
+  if (errno == ERANGE || value >= static_cast<unsigned long>(INT_MAX)) {
     Eroute.Emsg("Config", "blackhole.writespeedMiBps: value too large:", val);
     return false;
   }

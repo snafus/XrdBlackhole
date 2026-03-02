@@ -16,8 +16,7 @@
 
 
 struct Stub {
-  bool m_isOpen;
-  bool m_isOpenWrite;  
+  bool m_isOpenWrite {false};
   int m_flags;
   int m_mode;
   unsigned long long m_size;

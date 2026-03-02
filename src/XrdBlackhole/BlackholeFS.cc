@@ -40,20 +40,29 @@ int BlackholeFS::open(const std::string& fname, int flags, int mode) {
   if ((flags & O_ACCMODE) == O_RDONLY) {
     if (!fileExists) return -ENOENT;
     unsigned long long fd = ++m_fd_last;
-    stub->m_fd = fd;
-    stub->m_isOpen = true;
+    stub->m_fd    = fd;
     stub->m_flags = flags;
-    stub->m_mode = mode;
+    stub->m_mode  = mode;
     return fd;
   }
 
   // Access mode includes write.
   if (fileExists) {
+    // O_EXCL means "fail if file already exists", regardless of O_TRUNC.
+    if (flags & O_EXCL) return -EEXIST;
+
     if (flags & O_TRUNC) {
+      // Discard the existing stub; a fresh one is created below.
       m_files.erase(citr);
     } else {
-      if (flags & O_EXCL) return -EACCES;
-      return -EEXIST;
+      // Write open of an existing file without truncation: reuse the stub.
+      // Mark it open-for-write so Close() updates m_size correctly.
+      unsigned long long fd = ++m_fd_last;
+      stub->m_fd          = fd;
+      stub->m_isOpenWrite = true;
+      stub->m_flags       = flags;
+      stub->m_mode        = mode;
+      return fd;
     }
   }
 
@@ -61,7 +70,6 @@ int BlackholeFS::open(const std::string& fname, int flags, int mode) {
   unsigned long long tmp = ++m_fd_last;
   auto stub_owned = std::make_shared<Stub>();
   stub = stub_owned.get();
-  stub->m_isOpen = true;
   stub->m_isOpenWrite = true;
   stub->m_fd = tmp;
   stub->m_size = 0;
@@ -80,7 +88,6 @@ void BlackholeFS::close(const std::string& fname) {
   std::unique_lock<std::mutex> lock(m_mutexFD);
   auto citr = m_files.find(fname);
   if (citr == m_files.end()) return;
-  citr->second->m_isOpen = false;
   citr->second->m_isOpenWrite = false;
 }
 
@@ -97,8 +104,6 @@ void BlackholeFS::create_defaults(const std::string & path) {
   for (const auto& spec : specs) {
     unsigned long long tmp = ++m_fd_last;
     auto stub = std::make_shared<Stub>();
-    stub->m_isOpen = false;
-    stub->m_isOpenWrite = false;
     stub->m_fd = tmp;
     stub->m_flags = 0;
     stub->m_mode = 0;
