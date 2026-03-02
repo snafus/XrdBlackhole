@@ -84,20 +84,20 @@ public:
 
   int Configure(const char *, XrdSysError &);
 
-  virtual int     Chmod(const char *, mode_t mode, XrdOucEnv *eP=0);
-  virtual int     Create(const char *, const char *, mode_t, XrdOucEnv &, int opts=0);
-  virtual int     Init(XrdSysLogger *, const char*);
-  virtual int     Mkdir(const char *, mode_t mode, int mkpath=0, XrdOucEnv *eP=0);
-  virtual int     Remdir(const char *, int Opts=0, XrdOucEnv *eP=0);
-  virtual int     Rename(const char *, const char *, XrdOucEnv *eP1=0, XrdOucEnv *eP2=0);
-  virtual int     Stat(const char *, struct stat *, int opts=0, XrdOucEnv *eP=0);
-  virtual int     StatFS(const char *path, char *buff, int &blen, XrdOucEnv *eP=0);
-  virtual int     StatLS(XrdOucEnv &env, const char *path, char *buff, int &blen);
-  virtual int     StatVS(XrdOssVSInfo *sP, const char *sname=0, int updt=0);
-  virtual int     Truncate(const char *, unsigned long long, XrdOucEnv *eP=0);
-  virtual int     Unlink(const char *path, int Opts=0, XrdOucEnv *eP=0);
-  virtual XrdOssDF *newDir(const char *tident);
-  virtual XrdOssDF *newFile(const char *tident);
+  virtual int     Chmod(const char *, mode_t mode, XrdOucEnv *eP=0) override;
+  virtual int     Create(const char *, const char *, mode_t, XrdOucEnv &, int opts=0) override;
+  virtual int     Init(XrdSysLogger *, const char*) override;
+  virtual int     Mkdir(const char *, mode_t mode, int mkpath=0, XrdOucEnv *eP=0) override;
+  virtual int     Remdir(const char *, int Opts=0, XrdOucEnv *eP=0) override;
+  virtual int     Rename(const char *, const char *, XrdOucEnv *eP1=0, XrdOucEnv *eP2=0) override;
+  virtual int     Stat(const char *, struct stat *, int opts=0, XrdOucEnv *eP=0) override;
+  virtual int     StatFS(const char *path, char *buff, int &blen, XrdOucEnv *eP=0) override;
+  virtual int     StatLS(XrdOucEnv &env, const char *path, char *buff, int &blen) override;
+  virtual int     StatVS(XrdOssVSInfo *sP, const char *sname=0, int updt=0) override;
+  virtual int     Truncate(const char *, unsigned long long, XrdOucEnv *eP=0) override;
+  virtual int     Unlink(const char *path, int Opts=0, XrdOucEnv *eP=0) override;
+  virtual XrdOssDF *newDir(const char *tident) override;
+  virtual XrdOssDF *newFile(const char *tident) override;
 
   inline unsigned long writespeedMiBs() const { return m_writespeedMiBs; }
 
@@ -106,7 +106,7 @@ private:
   // Configuration state — one member per supported directive.
   // ---------------------------------------------------------------------------
   unsigned long m_writespeedMiBs{0};  ///< 0 = unlimited
-  std::string   m_defaultspath{""};   ///< Empty = no pre-seeded files
+  std::string   m_defaultspath{};     ///< Empty = no pre-seeded files
   std::string   m_readtype{"zeros"};  ///< Read pattern for pre-seeded files
 
   // ---------------------------------------------------------------------------

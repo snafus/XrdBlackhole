@@ -19,11 +19,13 @@ extern XrdBlackholeStatsManager g_statsManager;
 // ---------------------------------------------------------------------------
 
 /// Emit a single Prometheus metric block (HELP + TYPE + value line).
+/// Templated so integer counter types are output exactly (no float conversion).
+template<typename T>
 static void emitMetric(std::ostringstream &oss,
                        const char *name,
                        const char *type,
                        const char *help,
-                       double      value,
+                       T           value,
                        const char *labels = nullptr)
 {
   oss << "# HELP " << name << " " << help << "\n"
@@ -56,13 +58,12 @@ std::string XrdBlackholeMetrics::buildMetrics() const {
                            : 0.0;
 
   std::ostringstream oss;
-  oss << std::fixed << std::setprecision(2);
 
-  // Counters — values only ever increase.
+  // Counters — output as integers to preserve full precision for large values.
   emitMetric(oss,
     "blackhole_transfers_total", "counter",
     "Total number of completed transfers",
-    static_cast<double>(s.write_transfers), "op=\"write\"");
+    s.write_transfers, "op=\"write\"");
 
   // Reuse HELP/TYPE by emitting the second label line directly (same metric family).
   oss << "blackhole_transfers_total{op=\"read\"} " << s.read_transfers << "\n";
@@ -70,19 +71,20 @@ std::string XrdBlackholeMetrics::buildMetrics() const {
   emitMetric(oss,
     "blackhole_bytes_written_total", "counter",
     "Total bytes accepted for writing (data is discarded)",
-    static_cast<double>(s.total_bytes_written));
+    s.total_bytes_written);
 
   emitMetric(oss,
     "blackhole_bytes_read_total", "counter",
     "Total bytes synthesised and returned to readers",
-    static_cast<double>(s.total_bytes_read));
+    s.total_bytes_read);
 
   emitMetric(oss,
     "blackhole_errors_total", "counter",
     "Total error returns across all transfers",
-    static_cast<double>(s.total_errors));
+    s.total_errors);
 
-  // Gauges — instantaneous/average values.
+  // Gauges — instantaneous/average values; 2 decimal places.
+  oss << std::fixed << std::setprecision(2);
   emitMetric(oss,
     "blackhole_write_throughput_MiBs_avg", "gauge",
     "Average write throughput across all completed write transfers (MiB/s)",

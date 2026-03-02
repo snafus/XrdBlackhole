@@ -13,7 +13,7 @@
 #include "XrdBlackhole/XrdBlackholeOssFile.hh"
 #include "XrdBlackhole/XrdBlackholeOss.hh"
 
-XrdBlackholeOssFile::XrdBlackholeOssFile(XrdBlackholeOss *bhOss) : m_fd(-1), m_bhOss(bhOss) {}
+XrdBlackholeOssFile::XrdBlackholeOssFile(XrdBlackholeOss *bhOss) : m_bhOss(bhOss) {}
 
 int XrdBlackholeOssFile::Open(const char *path, int flags, mode_t mode, XrdOucEnv &env) {
   m_path = path;

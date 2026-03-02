@@ -40,14 +40,13 @@ class XrdBlackholeOssDir : public XrdOssDF {
 public:
 
   XrdBlackholeOssDir(XrdBlackholeOss *bhoss);
-  virtual ~XrdBlackholeOssDir() {};
-  virtual int Opendir(const char *, XrdOucEnv &);
-  virtual int Readdir(char *buff, int blen);
-  virtual int Close(long long *retsz=0);
+  virtual ~XrdBlackholeOssDir() = default;
+  virtual int Opendir(const char *, XrdOucEnv &) override;
+  virtual int Readdir(char *buff, int blen) override;
+  virtual int Close(long long *retsz=0) override;
 
 private:
 
-  DIR *m_dirp;
   XrdBlackholeOss *m_bhOss = nullptr;
 
 };

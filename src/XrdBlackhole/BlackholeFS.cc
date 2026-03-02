@@ -40,7 +40,6 @@ int BlackholeFS::open(const std::string& fname, int flags, int mode) {
   if ((flags & O_ACCMODE) == O_RDONLY) {
     if (!fileExists) return -ENOENT;
     unsigned long long fd = ++m_fd_last;
-    stub->m_fd    = fd;
     stub->m_flags = flags;
     stub->m_mode  = mode;
     return fd;
@@ -58,7 +57,6 @@ int BlackholeFS::open(const std::string& fname, int flags, int mode) {
       // Write open of an existing file without truncation: reuse the stub.
       // Mark it open-for-write so Close() updates m_size correctly.
       unsigned long long fd = ++m_fd_last;
-      stub->m_fd          = fd;
       stub->m_isOpenWrite = true;
       stub->m_flags       = flags;
       stub->m_mode        = mode;
@@ -71,7 +69,6 @@ int BlackholeFS::open(const std::string& fname, int flags, int mode) {
   auto stub_owned = std::make_shared<Stub>();
   stub = stub_owned.get();
   stub->m_isOpenWrite = true;
-  stub->m_fd = tmp;
   stub->m_size = 0;
   stub->m_flags = flags;
   stub->m_mode = mode;
@@ -104,7 +101,6 @@ void BlackholeFS::create_defaults(const std::string & path) {
   for (const auto& spec : specs) {
     unsigned long long tmp = ++m_fd_last;
     auto stub = std::make_shared<Stub>();
-    stub->m_fd = tmp;
     stub->m_flags = 0;
     stub->m_mode = 0;
     stub->m_special = true;

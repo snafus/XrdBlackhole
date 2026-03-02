@@ -28,7 +28,7 @@
 
 extern XrdSysError XrdBlackholeEroute;
 
-XrdBlackholeOssDir::XrdBlackholeOssDir(XrdBlackholeOss *bhOss) : m_dirp(0), m_bhOss(bhOss) {}
+XrdBlackholeOssDir::XrdBlackholeOssDir(XrdBlackholeOss *bhOss) : m_bhOss(bhOss) {}
 
 int XrdBlackholeOssDir::Opendir(const char *path, XrdOucEnv &env) {
   return -ENOTSUP;

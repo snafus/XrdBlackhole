@@ -52,23 +52,22 @@ class XrdBlackholeOssFile : public XrdOssDF {
 public:
 
   XrdBlackholeOssFile(XrdBlackholeOss *bhoss);
-  virtual ~XrdBlackholeOssFile() {};
-  virtual int Open(const char *path, int flags, mode_t mode, XrdOucEnv &env);
-  virtual int Close(long long *retsz=0);
-  virtual ssize_t Read(off_t offset, size_t blen);
-  virtual ssize_t Read(void *buff, off_t offset, size_t blen);
-  virtual int     Read(XrdSfsAio *aoip);
-  virtual ssize_t ReadV(XrdOucIOVec *readV, int n);
-  virtual ssize_t ReadRaw(void *, off_t, size_t);
-  virtual int Fstat(struct stat *buff);
-  virtual ssize_t Write(const void *buff, off_t offset, size_t blen);
-  virtual int Write(XrdSfsAio *aiop);
-  virtual int Fsync(void);
-  virtual int Ftruncate(unsigned long long);
+  virtual ~XrdBlackholeOssFile() = default;
+  virtual int     Open(const char *path, int flags, mode_t mode, XrdOucEnv &env) override;
+  virtual int     Close(long long *retsz=0) override;
+  virtual ssize_t Read(off_t offset, size_t blen) override;
+  virtual ssize_t Read(void *buff, off_t offset, size_t blen) override;
+  virtual int     Read(XrdSfsAio *aoip) override;
+  virtual ssize_t ReadV(XrdOucIOVec *readV, int n) override;
+  virtual ssize_t ReadRaw(void *, off_t, size_t) override;
+  virtual int     Fstat(struct stat *buff) override;
+  virtual ssize_t Write(const void *buff, off_t offset, size_t blen) override;
+  virtual int     Write(XrdSfsAio *aiop) override;
+  virtual int     Fsync(void) override;
+  virtual int     Ftruncate(unsigned long long) override;
 
 private:
 
-  int          m_fd;
   // NOTE: XRootD serialises all I/O operations on a single file handle —
   // Close() is always called after all reads and writes have completed.
   // Per-handle members therefore do not require additional locking beyond

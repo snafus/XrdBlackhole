@@ -20,8 +20,7 @@ struct Stub {
   int m_flags;
   int m_mode;
   unsigned long long m_size;
-  struct stat m_stat; 
-  int m_fd;
+  struct stat m_stat;
   bool m_special {false};
   std::string m_readtype {"zeros"};
   std::map<std::string, std::string> m_checksums; 
@@ -29,7 +28,7 @@ struct Stub {
 
 class BlackholeFS {
   public:
-    BlackholeFS(){};
+    BlackholeFS() = default;
     ~BlackholeFS() = default;
     bool exists(const std::string& fname);
 
