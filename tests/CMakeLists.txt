@@ -39,3 +39,25 @@ add_executable( test_stats
 target_include_directories( test_stats PRIVATE ${TEST_INCLUDES} )
 target_link_libraries( test_stats GTest::gtest_main ${XROOTD_LIBRARIES} )
 gtest_discover_tests( test_stats )
+
+# ---------------------------------------------------------------------------
+# test_ossfile — exercises XrdBlackholeOssFile Read/Write/Close/Fstat paths
+#
+# Compiles XrdBlackholeOss.cc directly (which defines XrdBlackholeEroute,
+# XrdBlackholeTrace, g_blackholeFS) rather than test_globals.cc; both cannot
+# coexist without duplicate-symbol errors.  The test fixture reassigns
+# XrdBlackholeEroute's logger to /dev/null before any I/O calls are made.
+# XrdBlackholeOssDir.cc is needed because XrdBlackholeOss::newDir() references
+# XrdBlackholeOssDir.
+# ---------------------------------------------------------------------------
+add_executable( test_ossfile
+  ${SRC}/XrdBlackholeOss.cc
+  ${SRC}/XrdBlackholeOssDir.cc
+  ${SRC}/XrdBlackholeOssFile.cc
+  ${SRC}/BlackholeFS.cc
+  ${SRC}/XrdBlackholeStats.cc
+  test_OssFile.cc )
+
+target_include_directories( test_ossfile PRIVATE ${TEST_INCLUDES} )
+target_link_libraries( test_ossfile GTest::gtest_main ${XROOTD_LIBRARIES} )
+gtest_discover_tests( test_ossfile )

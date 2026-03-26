@@ -159,6 +159,16 @@ TEST(StatsManager, MultipleTransfersAccumulate) {
   EXPECT_EQ(512LL,  snap.total_bytes_read);
 }
 
+TEST(StatsManager, LogSummaryDoesNotCrash) {
+  // Smoke test: logSummary() must not crash on an empty manager or after
+  // transfers.  Output goes to the /dev/null logger defined in test_globals.cc.
+  XrdBlackholeStatsManager mgr;
+  EXPECT_NO_THROW(mgr.logSummary());
+  mgr.recordTransfer(makeWriteStats(1024 * 1024, 1000));
+  mgr.recordTransfer(makeReadStats(512 * 1024, 500));
+  EXPECT_NO_THROW(mgr.logSummary());
+}
+
 TEST(StatsManager, SnapshotIsConsistentUnderLoad) {
   // Two threads record transfers concurrently; snapshot fields must not tear.
   XrdBlackholeStatsManager mgr;
