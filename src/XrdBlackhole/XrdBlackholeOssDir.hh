@@ -25,14 +25,19 @@
 #ifndef __XRD_BLACKHOLE_OSS_DIR_HH__
 #define __XRD_BLACKHOLE_OSS_DIR_HH__
 
+#include <string>
+#include <vector>
+
 #include "XrdOss/XrdOss.hh"
 #include "XrdBlackhole/XrdBlackholeOss.hh"
 
 //------------------------------------------------------------------------------
 //! XrdOssDF directory handle for the blackhole storage backend.
 //!
-//! Directory listing is not supported: the blackhole has no persistent
-//! namespace, so Opendir and Readdir always return -ENOTSUP.
+//! Opendir() snapshots the direct children of the requested path from
+//! BlackholeFS into m_entries.  Readdir() iterates that snapshot, copying
+//! one entry name per call and signalling end-of-directory with an empty
+//! buffer.
 //------------------------------------------------------------------------------
 
 class XrdBlackholeOssDir : public XrdOssDF {
@@ -47,7 +52,10 @@ public:
 
 private:
 
-  XrdBlackholeOss *m_bhOss = nullptr;
+  XrdBlackholeOss          *m_bhOss   = nullptr;
+  std::string               m_prefix;
+  std::vector<std::string>  m_entries;
+  size_t                    m_pos{0};
 
 };
 

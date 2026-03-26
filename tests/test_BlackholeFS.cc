@@ -294,3 +294,64 @@ TEST(BlackholeFS, RenameLeavesOtherFilesIntact) {
   EXPECT_TRUE(fs.exists(kPath2));
   EXPECT_TRUE(fs.exists(kPath3));
 }
+
+// ---------------------------------------------------------------------------
+// readdir()
+// ---------------------------------------------------------------------------
+
+TEST(BlackholeFS, ReaddirEmptyOnNewFS) {
+  BlackholeFS fs;
+  std::vector<std::string> entries;
+  fs.readdir("/test", entries);
+  EXPECT_TRUE(entries.empty());
+}
+
+TEST(BlackholeFS, ReaddirReturnsDirectChildren) {
+  BlackholeFS fs;
+  fs.open("/test/a.root", O_WRONLY | O_CREAT, 0644);
+  fs.open("/test/b.root", O_WRONLY | O_CREAT, 0644);
+  std::vector<std::string> entries;
+  fs.readdir("/test", entries);
+  ASSERT_EQ(2u, entries.size());
+  // Order is map (lexicographic) order.
+  EXPECT_EQ("a.root", entries[0]);
+  EXPECT_EQ("b.root", entries[1]);
+}
+
+TEST(BlackholeFS, ReaddirExcludesDeepChildren) {
+  BlackholeFS fs;
+  fs.open("/test/a.root",      O_WRONLY | O_CREAT, 0644);
+  fs.open("/test/sub/b.root",  O_WRONLY | O_CREAT, 0644);
+  std::vector<std::string> entries;
+  fs.readdir("/test", entries);
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ("a.root", entries[0]);
+}
+
+TEST(BlackholeFS, ReaddirExcludesOtherPrefixes) {
+  BlackholeFS fs;
+  fs.open("/test/a.root",  O_WRONLY | O_CREAT, 0644);
+  fs.open("/other/b.root", O_WRONLY | O_CREAT, 0644);
+  std::vector<std::string> entries;
+  fs.readdir("/test", entries);
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ("a.root", entries[0]);
+}
+
+TEST(BlackholeFS, ReaddirTrailingSlashNormalised) {
+  BlackholeFS fs;
+  fs.open("/test/a.root", O_WRONLY | O_CREAT, 0644);
+  std::vector<std::string> entries;
+  fs.readdir("/test/", entries);
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ("a.root", entries[0]);
+}
+
+TEST(BlackholeFS, ReaddirSubdirectory) {
+  BlackholeFS fs;
+  fs.open("/test/sub/c.root", O_WRONLY | O_CREAT, 0644);
+  std::vector<std::string> entries;
+  fs.readdir("/test/sub", entries);
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ("c.root", entries[0]);
+}
