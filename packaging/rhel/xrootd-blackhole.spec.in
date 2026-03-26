@@ -156,6 +156,21 @@ rm -rf $RPM_BUILD_ROOT
 # Changelog
 #-------------------------------------------------------------------------------
 %changelog
+* Thu Mar 26 2026 James <james@snafus> - 0.3.0-1
+- AIO read (Read(XrdSfsAio*)) and vectored read (ReadV) implemented
+- Rename with POSIX atomic-replace semantics (required for GFAL2 atomic upload)
+- GoogleTest unit test framework: 77 tests across BlackholeFS, StatsManager, OssFile
+- CI test job on Rocky 8 and Rocky 9
+
+* Sat Feb 01 2026 James <james@snafus> - 0.2.0-1
+- GitHub Actions CI pipeline (Rocky 8 + Rocky 9): build, test, RPM jobs
+- Multi-stage Dockerfile for self-contained AlmaLinux 9 runtime image
+- Prometheus metrics endpoint (libXrdBlackholeMetrics-5.so) via XrdHttpExtHandler
+- Per-transfer stats (duration, byte counts, op counts, errors)
+- Read support returning zero-filled data; StatLS reports 1 PiB free
+- POSC disabled; read boundary guard against size_t underflow
+- Spec file: stale file reference removed; metrics subpackage added
+
 * Mon Mar 14 2022 Jyothish Thomas <jyothish.thomas@stfc.ac.uk>
 - offline file bug fix
 
