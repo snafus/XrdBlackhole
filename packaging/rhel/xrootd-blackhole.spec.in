@@ -2,27 +2,6 @@
 # Helper macros
 #-------------------------------------------------------------------------------
 %if %{?rhel:1}%{!?rhel:0}
-    %if %{rhel} >= 7
-        %define use_systemd 1
-    %else
-        %define use_systemd 0
-    %endif
-%else
-    %if %{?fedora}%{!?fedora:0} >= 19
-        %define use_systemd 1
-    %else
-        %define use_systemd 0
-    %endif
-%endif
-
-%if %{?fedora}%{!?fedora:0} >= 22
-    %define use_libc_semaphore 1
-%else
-    %define use_libc_semaphore 0
-%endif
-
-
-%if %{?rhel:1}%{!?rhel:0}
     %if %{rhel} > 7
         %define use_cmake3 0
     %else
@@ -32,6 +11,9 @@
     %define use_cmake3 0
 %endif
 
+# Allow the metrics subpackage to be empty if XrdHttp headers were absent.
+%define _empty_manifest_terminate_build 0
+
 #-------------------------------------------------------------------------------
 # Package definitions
 #-------------------------------------------------------------------------------
@@ -40,13 +22,9 @@ Epoch:     1
 Version:   __VERSION__
 Release:   __RELEASE__%{?dist}%{?_with_clang:.clang}
 Summary:   Blackhole plug-in for XRootD
-Group:     System Environment/Daemons
 License:   LGPLv3+
-URL:       http://xrootd.org/
+URL:       https://github.com/snafus/XrdBlackhole
 
-# git clone http://xrootd.org/repo/xrootd.git xrootd
-# cd xrootd
-# git-archive master | gzip -9 > ~/rpmbuild/SOURCES/xrootd.tgz
 Source0:   xrootd-blackhole.tar.gz
 
 BuildRoot: %{_tmppath}/%{name}-root
@@ -61,34 +39,39 @@ BuildRequires: cmake
 BuildRequires: cppunit-devel
 %endif
 
-
 %if %{?_with_clang:1}%{!?_with_clang:0}
 BuildRequires: clang
 %endif
 
-#BuildRequires: xrootd-server-devel%{?_isa} = %{epoch}:%{version}-%{release}
-#BuildRequires: xrootd-private-devel%{?_isa} = %{epoch}:%{version}-%{release}
-#BuildRequires: xrootd-libs%{?_isa} = %{epoch}:%{version}-%{release}
-#BuildRequires: xrootd-server-libs%{?_isa} = %{epoch}:%{version}-%{release}
-#BuildRequires: xrootd-client-libs%{?_isa} = %{epoch}:%{version}-%{release}
-
-#Requires: xrootd-server-libs%{?_isa} = %{epoch}:%{version}-%{release}
-#Requires: xrootd-client-libs%{?_isa} = %{epoch}:%{version}-%{release}
-#Requires: xrootd-libs%{?_isa} = %{epoch}:%{version}-%{release}
-
-BuildRequires: xrootd-server-devel%{?_isa} >= 1:5.3.3
-BuildRequires: xrootd-private-devel%{?_isa} >= 1:5.3.3
-BuildRequires: xrootd-libs%{?_isa} >= 1:5.3.1
-BuildRequires: xrootd-server-libs%{?_isa} >= 1:5.3.3
-BuildRequires: xrootd-client-libs%{?_isa} >= 1:5.3.3
+BuildRequires: xrootd-server-devel%{?_isa}   >= 1:5.3.3
+BuildRequires: xrootd-private-devel%{?_isa}  >= 1:5.3.3
+BuildRequires: xrootd-libs%{?_isa}           >= 1:5.3.1
+BuildRequires: xrootd-server-libs%{?_isa}    >= 1:5.3.3
+BuildRequires: xrootd-client-libs%{?_isa}    >= 1:5.3.3
 
 Requires: xrootd-server-libs%{?_isa} >= 1:5.3.3
 Requires: xrootd-client-libs%{?_isa} >= 1:5.3.3
-Requires: xrootd-libs%{?_isa} >= 1:5.3.3
+Requires: xrootd-libs%{?_isa}        >= 1:5.3.3
 
 %description
-The xrootd-blackhole is an OSS layer plug-in for the XRootD server for perfmance
-testing. Any data writing to this plugin will be lost forever.
+The xrootd-blackhole is an OSS layer plug-in for the XRootD server for
+performance testing. Writes are silently discarded; reads return zeros.
+
+#-------------------------------------------------------------------------------
+# Metrics sub-package — built only when XrdHttp/XrdHttpExtHandler.hh is found.
+# The %files section is driven by a generated filelist so that a missing header
+# produces an empty (but valid) RPM rather than a build failure.
+#-------------------------------------------------------------------------------
+%package metrics
+Summary:  Prometheus metrics handler for xrootd-blackhole
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: xrootd-server-libs%{?_isa} >= 1:5.3.3
+
+%description metrics
+Optional XrdHttpExtHandler plug-in that exposes a Prometheus-compatible
+metrics endpoint at GET /metrics for the xrootd-blackhole server.
+Requires XrdHttp headers at build time (xrootd-server-devel).
+Load via: http.exthandler bhmetrics %{_libdir}/libXrdBlackholeMetrics-5.so
 
 #-------------------------------------------------------------------------------
 # Build instructions
@@ -120,7 +103,7 @@ cmake  \
 %endif
       ../
 
-make -i VERBOSE=1 %{?_smp_mflags}
+make VERBOSE=1 %{?_smp_mflags}
 popd
 
 #-------------------------------------------------------------------------------
@@ -129,16 +112,24 @@ popd
 %install
 rm -rf $RPM_BUILD_ROOT
 
-#-------------------------------------------------------------------------------
-# Install 4.x.y
-#-------------------------------------------------------------------------------
 pushd xrootd-blackhole
-pushd  build
+pushd build
 make install DESTDIR=$RPM_BUILD_ROOT
 popd
+popd
 
-# blackhole posix unversioned so
-# rm -f $RPM_BUILD_ROOT%{_libdir}/libXrdBlackholePosix.so
+# Generate the metrics file list: non-empty only if the library was built.
+# _empty_manifest_terminate_build 0 (set above) allows an empty list.
+rm -f %{_builddir}/metrics-filelist.txt
+if [ -f %{buildroot}%{_libdir}/libXrdBlackholeMetrics-5.so ]; then
+    echo "%{_libdir}/libXrdBlackholeMetrics-5.so" \
+         > %{_builddir}/metrics-filelist.txt
+    echo "metrics library packaged: %{_libdir}/libXrdBlackholeMetrics-5.so"
+else
+    touch %{_builddir}/metrics-filelist.txt
+    echo "WARNING: libXrdBlackholeMetrics-5.so not built — metrics package will be empty"
+    echo "  Check cmake configure output for 'XRDHTTP_INCLUDE_DIR' to diagnose"
+fi
 
 
 %clean
@@ -151,7 +142,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_libdir}/libXrdBlackhole-5.so
 %{_libdir}/libXrdBlackholeXattr-5.so
-%{_libdir}/libXrdBlackholePosix.so*
+
+%files metrics -f %{_builddir}/metrics-filelist.txt
+%defattr(-,root,root,-)
 
 %if %{?_with_tests:1}%{!?_with_tests:0}
 %files tests
@@ -164,5 +157,5 @@ rm -rf $RPM_BUILD_ROOT
 #-------------------------------------------------------------------------------
 %changelog
 * Mon Mar 14 2022 Jyothish Thomas <jyothish.thomas@stfc.ac.uk>
--offline file bug fix
+- offline file bug fix
 

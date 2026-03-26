@@ -1,13 +1,6 @@
 include_directories( ${XROOTD_INCLUDE_DIR} )
 include_directories( ${CMAKE_SOURCE_DIR}/src )
 
-
-#-------------------------------------------------------------------------------
-# XrdBlackholePosix library version
-#-------------------------------------------------------------------------------
-set( XRD_BLACKHOLE_POSIX_VERSION   0.0.1 )
-set( XRD_BLACKHOLE_POSIX_SOVERSION 0 )
-
 #-------------------------------------------------------------------------------
 # The XrdBlackhole module
 #-------------------------------------------------------------------------------
@@ -19,17 +12,14 @@ add_library(
   XrdBlackhole/XrdBlackholeOss.cc       XrdBlackhole/XrdBlackholeOss.hh
   XrdBlackhole/XrdBlackholeOssFile.cc   XrdBlackhole/XrdBlackholeOssFile.hh
   XrdBlackhole/XrdBlackholeOssDir.cc    XrdBlackhole/XrdBlackholeOssDir.hh
-  XrdBlackhole/BlackholeFS.cc        XrdBlackhole/BlackholeFS.hh
+  XrdBlackhole/XrdBlackholeStats.cc     XrdBlackhole/XrdBlackholeStats.hh
+  XrdBlackhole/BlackholeFS.cc           XrdBlackhole/BlackholeFS.hh
   )
 
 target_link_libraries(
   ${LIB_XRD_BLACKHOLE}
-  ${XROOTD_LIBRARIES}  
+  ${XROOTD_LIBRARIES}
 )
-#target_link_libraries(
-#  ${LIB_XRD_BLACKHOLE}
-#  ${XROOTD_LIBRARIES}  
-#  XrdBlackholePosix )
 
 set_target_properties(
   ${LIB_XRD_BLACKHOLE}
@@ -49,12 +39,7 @@ add_library(
 
 target_link_libraries(
   ${LIB_XRD_BLACKHOLE_XATTR}
-  ${XROOTD_LIBRARIES}  )
-
-#target_link_libraries(
-#  ${LIB_XRD_BLACKHOLE_XATTR}
-#  ${XROOTD_LIBRARIES}  
-#  XrdBlackholePosix )
+  ${XROOTD_LIBRARIES} )
 
 set_target_properties(
   ${LIB_XRD_BLACKHOLE_XATTR}
@@ -63,11 +48,55 @@ set_target_properties(
   LINK_INTERFACE_LIBRARIES "" )
 
 #-------------------------------------------------------------------------------
+# The XrdBlackholeMetrics module (optional — requires XrdHttp headers)
+#-------------------------------------------------------------------------------
+message( STATUS "XrdBlackholeMetrics: searching for XrdHttp/XrdHttpExtHandler.hh" )
+message( STATUS "  XROOTD_INCLUDE_DIR = ${XROOTD_INCLUDE_DIR}" )
+
+find_path( XRDHTTP_INCLUDE_DIR
+           NAMES XrdHttp/XrdHttpExtHandler.hh
+           HINTS ${XROOTD_INCLUDE_DIR}
+                 ${XROOTD_INCLUDE_DIR}/private
+                 /usr/include/xrootd
+                 /usr/local/include/xrootd )
+
+message( STATUS "  XRDHTTP_INCLUDE_DIR = ${XRDHTTP_INCLUDE_DIR}" )
+
+if( XRDHTTP_INCLUDE_DIR )
+  message( STATUS "XrdHttp headers found — building XrdBlackholeMetrics" )
+
+  set( LIB_XRD_BLACKHOLE_METRICS XrdBlackholeMetrics-${PLUGIN_VERSION} )
+
+  add_library(
+    ${LIB_XRD_BLACKHOLE_METRICS}
+    MODULE
+    XrdBlackhole/XrdBlackholeMetrics.cc   XrdBlackhole/XrdBlackholeMetrics.hh )
+
+  target_include_directories(
+    ${LIB_XRD_BLACKHOLE_METRICS}
+    PRIVATE ${XRDHTTP_INCLUDE_DIR} )
+
+  target_link_libraries(
+    ${LIB_XRD_BLACKHOLE_METRICS}
+    ${XROOTD_LIBRARIES} )
+
+  set_target_properties(
+    ${LIB_XRD_BLACKHOLE_METRICS}
+    PROPERTIES
+    INTERFACE_LINK_LIBRARIES ""
+    LINK_INTERFACE_LIBRARIES "" )
+
+  install(
+    TARGETS ${LIB_XRD_BLACKHOLE_METRICS}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+
+else()
+  message( STATUS "XrdHttp headers not found — skipping XrdBlackholeMetrics" )
+endif()
+
+#-------------------------------------------------------------------------------
 # Install
 #-------------------------------------------------------------------------------
 install(
   TARGETS ${LIB_XRD_BLACKHOLE} ${LIB_XRD_BLACKHOLE_XATTR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
-#install(
-#  TARGETS ${LIB_XRD_BLACKHOLE} ${LIB_XRD_BLACKHOLE_XATTR} XrdBlackholePosix
-#  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )

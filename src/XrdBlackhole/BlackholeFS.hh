@@ -1,15 +1,14 @@
 #ifndef __BLACKHOLEFS_OSS_HH__
 #define __BLACKHOLEFS_OSS_HH__
 
+#include <map>
+#include <memory>
+#include <mutex>
 #include <string>
+
 #include <XrdOss/XrdOss.hh>
 #include "XrdSys/XrdSysError.hh"
 #include "XrdOuc/XrdOucTrace.hh"
-
-#include <map>
-#include <thread>
-#include <mutex>
-#include <string>
 
 #include <sys/stat.h>
 #include <sys/errno.h>
@@ -17,13 +16,11 @@
 
 
 struct Stub {
-  bool m_isOpen;
-  bool m_isOpenWrite;  
+  bool m_isOpenWrite {false};
   int m_flags;
   int m_mode;
   unsigned long long m_size;
-  struct stat m_stat; 
-  int m_fd;
+  struct stat m_stat;
   bool m_special {false};
   std::string m_readtype {"zeros"};
   std::map<std::string, std::string> m_checksums; 
@@ -31,11 +28,11 @@ struct Stub {
 
 class BlackholeFS {
   public:
-    BlackholeFS(){};
-    ~BlackholeFS() {m_files.clear();}
+    BlackholeFS() = default;
+    ~BlackholeFS() = default;
     bool exists(const std::string& fname);
 
-    Stub * getStub(const std::string& fname);
+    std::shared_ptr<Stub> getStub(const std::string& fname);
 
     int unlink(const std::string& fname);
 
@@ -46,9 +43,9 @@ class BlackholeFS {
     void create_defaults(const std::string & path); //! allow for a default set of files for reading ... 
 
   private:
-    std::map<std::string, Stub*>  m_files; 
+    std::map<std::string, std::shared_ptr<Stub>> m_files;
     unsigned long long m_fd_last = 0;
-    std::mutex m_mutexFD;  // Declare a mutex
+    std::mutex m_mutexFD;
 
 
 };

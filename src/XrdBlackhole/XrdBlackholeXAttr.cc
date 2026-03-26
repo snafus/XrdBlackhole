@@ -37,8 +37,7 @@ extern "C"
                        const char   *config_fn,
                        const char   *parms)
   {
-    // Do the herald thing
-    XrdBlackholeXattrEroute.SetPrefix("cephxattr_");
+    XrdBlackholeXattrEroute.SetPrefix("blackhole_xattr_");
     XrdBlackholeXattrEroute.logger(errP->logger());
     XrdBlackholeXattrEroute.Say("++++++ CERN/IT-DSS XrdBlackholeXattr");
     return new XrdBlackholeXAttr();
@@ -53,9 +52,7 @@ int XrdBlackholeXAttr::Del(const char *Aname, const char *Path, int fd) {
   return -ENOTSUP;
 }
 
-void XrdBlackholeXAttr::Free(AList *aPL) {
-  //ceph_posix_freexattrlist(aPL);
-}
+void XrdBlackholeXAttr::Free(AList *aPL) {}
 
 int XrdBlackholeXAttr::Get(const char *Aname, void *Aval, int Avsz,
                    const char *Path,  int fd) {
@@ -72,4 +69,3 @@ int XrdBlackholeXAttr::Set(const char *Aname, const void *Aval, int Avsz,
 }
 
 XrdVERSIONINFO(XrdSysGetXAttrObject, XrdBlackholeXAttr);
-

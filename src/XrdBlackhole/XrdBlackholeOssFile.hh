@@ -27,64 +27,72 @@
 
 #include "XrdOss/XrdOss.hh"
 #include "XrdBlackhole/XrdBlackholeOss.hh"
+#include "XrdBlackhole/XrdBlackholeStats.hh"
 
+#include <atomic>
 #include <chrono>
-
+#include <memory>
 
 //------------------------------------------------------------------------------
-//! This class implements XrdOssDF interface for usage with a CEPH storage.
+//! XrdOssDF implementation for the blackhole storage backend.
 //!
-//! This plugin is able to use any pool of ceph with any userId.
-//! There are several ways to provide the pool and userId to be used for a given
-//! operation. Here is the ordered list of possibilities.
-//! First one defined wins :
-//!   - the path can be prepended with userId and pool. Syntax is :
-//!       [[userId@]pool:]<actual path>
-//!   - the XrdOucEnv parameter, when existing, can have 'cephUserId' and/or
-//!     'cephPool' entries
-//!   - the ofs.osslib directive can provide an argument with format :
-//!       [userID@]pool
-//!   - default are 'admin' and 'default' for userId and pool respectively
+//! Writes are discarded after optionally sleeping to simulate a configured
+//! write speed. The total bytes written are tracked so that the file appears
+//! with the correct size after close.
 //!
-//! Note that the definition of a default via the ofs.osslib directive may
-//! clash with one used in a ofs.xattrlib directive. In case both directives
-//! have a default and they are different, the behavior is not defined.
-//! In case one of the two only has a default, it will be applied for both plugins.
+//! Reads return a zero-filled buffer up to the file's registered size.
+//! AIO reads and vectored reads are not supported.
+//!
+//! Per-transfer statistics are accumulated during the Open→Close lifecycle
+//! and submitted to XrdBlackholeStatsManager on close.
 //------------------------------------------------------------------------------
 
 class XrdBlackholeOssFile : public XrdOssDF {
 
 public:
 
-  XrdBlackholeOssFile(XrdBlackholeOss *cephoss);
-  virtual ~XrdBlackholeOssFile() {};
-  virtual int Open(const char *path, int flags, mode_t mode, XrdOucEnv &env);
-  virtual int Close(long long *retsz=0);
-  virtual ssize_t Read(off_t offset, size_t blen);
-  virtual ssize_t Read(void *buff, off_t offset, size_t blen);
-  virtual int     Read(XrdSfsAio *aoip);
-  virtual ssize_t ReadV(XrdOucIOVec *readV, int n);
-  virtual ssize_t ReadRaw(void *, off_t, size_t);
-  virtual int Fstat(struct stat *buff);
-  virtual ssize_t Write(const void *buff, off_t offset, size_t blen);
-  virtual int Write(XrdSfsAio *aiop);
-  virtual int Fsync(void);
-  virtual int Ftruncate(unsigned long long);
+  XrdBlackholeOssFile(XrdBlackholeOss *bhoss);
+  virtual ~XrdBlackholeOssFile() = default;
+  virtual int     Open(const char *path, int flags, mode_t mode, XrdOucEnv &env) override;
+  virtual int     Close(long long *retsz=0) override;
+  virtual ssize_t Read(off_t offset, size_t blen) override;
+  virtual ssize_t Read(void *buff, off_t offset, size_t blen) override;
+  virtual int     Read(XrdSfsAio *aoip) override;
+  virtual ssize_t ReadV(XrdOucIOVec *readV, int n) override;
+  virtual ssize_t ReadRaw(void *, off_t, size_t) override;
+  virtual int     Fstat(struct stat *buff) override;
+  virtual ssize_t Write(const void *buff, off_t offset, size_t blen) override;
+  virtual int     Write(XrdSfsAio *aiop) override;
+  virtual int     Fsync(void) override;
+  virtual int     Ftruncate(unsigned long long) override;
 
 private:
 
-  int m_fd;
-  Stub * m_stub {nullptr};
-  std::string m_path; 
-  size_t m_size {0};
+  // NOTE: XRootD serialises all I/O operations on a single file handle —
+  // Close() is always called after all reads and writes have completed.
+  // Per-handle members therefore do not require additional locking beyond
+  // what the atomic counters below already provide.
+  std::shared_ptr<Stub> m_stub;
+  std::string  m_path;
+  size_t       m_size {0};   ///< Cached stub size; set once in Open(), read-only thereafter
   XrdBlackholeOss *m_bhOss;
 
+  // Timing — high-resolution clock for throttle / duration calculations.
   std::chrono::high_resolution_clock::time_point m_start;
   std::chrono::high_resolution_clock::time_point m_end;
 
-  ssize_t m_writeBytesAIO{0};
-  ssize_t m_writeBytes{0};
+  // Atomic byte/op counters — updated on every I/O call; may be called from
+  // concurrent threads on the same handle.  Read into TransferStats at Close().
+  std::atomic<ssize_t>   m_writeBytes{0};
+  std::atomic<ssize_t>   m_writeBytesAIO{0};
+  std::atomic<ssize_t>   m_readBytes{0};
+  std::atomic<uint32_t>  m_writeOps{0};
+  std::atomic<uint32_t>  m_writeAioOps{0};
+  std::atomic<uint32_t>  m_readOps{0};
+  std::atomic<uint32_t>  m_errors{0};
 
+  // Per-transfer statistics submitted to g_statsManager on close.
+  TransferStats m_stats;
 };
 
 #endif /* __XRD_BLACKHOLE_OSS_FILE_HH__ */
