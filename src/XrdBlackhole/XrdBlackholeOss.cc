@@ -219,7 +219,10 @@ int XrdBlackholeOss::Rename(const char *from,
                     const char *to,
                     XrdOucEnv *eP1,
                     XrdOucEnv *eP2) {
-  return -ENOTSUP;
+  int rc = g_blackholeFS.rename(from, to);
+  if (rc) XrdBlackholeEroute.Emsg("Rename", -rc, "rename", from);
+  BHTRACE("Rename from=" << from << " to=" << to << " rc=" << rc);
+  return rc;
 }
 
 int XrdBlackholeOss::Stat(const char* path,

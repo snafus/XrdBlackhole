@@ -34,6 +34,8 @@ class BlackholeFS {
 
     std::shared_ptr<Stub> getStub(const std::string& fname);
 
+    int rename(const std::string& from, const std::string& to);
+
     int unlink(const std::string& fname);
 
     int open(const std::string& fname, int flags, int mode);

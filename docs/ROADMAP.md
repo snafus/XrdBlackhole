@@ -61,12 +61,12 @@ Iterates the `XrdOucIOVec` array, calls sync `Read()` per entry, accumulates
 total bytes. Skips zero-size entries; propagates per-segment errors. Tested
 with 7 new GoogleTest cases.
 
-### 2.3 Rename ⬅ **recommended next**
+### 2.3 Rename ✅ DONE
 
-Required for GFAL2's atomic upload pattern (`open → write → rename`).
-
-**Implementation:** within `BlackholeFS`, acquire the lock, look up `from`,
-insert under `to`, erase `from`. Return `-ENOENT` if `from` not found.
+`BlackholeFS::rename()` acquires the lock, returns `-ENOENT` if source is
+missing, atomically replaces the destination (POSIX semantics), then
+re-inserts the stub under the new name and erases the old entry. Tested
+with 6 new GoogleTest cases.
 
 ### 2.4 Directory listing (`Opendir` / `Readdir`)
 
@@ -227,7 +227,7 @@ layer or separate build path.
 | Version | Phase | Key deliverables |
 |---|---|---|
 | 0.2.0 | 1 | ✅ CI (Rocky 8+9), ✅ multi-stage Dockerfile, ✅ packaging fixes, ✅ Prometheus metrics; unit tests + versioning still outstanding |
-| 0.3.0 | 1+2 | ✅ Unit tests (1.1), ✅ AIO read (2.1), ✅ ReadV (2.2); Rename (2.3) and release versioning (1.5) still outstanding |
+| 0.3.0 | 1+2 | ✅ Unit tests (1.1), ✅ AIO read (2.1), ✅ ReadV (2.2), ✅ Rename (2.3); release versioning (1.5) still outstanding |
 | 0.4.0 | 2+3 | Opendir/Readdir (2.4), Checksum (2.5), StatFS accuracy (2.6), per-path QoS (3.1), seed config (3.3) |
 | 1.0.0 | 3 | Full Phase 3 complete; stable API; docs site |
 | 1.x | 4 | Persistent namespace, error injection, integration tests |

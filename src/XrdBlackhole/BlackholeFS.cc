@@ -16,6 +16,20 @@ std::shared_ptr<Stub> BlackholeFS::getStub(const std::string& fname) {
   return citr->second;
 }
 
+int BlackholeFS::rename(const std::string& from, const std::string& to) {
+  std::unique_lock<std::mutex> lock(m_mutexFD);
+  auto src = m_files.find(from);
+  if (src == m_files.end()) return -ENOENT;
+  // Capture the stub before any map mutation so that a self-rename (from==to)
+  // and the destination-erase below cannot invalidate the iterator.
+  auto stub = src->second;
+  // POSIX rename() atomically replaces the destination; erase it if present.
+  m_files.erase(to);
+  m_files.insert({to, stub});
+  if (from != to) m_files.erase(from);
+  return 0;
+}
+
 int BlackholeFS::unlink(const std::string& fname) {
   std::unique_lock<std::mutex> lock(m_mutexFD);
   auto citr = m_files.find(fname);
