@@ -50,8 +50,17 @@ set_target_properties(
 #-------------------------------------------------------------------------------
 # The XrdBlackholeMetrics module (optional — requires XrdHttp headers)
 #-------------------------------------------------------------------------------
-find_path( XRDHTTP_INCLUDE_DIR XrdHttp/XrdHttpExtHandler.hh
-           HINTS ${XROOTD_INCLUDE_DIR} )
+message( STATUS "XrdBlackholeMetrics: searching for XrdHttp/XrdHttpExtHandler.hh" )
+message( STATUS "  XROOTD_INCLUDE_DIR = ${XROOTD_INCLUDE_DIR}" )
+
+find_path( XRDHTTP_INCLUDE_DIR
+           NAMES XrdHttp/XrdHttpExtHandler.hh
+           HINTS ${XROOTD_INCLUDE_DIR}
+                 ${XROOTD_INCLUDE_DIR}/private
+                 /usr/include/xrootd
+                 /usr/local/include/xrootd )
+
+message( STATUS "  XRDHTTP_INCLUDE_DIR = ${XRDHTTP_INCLUDE_DIR}" )
 
 if( XRDHTTP_INCLUDE_DIR )
   message( STATUS "XrdHttp headers found — building XrdBlackholeMetrics" )
