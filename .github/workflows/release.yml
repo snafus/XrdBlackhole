@@ -1,0 +1,85 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build binary RPMs for each supported platform and attach them to the
+  # GitHub Release created by the tag push.
+  # ---------------------------------------------------------------------------
+  rpm:
+    name: RPM / ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: rocky8
+            image: rockylinux:8
+            crb: powertools
+          - os: rocky9
+            image: rockylinux:9
+            crb: crb
+
+    steps:
+      - name: Install git
+        run: dnf -y install git
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      # See ci.yml for the safe.directory rationale.
+      - name: Mark workspace as git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install build and RPM dependencies
+        run: |
+          dnf -y update
+          dnf -y install dnf-plugins-core epel-release
+          dnf config-manager --set-enabled ${{ matrix.crb }}
+          dnf -y install \
+            gcc gcc-c++ make cmake git which \
+            openssl-devel zlib-devel curl-devel libuuid-devel \
+            rpm-build rpmdevtools
+          curl -sSL https://xrootd.web.cern.ch/xrootd.repo \
+            -o /etc/yum.repos.d/xrootd.repo
+          dnf -y install \
+            xrootd-server-devel \
+            xrootd-private-devel \
+            xrootd-client-devel \
+            xrootd-libs
+
+      - name: Set up RPM tree
+        run: rpmdev-setuptree
+
+      - name: Build SRPM
+        run: |
+          mkdir -p /tmp/srpms
+          cd packaging
+          bash makesrpm.sh --source ../ --output /tmp/srpms
+
+      - name: Install binary RPM build dependencies
+        run: dnf builddep -y /tmp/srpms/xrootd-blackhole-*.src.rpm
+
+      - name: Build binary RPMs
+        run: rpmbuild --rebuild /tmp/srpms/xrootd-blackhole-*.src.rpm
+
+      - name: Collect RPMs
+        run: |
+          mkdir -p /tmp/rpms
+          find "$HOME/rpmbuild/RPMS" -name '*.rpm' | sort | tee /tmp/rpms-list.txt
+          xargs -a /tmp/rpms-list.txt cp -t /tmp/rpms/
+          cp /tmp/srpms/xrootd-blackhole-*.src.rpm /tmp/rpms/
+
+      - name: Upload RPMs to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: /tmp/rpms/*.rpm
+          fail_on_unmatched_files: true

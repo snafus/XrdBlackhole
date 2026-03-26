@@ -32,6 +32,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       # actions/checkout uses its bundled git to set safe.directory, writing to
       # a config path that /usr/bin/git (dnf-installed) does not read.  Set it
@@ -94,6 +95,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Mark workspace as git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -152,6 +154,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       # Same safe.directory fix as in the build job — see comment there.
       - name: Mark workspace as git safe directory
