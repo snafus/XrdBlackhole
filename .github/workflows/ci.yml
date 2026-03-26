@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, test-dev]
+  pull_request:
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build: compile the plugin and verify it links correctly.
+  # No unit tests exist yet (roadmap Phase 1.1); this job validates the build.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build / ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: rocky8
+            image: rockylinux:8
+            crb: powertools
+          - os: rocky9
+            image: rockylinux:9
+            crb: crb
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install build dependencies
+        run: |
+          dnf -y update
+          dnf -y install dnf-plugins-core epel-release
+          dnf config-manager --set-enabled ${{ matrix.crb }}
+          dnf -y install \
+            gcc gcc-c++ make cmake git \
+            openssl-devel zlib-devel curl-devel libuuid-devel
+          curl -sSL https://xrootd.web.cern.ch/xrootd.repo \
+            -o /etc/yum.repos.d/xrootd.repo
+          dnf -y install \
+            xrootd-server-devel \
+            xrootd-private-devel \
+            xrootd-client-devel \
+            xrootd-libs
+
+      - name: Build
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build -j$(nproc)
+
+      - name: Upload libraries
+        uses: actions/upload-artifact@v4
+        with:
+          name: libs-${{ matrix.os }}
+          path: build/**/*.so
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # RPM: build an SRPM via the packaging script then rebuild to binary RPMs.
+  # Runs only after the build job passes (avoids wasting time on known-broken code).
+  # ---------------------------------------------------------------------------
+  rpm:
+    name: RPM / ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    needs: build
+    container:
+      image: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: rocky8
+            image: rockylinux:8
+            crb: powertools
+          - os: rocky9
+            image: rockylinux:9
+            crb: crb
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install build and RPM dependencies
+        run: |
+          dnf -y update
+          dnf -y install dnf-plugins-core epel-release
+          dnf config-manager --set-enabled ${{ matrix.crb }}
+          dnf -y install \
+            gcc gcc-c++ make cmake git \
+            openssl-devel zlib-devel curl-devel libuuid-devel \
+            rpm-build rpmdevtools
+          curl -sSL https://xrootd.web.cern.ch/xrootd.repo \
+            -o /etc/yum.repos.d/xrootd.repo
+          dnf -y install \
+            xrootd-server-devel \
+            xrootd-private-devel \
+            xrootd-client-devel \
+            xrootd-libs
+
+      - name: Set up RPM tree
+        run: rpmdev-setuptree
+
+      - name: Build SRPM
+        run: |
+          mkdir -p /tmp/srpms
+          cd packaging
+          bash makesrpm.sh --source ../ --output /tmp/srpms
+
+      - name: Install binary RPM build dependencies
+        run: dnf builddep -y /tmp/srpms/xrootd-blackhole-*.src.rpm
+
+      - name: Build binary RPMs
+        run: rpmbuild --rebuild /tmp/srpms/xrootd-blackhole-*.src.rpm
+
+      - name: List built RPMs
+        run: find /root/rpmbuild/RPMS -name '*.rpm' | sort
+
+      - name: Upload RPMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpms-${{ matrix.os }}
+          path: /root/rpmbuild/RPMS/**/*.rpm
+          retention-days: 30
