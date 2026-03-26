@@ -12,6 +12,8 @@ jobs:
   # ---------------------------------------------------------------------------
   rpm:
     name: RPM / ${{ matrix.os }}
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     container:
       image: ${{ matrix.image }}
