@@ -97,7 +97,7 @@ jobs:
           dnf -y install dnf-plugins-core epel-release
           dnf config-manager --set-enabled ${{ matrix.crb }}
           dnf -y install \
-            gcc gcc-c++ make cmake git \
+            gcc gcc-c++ make cmake git which \
             openssl-devel zlib-devel curl-devel libuuid-devel \
             rpm-build rpmdevtools
           curl -sSL https://xrootd.web.cern.ch/xrootd.repo \
