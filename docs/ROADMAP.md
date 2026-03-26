@@ -11,7 +11,7 @@ starting the next.
 
 *Goal: make it safe to accept contributions and prevent regressions.*
 
-### 1.1 Unit test framework
+### 1.1 Unit test framework ⬅ **recommended next**
 
 No tests exist. This is the single highest-risk gap.
 
@@ -31,26 +31,26 @@ No tests exist. This is the single highest-risk gap.
 **Framework recommendation:** GoogleTest (already a common choice in XRootD
 ecosystem; lightweight; good CMake integration).
 
-### 1.2 CI pipeline
+### 1.2 CI pipeline ✅ DONE
 
-**What to build:**
-- GitHub Actions workflow: build on AlmaLinux 9 (matching the Dockerfile),
-  run unit tests, fail the PR if tests fail
-- Separate workflow for RPM build smoke-test (`packaging/makesrpm.sh`)
-- Optional: build matrix for XRootD 5.x minor versions
+GitHub Actions workflow on Rocky Linux 8 and Rocky Linux 9 containers:
+- `build` job: cmake configure + compile, uploads `.so` artifacts
+- `rpm` job: SRPM via `makesrpm.sh` → `dnf builddep` → `rpmbuild --rebuild`, uploads RPMs
+- Matrix: `rockylinux:8` (`powertools` CRB) and `rockylinux:9` (`crb` CRB)
+- Triggers on push to `main`/`master`/`test-dev` and all PRs
 
-### 1.3 Dockerfile cleanup
+### 1.3 Dockerfile cleanup ✅ DONE
 
-The current `Dockerfile` has a single-stage build with commented-out
-multi-stage instructions. Finish the multi-stage split so the runtime image
-only contains XRootD + the plugin `.so`, not the full build toolchain.
-This reduces the image from ~1.5 GB to ~200 MB.
+Two-stage build: Stage 1 compiles and packages an RPM; Stage 2 installs it
+into a clean AlmaLinux 9 runtime. Runtime image is ~200 MB.
 
-### 1.4 Packaging fixes
+### 1.4 Packaging fixes ✅ DONE
 
-`packaging/rhel/xrootd-blackhole.spec.in` references
-`libXrdBlackholePosix.so*` which no longer exists. Remove it from `%files`.
-Update the `%description` typo ("perfmance").
+`packaging/rhel/xrootd-blackhole.spec.in` cleaned up:
+- Stale `libXrdBlackholePosix.so*` reference removed from `%files`
+- `%package metrics` subpackage added with filelist-driven `%files` so the
+  package builds cleanly whether or not XrdHttp headers are present
+- `_empty_manifest_terminate_build 0` prevents build failure on empty metrics list
 
 ### 1.5 Release versioning
 
@@ -64,7 +64,7 @@ to date.
 
 *Goal: pass end-to-end tests with the tools the HEP community actually uses.*
 
-### 2.1 AIO read (`Read(XrdSfsAio*)`)
+### 2.1 AIO read (`Read(XrdSfsAio*)`) ⬅ **recommended next**
 
 Currently returns `-ENOTSUP`. XRootD's scheduler uses AIO for parallel chunk
 reads — without it, large file reads fall back to sequential single-buffer
@@ -82,14 +82,14 @@ int XrdBlackholeOssFile::Read(XrdSfsAio *aiop) {
 }
 ```
 
-### 2.2 Vectored read (`ReadV`)
+### 2.2 Vectored read (`ReadV`) ⬅ **recommended next**
 
 Used by GFAL2 and XRootD's `xrdcopy --parallel` to pipeline chunk requests.
 
 **Implementation:** iterate the `XrdOucIOVec` array, calling the sync
 `Read(buff, offset, blen)` for each entry, accumulate total bytes.
 
-### 2.3 Rename
+### 2.3 Rename ⬅ **recommended next**
 
 Required for GFAL2's atomic upload pattern (`open → write → rename`).
 
@@ -154,24 +154,18 @@ Rules are matched in declaration order; first match wins.
 `vector<{glob, write_speed, read_speed}>`. `XrdBlackholeOssFile::Open()`
 walks the list and stores the matched speeds for the lifetime of the handle.
 
-### 3.2 Prometheus metrics
+### 3.2 Prometheus metrics ✅ DONE
 
-XRootD 5.x ships with a built-in HTTP server. Expose a `/metrics` endpoint
-returning Prometheus text format:
-
+`libXrdBlackholeMetrics-5.so` is an optional `XrdHttpExtHandler` plugin that
+exposes a Prometheus text format `/metrics` endpoint. Built when
+`XrdHttp/XrdHttpExtHandler.hh` is found at configure time; packaged in the
+`xrootd-blackhole-metrics` RPM subpackage. Load with:
 ```
-# HELP blackhole_bytes_written_total Bytes accepted for writing
-blackhole_bytes_written_total 42949672960
-# HELP blackhole_write_throughput_MiBs_avg Rolling average write throughput
-blackhole_write_throughput_MiBs_avg 987.2
-blackhole_transfers_total{op="write"} 1024
-blackhole_transfers_total{op="read"} 256
-blackhole_errors_total 0
+http.exthandler bhmetrics /usr/lib64/xrootd/libXrdBlackholeMetrics-5.so
 ```
-
-`XrdBlackholeStatsManager` already accumulates the necessary aggregates;
-expose them via an `XrdHttpExtHandler` (or a lightweight `/metrics` path in
-`XrdBlackholeXAttr`'s HTTP handler).
+Metrics exposed: `blackhole_transfers_total`, `blackhole_bytes_written_total`,
+`blackhole_bytes_read_total`, `blackhole_errors_total`,
+`blackhole_write_throughput_MiBs_avg`, `blackhole_read_throughput_MiBs_avg`.
 
 ### 3.3 Configurable pre-seeded file set
 
@@ -260,9 +254,9 @@ layer or separate build path.
 
 | Version | Phase | Key deliverables |
 |---|---|---|
-| 0.2.0 | 1 | Tests, CI, Dockerfile fix, packaging fix, versioning |
-| 0.3.0 | 2 | AIO read, ReadV, Rename, Opendir/Readdir, Checksum |
-| 0.4.0 | 2+3 | StatFS accuracy, per-path QoS, Prometheus, seed config |
+| 0.2.0 | 1 | ✅ CI (Rocky 8+9), ✅ multi-stage Dockerfile, ✅ packaging fixes, ✅ Prometheus metrics; unit tests + versioning still outstanding |
+| 0.3.0 | 1+2 | Unit tests (1.1), AIO read (2.1), ReadV (2.2), Rename (2.3), release versioning (1.5) |
+| 0.4.0 | 2+3 | Opendir/Readdir (2.4), Checksum (2.5), StatFS accuracy (2.6), per-path QoS (3.1), seed config (3.3) |
 | 1.0.0 | 3 | Full Phase 3 complete; stable API; docs site |
 | 1.x | 4 | Persistent namespace, error injection, integration tests |
 

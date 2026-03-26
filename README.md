@@ -22,6 +22,8 @@ benchmarking and integration testing.
   in a session are readable back with the size they were written at.
 - **Pre-seeded test files** of configurable fixed sizes can be created at
   startup for read benchmarking without first having to write anything.
+- **Prometheus metrics** are exposed at `GET /metrics` via an optional
+  `XrdHttpExtHandler` plugin when XRootD's HTTP service is enabled.
 
 ---
 
@@ -49,6 +51,7 @@ benchmarking and integration testing.
 | **Read throughput benchmarking** | Pre-seeded test files of any size allow clients to read at full network speed without needing to write first. |
 | **Client pipeline testing** | Test XRootD clients, transfer tools, and middleware against a server that always responds correctly, without needing working storage. |
 | **Protocol correctness testing** | Validates client behaviour (open/read/write/close sequencing, AIO callbacks, stat checks) in isolation. |
+| **Observability testing** | Scrape the Prometheus `/metrics` endpoint to test monitoring pipelines against a live transfer stream. |
 
 ---
 
@@ -72,6 +75,7 @@ client write ──► XrdBlackholeOssFile::Write()
 
 client close ──► stub->m_size = total bytes written
                  stub->m_stat.st_size updated
+                 transfer stats recorded to XrdBlackholeStatsManager
 ```
 
 Both synchronous (`Write(const void*, off_t, size_t)`) and AIO
@@ -92,6 +96,13 @@ client read ──► XrdBlackholeOssFile::Read(void*, off_t, size_t)
 Reads beyond the file's registered size return 0 bytes (EOF). AIO reads and
 vectored reads (`ReadV`) return `-ENOTSUP`.
 
+### Transfer statistics
+
+At close, each file handle records a `TransferStats` entry (path, duration,
+bytes written/read, op counts, throughput) to a global `XrdBlackholeStatsManager`
+singleton. The manager logs a per-transfer line and maintains aggregate counters.
+These aggregates are exposed by the optional Prometheus metrics endpoint.
+
 ---
 
 ## Supported Operations
@@ -100,7 +111,7 @@ vectored reads (`ReadV`) return `-ENOTSUP`.
 |---|---|
 | `Open` (read) | Succeeds if file exists in the in-memory FS. |
 | `Open` (write / O_TRUNC) | Creates a new stub entry; replaces any existing entry. |
-| `Close` | Updates stub size from bytes written; clears open flags. |
+| `Close` | Updates stub size from bytes written; records transfer stats. |
 | `Read(void*, off_t, size_t)` | Returns zero-filled bytes up to file size. |
 | `ReadRaw` | Delegates to `Read(void*, off_t, size_t)`. |
 | `Read(off_t, size_t)` | Preposition-only; validates stub exists, returns 0. |
@@ -121,7 +132,7 @@ vectored reads (`ReadV`) return `-ENOTSUP`.
 
 ## Configuration Directives
 
-Both directives are placed in the standard xrootd configuration file and are
+All directives are placed in the standard xrootd configuration file and are
 prefixed with `blackhole.`.
 
 ### `blackhole.writespeedMiBps <N>`
@@ -151,6 +162,15 @@ blackhole.defaultspath /test
 
 See [Pre-seeded Test Files](#pre-seeded-test-files) for the files that are
 created.
+
+### `blackhole.readtype <type>`
+
+Controls the data pattern returned by reads. Currently only `zeros` is
+accepted (the default). Reserved for future extension to other fill patterns.
+
+```
+blackhole.readtype zeros
+```
 
 ---
 
@@ -207,12 +227,13 @@ make -j$(nproc)
 make install
 ```
 
-This produces two shared libraries:
+This produces up to three shared libraries:
 
 | Library | Purpose |
 |---|---|
 | `libXrdBlackhole-5.so` | OSS plugin — load with `ofs.osslib` |
 | `libXrdBlackholeXattr-5.so` | XAttr plugin — load with `ofs.xattrlib` (all ops are no-ops) |
+| `libXrdBlackholeMetrics-5.so` | Prometheus HTTP handler — load with `http.exthandler` (optional; requires `xrootd-server-devel` with XrdHttp headers) |
 
 The `5` suffix is the XRootD plugin ABI version. It is controlled by
 `PLUGIN_VERSION` in `cmake/XRootDDefaults.cmake`.
@@ -227,9 +248,9 @@ docker run --rm -p 1094:1094 xrootd-blackhole \
     /usr/bin/xrootd -f -c /etc/xrootd/xrootd-blackhole.cfg -l /dev/stderr
 ```
 
-The Dockerfile installs XRootD 5.x from the official CERN repository and
-links the built libraries into the standard plugin search path
-(`/usr/lib64/xrootd/`).
+The Dockerfile uses a two-stage build. Stage 1 compiles and packages the
+plugin as an RPM using the XRootD 5.x CERN repository. Stage 2 installs the
+RPM into a clean AlmaLinux 9 runtime, producing an image of ~200 MB.
 
 ---
 
@@ -283,9 +304,11 @@ blackhole.defaultspath /data
 all.export / rw
 ```
 
-### With XAttr plugin and HTTP
+### Full configuration with Prometheus metrics
 
-Full configuration with both plugins and HTTP support:
+Enable XrdHttp on port 1094 and expose a Prometheus-compatible `/metrics`
+endpoint. The metrics handler is an optional subpackage that requires the
+`xrootd-blackhole-metrics` RPM (or building with XrdHttp headers present).
 
 ```
 # /etc/xrootd/xrootd-blackhole.cfg
@@ -294,8 +317,10 @@ all.role server
 xrd.port 1094
 xrd.protocol XrdHttp:1094 libXrdHttp.so
 
-ofs.osslib  /usr/lib64/xrootd/libXrdBlackhole-5.so
+ofs.osslib   /usr/lib64/xrootd/libXrdBlackhole-5.so
 ofs.xattrlib /usr/lib64/xrootd/libXrdBlackholeXattr-5.so
+
+http.exthandler bhmetrics /usr/lib64/xrootd/libXrdBlackholeMetrics-5.so
 
 blackhole.writespeedMiBps 500
 blackhole.defaultspath /test
@@ -337,7 +362,7 @@ xrdcp /path/to/local/file root://localhost//data/myfile
 The server logs the elapsed time and total bytes written at close:
 
 ```
-Close: /data/bench_10GiB, 9823451us, Write: 10737418240, WriteAIO: 0
+[XFER] path=/data/bench_10GiB op=write written=10737418240 read=0 duration_us=9823451 write_MiBs=1043.21 ...
 ```
 
 ### Read benchmarking using pre-seeded files
@@ -386,6 +411,38 @@ MTime:  ...
 xrdfs localhost rm /data/myfile
 ```
 
+### Prometheus metrics
+
+With the metrics handler loaded and XrdHttp enabled on port 1094:
+
+```bash
+curl http://localhost:1094/metrics
+```
+
+Example output:
+
+```
+# HELP blackhole_transfers_total Total number of completed transfers
+# TYPE blackhole_transfers_total counter
+blackhole_transfers_total{op="write"} 42
+blackhole_transfers_total{op="read"} 7
+# HELP blackhole_bytes_written_total Total bytes accepted for writing
+# TYPE blackhole_bytes_written_total counter
+blackhole_bytes_written_total 451674817536
+# HELP blackhole_bytes_read_total Total bytes returned for reading
+# TYPE blackhole_bytes_read_total counter
+blackhole_bytes_read_total 7516192768
+# HELP blackhole_errors_total Total number of transfer errors
+# TYPE blackhole_errors_total counter
+blackhole_errors_total 0
+# HELP blackhole_write_throughput_MiBs_avg Rolling average write throughput
+# TYPE blackhole_write_throughput_MiBs_avg gauge
+blackhole_write_throughput_MiBs_avg 987.23
+# HELP blackhole_read_throughput_MiBs_avg Rolling average read throughput
+# TYPE blackhole_read_throughput_MiBs_avg gauge
+blackhole_read_throughput_MiBs_avg 3241.10
+```
+
 ### Verify the server is alive
 
 ```bash
@@ -407,7 +464,12 @@ xrdfs localhost ping
 
 - **No truncate or fsync.** `Ftruncate` and `Fsync` return `-ENOTSUP`.
 
-- **No AIO reads.** `Read(XrdSfsAio*)` and `ReadV` return `-ENOTSUP`.
+- **No AIO reads.** `Read(XrdSfsAio*)` and `ReadV` return `-ENOTSUP`. Clients
+  using parallel-stream reads (e.g. `xrdcp --streams N`) fall back to
+  sequential buffered reads.
+
+- **No rename.** `Rename` returns `-ENOTSUP`. GFAL2's atomic-upload pattern
+  (`open → write → rename`) is not supported.
 
 - **Write throttle granularity.** The `writespeedMiBps` throttle sleeps
   per write call. For small writes the integer delay may truncate to zero,
@@ -418,6 +480,10 @@ xrdfs localhost ping
   multiple clients, but the byte counters (`m_writeBytes`, `m_writeBytesAIO`)
   are per file-handle, not shared. Concurrent writes to the same path will
   each track their own count independently.
+
+- **Prometheus throughput metrics are lifetime averages**, not a sliding
+  window. The `blackhole_*_throughput_MiBs_avg` gauges divide cumulative
+  sum-of-throughputs by transfer count since process start.
 
 ---
 
