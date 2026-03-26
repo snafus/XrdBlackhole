@@ -238,3 +238,59 @@ TEST(BlackholeFS, CreateDefaultsDifferentPaths) {
   EXPECT_TRUE(fs.exists("/beta/testfile_zeros_1MiB"));
   EXPECT_FALSE(fs.exists("/gamma/testfile_zeros_1MiB"));
 }
+
+// ---------------------------------------------------------------------------
+// rename()
+// ---------------------------------------------------------------------------
+
+TEST(BlackholeFS, RenameMovesFile) {
+  BlackholeFS fs;
+  fs.open(kPath, O_WRONLY | O_CREAT, 0644);
+  ASSERT_EQ(0, fs.rename(kPath, kPath2));
+  EXPECT_FALSE(fs.exists(kPath));
+  EXPECT_TRUE(fs.exists(kPath2));
+}
+
+TEST(BlackholeFS, RenamePreservesStub) {
+  BlackholeFS fs;
+  fs.open(kPath, O_WRONLY | O_CREAT, 0644);
+  auto stub_before = fs.getStub(kPath);
+  ASSERT_NE(nullptr, stub_before);
+  fs.rename(kPath, kPath2);
+  auto stub_after = fs.getStub(kPath2);
+  ASSERT_NE(nullptr, stub_after);
+  EXPECT_EQ(stub_before.get(), stub_after.get()) << "rename must reuse the same Stub object";
+}
+
+TEST(BlackholeFS, RenameUnknownSourceReturnsEnoent) {
+  BlackholeFS fs;
+  EXPECT_EQ(-ENOENT, fs.rename("/no/such/file", kPath2));
+}
+
+TEST(BlackholeFS, RenameOverwritesExistingDestination) {
+  BlackholeFS fs;
+  fs.open(kPath,  O_WRONLY | O_CREAT, 0644);
+  fs.open(kPath2, O_WRONLY | O_CREAT, 0644);
+  auto stub1 = fs.getStub(kPath);
+  ASSERT_EQ(0, fs.rename(kPath, kPath2));
+  // kPath2 now holds what was at kPath.
+  EXPECT_EQ(stub1.get(), fs.getStub(kPath2).get());
+  EXPECT_FALSE(fs.exists(kPath));
+}
+
+TEST(BlackholeFS, RenameToSelfIsNoop) {
+  BlackholeFS fs;
+  fs.open(kPath, O_WRONLY | O_CREAT, 0644);
+  EXPECT_EQ(0, fs.rename(kPath, kPath));
+  EXPECT_TRUE(fs.exists(kPath));
+}
+
+TEST(BlackholeFS, RenameLeavesOtherFilesIntact) {
+  BlackholeFS fs;
+  fs.open(kPath,  O_WRONLY | O_CREAT, 0644);
+  fs.open(kPath2, O_WRONLY | O_CREAT, 0644);
+  static constexpr const char* kPath3 = "/test/third.root";
+  fs.rename(kPath, kPath3);
+  EXPECT_TRUE(fs.exists(kPath2));
+  EXPECT_TRUE(fs.exists(kPath3));
+}
