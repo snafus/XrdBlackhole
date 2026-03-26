@@ -133,12 +133,15 @@ jobs:
       - name: Build binary RPMs
         run: rpmbuild --rebuild /tmp/srpms/xrootd-blackhole-*.src.rpm
 
-      - name: List built RPMs
-        run: find /root/rpmbuild/RPMS -name '*.rpm' | sort
+      - name: Collect RPMs
+        run: |
+          mkdir -p /tmp/rpms
+          find "$HOME/rpmbuild/RPMS" -name '*.rpm' | sort | tee /tmp/rpms-list.txt
+          xargs -a /tmp/rpms-list.txt cp -t /tmp/rpms/
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
         with:
           name: rpms-${{ matrix.os }}
-          path: /root/rpmbuild/RPMS/**/*.rpm
+          path: /tmp/rpms/*.rpm
           retention-days: 30
