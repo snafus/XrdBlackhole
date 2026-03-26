@@ -109,7 +109,14 @@ ssize_t XrdBlackholeOssFile::Read(void *buff, off_t offset, size_t blen) {
 }
 
 int XrdBlackholeOssFile::Read(XrdSfsAio *aiop) {
-  return -ENOTSUP;
+  size_t blen   = aiop->sfsAio.aio_nbytes;
+  off_t  offset = aiop->sfsAio.aio_offset;
+  void  *buff   = const_cast<void*>(
+                    static_cast<volatile void*>(aiop->sfsAio.aio_buf));
+  aiop->Result  = Read(buff, offset, blen);
+  aiop->doneRead();
+  BHTRACE("ReadAIO " << blen << " bytes @ " << offset << " path=" << m_path);
+  return XrdOssOK;
 }
 
 ssize_t XrdBlackholeOssFile::ReadRaw(void *buff, off_t offset, size_t blen) {
@@ -117,7 +124,18 @@ ssize_t XrdBlackholeOssFile::ReadRaw(void *buff, off_t offset, size_t blen) {
 }
 
 ssize_t XrdBlackholeOssFile::ReadV(XrdOucIOVec *readV, int n) {
-  return -ENOTSUP;
+  if (n <= 0) return 0;
+  ssize_t total = 0;
+  for (int i = 0; i < n; i++) {
+    if (readV[i].size <= 0) continue;
+    ssize_t rc = Read(readV[i].data,
+                      static_cast<off_t>(readV[i].offset),
+                      static_cast<size_t>(readV[i].size));
+    if (rc < 0) return rc;
+    total += rc;
+  }
+  BHTRACE("ReadV " << n << " segs total=" << total << " path=" << m_path);
+  return total;
 }
 
 int XrdBlackholeOssFile::Fstat(struct stat *buf) {
