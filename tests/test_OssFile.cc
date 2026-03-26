@@ -35,7 +35,7 @@ public:
 // ---------------------------------------------------------------------------
 
 class OssFileTest : public ::testing::Test {
-protected:
+public:
     static XrdSysLogger* s_logger;
     static XrdBlackholeOss* s_oss;
 
@@ -77,6 +77,16 @@ protected:
     // Open the test file for reading (requires it to exist first).
     void OpenRead() {
         ASSERT_EQ(XrdOssOK, f->Open(kPath, O_RDONLY, 0, env));
+    }
+
+    // Write nbytes to the test file, close it, then reopen for reading.
+    void WriteAndReopen(size_t nbytes) {
+        std::vector<char> buf(nbytes, 0);
+        f->Write(buf.data(), 0, nbytes);
+        f->Close();
+        delete f;
+        f = new XrdBlackholeOssFile(s_oss);
+        OpenRead();
     }
 };
 
@@ -211,22 +221,9 @@ TEST_F(OssFileTest, CloseUpdateStubSizeSyncPlusAio) {
 // Read — buffered path: Read(void*, off_t, size_t)
 // ---------------------------------------------------------------------------
 
-// Helper: write N bytes then reopen for reading.
-static void WriteAndReopen(OssFileTest* t, size_t nbytes) {
-    char wbuf[1]{};
-    // Write in a loop — each Write call counts regardless of buffer content.
-    // Easier to just write a single large block via a heap buffer.
-    std::vector<char> buf(nbytes, 0);
-    t->f->Write(buf.data(), 0, nbytes);
-    t->f->Close();
-    delete t->f;
-    t->f = new XrdBlackholeOssFile(OssFileTest::s_oss);
-    t->OpenRead();
-}
-
 TEST_F(OssFileTest, ReadFromStartReturnsRequestedBytes) {
     OpenWrite();
-    WriteAndReopen(this, 4096);
+    WriteAndReopen(4096);
     char rbuf[1024]{};
     EXPECT_EQ(static_cast<ssize_t>(sizeof(rbuf)),
               f->Read(rbuf, 0, sizeof(rbuf)));
@@ -234,7 +231,7 @@ TEST_F(OssFileTest, ReadFromStartReturnsRequestedBytes) {
 
 TEST_F(OssFileTest, ReadFillsZeros) {
     OpenWrite();
-    WriteAndReopen(this, 4096);
+    WriteAndReopen(4096);
     char rbuf[256];
     memset(rbuf, 0xFF, sizeof(rbuf));
     f->Read(rbuf, 0, sizeof(rbuf));
@@ -243,7 +240,7 @@ TEST_F(OssFileTest, ReadFillsZeros) {
 
 TEST_F(OssFileTest, ReadMidFileReturnsRemainder) {
     OpenWrite();
-    WriteAndReopen(this, 1024);
+    WriteAndReopen(1024);
     char rbuf[512]{};
     // offset 768, blen 512, file size 1024 → clamped to 256 bytes
     EXPECT_EQ(256, f->Read(rbuf, 768, sizeof(rbuf)));
@@ -251,21 +248,21 @@ TEST_F(OssFileTest, ReadMidFileReturnsRemainder) {
 
 TEST_F(OssFileTest, ReadAtExactSizeReturnsEOF) {
     OpenWrite();
-    WriteAndReopen(this, 1024);
+    WriteAndReopen(1024);
     char rbuf[64]{};
     EXPECT_EQ(0, f->Read(rbuf, 1024, sizeof(rbuf)));
 }
 
 TEST_F(OssFileTest, ReadPastSizeReturnsEOF) {
     OpenWrite();
-    WriteAndReopen(this, 1024);
+    WriteAndReopen(1024);
     char rbuf[64]{};
     EXPECT_EQ(0, f->Read(rbuf, 2048, sizeof(rbuf)));
 }
 
 TEST_F(OssFileTest, ReadNegativeOffsetReturnsEOF) {
     OpenWrite();
-    WriteAndReopen(this, 1024);
+    WriteAndReopen(1024);
     char rbuf[64]{};
     // Guards size_t underflow: offset < 0 must return 0, not a huge count.
     EXPECT_EQ(0, f->Read(rbuf, -1, sizeof(rbuf)));
