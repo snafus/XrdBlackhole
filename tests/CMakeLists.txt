@@ -59,5 +59,8 @@ add_executable( test_ossfile
   test_OssFile.cc )
 
 target_include_directories( test_ossfile PRIVATE ${TEST_INCLUDES} )
-target_link_libraries( test_ossfile GTest::gtest_main ${XROOTD_LIBRARIES} )
+# XrdOss / XrdOssDF vtables and default method bodies (Connect, pgRead, etc.)
+# live in libXrdServer.so.  MODULE libraries resolve these at runtime from the
+# xrootd process; a test executable must link them explicitly.
+target_link_libraries( test_ossfile GTest::gtest_main ${XROOTD_LIBRARIES} XrdServer )
 gtest_discover_tests( test_ossfile )
