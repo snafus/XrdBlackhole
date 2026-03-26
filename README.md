@@ -267,7 +267,7 @@ previously written.
 all.role server
 xrd.port 1094
 
-ofs.osslib /usr/lib64/xrootd/libXrdBlackhole-5.so
+ofs.osslib /usr/lib64/libXrdBlackhole.so
 
 all.export / rw
 ```
@@ -282,7 +282,7 @@ Simulate a 1 GiB/s storage backend:
 all.role server
 xrd.port 1094
 
-ofs.osslib /usr/lib64/xrootd/libXrdBlackhole-5.so
+ofs.osslib /usr/lib64/libXrdBlackhole.so
 blackhole.writespeedMiBps 1024
 
 all.export / rw
@@ -298,7 +298,7 @@ Make test files immediately available under `/data` for read benchmarking:
 all.role server
 xrd.port 1094
 
-ofs.osslib /usr/lib64/xrootd/libXrdBlackhole-5.so
+ofs.osslib /usr/lib64/libXrdBlackhole.so
 blackhole.defaultspath /data
 
 all.export / rw
@@ -317,10 +317,10 @@ all.role server
 xrd.port 1094
 xrd.protocol XrdHttp:1094 libXrdHttp.so
 
-ofs.osslib   /usr/lib64/xrootd/libXrdBlackhole-5.so
-ofs.xattrlib /usr/lib64/xrootd/libXrdBlackholeXattr-5.so
+ofs.osslib   /usr/lib64/libXrdBlackhole.so
+ofs.xattrlib /usr/lib64/libXrdBlackholeXattr.so
 
-http.exthandler bhmetrics /usr/lib64/xrootd/libXrdBlackholeMetrics-5.so
+http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics-5.so
 
 blackhole.writespeedMiBps 500
 blackhole.defaultspath /test
