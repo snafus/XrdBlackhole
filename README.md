@@ -89,12 +89,15 @@ client read ──► XrdBlackholeOssFile::Read(void*, off_t, size_t)
                   │
                   ├─ look up file size from stub
                   ├─ bytesremaining = min(blen, size - offset)
-                  ├─ memset(buff, 0, bytesremaining)
+                  ├─ if type=zeros:  memset(buff, 0, bytesremaining)
+                  │  if type=random: LCG fill seeded by (offset ^ st_ino)
                   └─ return bytesremaining
 ```
 
-Reads beyond the file's registered size return 0 bytes (EOF). AIO reads and
-vectored reads (`ReadV`) return `-ENOTSUP`.
+Reads beyond the file's registered size return 0 bytes (EOF). AIO reads
+(`Read(XrdSfsAio*)`) delegate to the sync path and call `aiop->doneRead()`
+before returning. Vectored reads (`ReadV`) iterate each segment and call the
+sync path per entry.
 
 ### Transfer statistics
 
@@ -112,20 +115,21 @@ These aggregates are exposed by the optional Prometheus metrics endpoint.
 | `Open` (read) | Succeeds if file exists in the in-memory FS. |
 | `Open` (write / O_TRUNC) | Creates a new stub entry; replaces any existing entry. |
 | `Close` | Updates stub size from bytes written; records transfer stats. |
-| `Read(void*, off_t, size_t)` | Returns zero-filled bytes up to file size. |
+| `Read(void*, off_t, size_t)` | Returns zero-filled or deterministic pseudo-random bytes up to file size. |
 | `ReadRaw` | Delegates to `Read(void*, off_t, size_t)`. |
 | `Read(off_t, size_t)` | Preposition-only; validates stub exists, returns 0. |
+| `Read(XrdSfsAio*)` | Async read; delegates to sync path, sets `aiop->Result`, calls `doneRead()`. |
+| `ReadV` | Vectored read; iterates segments, calls sync `Read()` per entry. |
 | `Write(const void*, off_t, size_t)` | Discards data; optionally throttles; returns `blen`. |
 | `Write(XrdSfsAio*)` | Discards data; calls `doneWrite()`; optionally throttles. |
 | `Fstat` | Returns stub `struct stat` with `st_mode = 0666 \| S_IFREG`. |
 | `Stat` | Returns stub `struct stat` from the OSS layer. |
 | `Unlink` | Removes the stub from the in-memory map. |
+| `Rename` | Moves the stub to the new path; atomically replaces destination if present. |
 | `Mkdir` / `Remdir` | Always returns success (required by POSIX-assuming clients such as GFAL2). |
-| `Read(XrdSfsAio*)` | Returns `-ENOTSUP`. |
-| `ReadV` | Returns `-ENOTSUP`. |
+| `Opendir` / `Readdir` | Returns a snapshot of direct children under the requested path. |
 | `Fsync` / `Ftruncate` | Returns `-ENOTSUP`. |
-| `Chmod` / `Create` / `Rename` / `Truncate` | Returns `-ENOTSUP`. |
-| `Opendir` / `Readdir` | Returns `-ENOTSUP`. |
+| `Chmod` / `Create` / `Truncate` | Returns `-ENOTSUP`. |
 | All XAttr operations | Returns `-ENOTSUP`. |
 
 ---
@@ -163,10 +167,39 @@ blackhole.defaultspath /test
 See [Pre-seeded Test Files](#pre-seeded-test-files) for the files that are
 created.
 
+### `blackhole.seedfile <path> <size>[K|M|G|T] [count=N] [type=zeros|random]`
+
+Create one or more pre-seeded stubs at startup. Unlike `defaultspath`, this
+directive gives full control over path, size, count, and read-data pattern.
+
+- `path` — absolute path of the file to create. When `count=N` is given,
+  `path` must contain a `printf` integer format specifier (e.g. `%04d`) which
+  is expanded to produce `N` distinct paths numbered `0` through `N-1`.
+- `size` — file size in bytes. Accepts `K`, `M`, `G`, or `T` suffixes
+  (powers of 1024, case-insensitive).
+- `count=N` — create N files by expanding the format specifier in `path`.
+  Defaults to 1.
+- `type=zeros|random` — fill pattern for reads. `zeros` (default) returns a
+  zero-filled buffer. `random` returns a deterministic pseudo-random byte
+  stream seeded by the read offset and inode number, allowing checksum
+  verification by clients.
+
+```
+# Single 4 GiB zero file
+blackhole.seedfile /data/4GiB.root  4G
+
+# 100 files of 1 GiB each, named /data/f_0000.root through /data/f_0099.root
+blackhole.seedfile /data/f_%04d.root  1G  count=100
+
+# A 1 GiB file whose content is deterministic pseudo-random bytes
+blackhole.seedfile /data/rand.root  1G  type=random
+```
+
 ### `blackhole.readtype <type>`
 
-Controls the data pattern returned by reads. Currently only `zeros` is
-accepted (the default). Reserved for future extension to other fill patterns.
+Controls the data pattern returned by reads for files opened without a
+specific readtype. Currently only `zeros` is accepted (the default).
+Reserved for future extension.
 
 ```
 blackhole.readtype zeros
@@ -176,8 +209,12 @@ blackhole.readtype zeros
 
 ## Pre-seeded Test Files
 
-When `blackhole.defaultspath /test` is set, the following files are created
-in the in-memory filesystem at startup:
+There are two ways to pre-seed the in-memory filesystem at startup.
+
+### `blackhole.defaultspath`
+
+When `blackhole.defaultspath /test` is set, the following fixed files are
+created automatically:
 
 | Path | Size |
 |---|---|
@@ -185,8 +222,19 @@ in the in-memory filesystem at startup:
 | `/test/testfile_zeros_1GiB` | 1 GiB (1,073,741,824 bytes) |
 | `/test/testfile_zeros_10GiB` | 10 GiB (10,737,418,240 bytes) |
 
-All files return zeros on read. They are present for the lifetime of the
-server process and cannot be overwritten (they have no write-open path).
+### `blackhole.seedfile`
+
+For custom paths, sizes, counts, and content patterns, use
+`blackhole.seedfile`. Multiple directives may appear in the config file:
+
+```
+blackhole.seedfile /data/4GiB.root    4G
+blackhole.seedfile /data/f_%04d.root  1G  count=100
+blackhole.seedfile /data/rand.root    1G  type=random
+```
+
+All pre-seeded files are present for the lifetime of the server process and
+return their configured data pattern on every read.
 
 ---
 
@@ -455,21 +503,11 @@ xrdfs localhost ping
 
 - **No persistence.** The in-memory filesystem is wiped when the server
   process exits. Pre-seeded test files are re-created at next startup if
-  `blackhole.defaultspath` is configured.
-
-- **No directory listing.** `Opendir` and `Readdir` return `-ENOTSUP`.
-  There is no namespace to enumerate.
+  `blackhole.defaultspath` or `blackhole.seedfile` directives are configured.
 
 - **No extended attributes.** All `XrdSysXAttr` operations return `-ENOTSUP`.
 
 - **No truncate or fsync.** `Ftruncate` and `Fsync` return `-ENOTSUP`.
-
-- **No AIO reads.** `Read(XrdSfsAio*)` and `ReadV` return `-ENOTSUP`. Clients
-  using parallel-stream reads (e.g. `xrdcp --streams N`) fall back to
-  sequential buffered reads.
-
-- **No rename.** `Rename` returns `-ENOTSUP`. GFAL2's atomic-upload pattern
-  (`open → write → rename`) is not supported.
 
 - **Write throttle granularity.** The `writespeedMiBps` throttle sleeps
   per write call. For small writes the integer delay may truncate to zero,
