@@ -89,8 +89,13 @@ int XrdBlackholeOss::Configure(const char *configfn, XrdSysError &Eroute) {
   };
   static const int k_nDirectives = sizeof(k_directives) / sizeof(k_directives[0]);
   int NoGo = 0;
-  XrdOucEnv myEnv;
-  XrdOucStream Config(&Eroute, getenv("XRDINSTANCE"), &myEnv, "=====> ");
+  // Do not pass an XrdOucEnv to the stream: XrdOucStream::GetMyFirstWord()
+  // has a code path that, when myInst (XRDINSTANCE) is unset and myEnv is
+  // non-null, silently skips all directives except "set"/"setenv".
+  // XRDINSTANCE is always set by the XRootD daemon in production but is
+  // absent in unit-test processes.  XrdBlackhole config uses no $VARIABLE
+  // substitution so passing nullptr is safe and correct in all contexts.
+  XrdOucStream Config(&Eroute, getenv("XRDINSTANCE"), nullptr, "=====> ");
 
   // Disable POSC (Persist-On-Successful-Close): nothing is ever persisted.
   XrdOucEnv::Export("XRDXROOTD_NOPOSC", "1");
@@ -256,7 +261,7 @@ bool XrdBlackholeOss::cfg_seedfile(XrdOucStream &cfg, XrdSysError &Eroute) {
     char buf[4096];
     for (unsigned long long i = 0; i < count; i++) {
       if (snprintf(buf, sizeof(buf), path.c_str(),
-                   static_cast<unsigned long long>(i)) >= static_cast<int>(sizeof(buf))) {
+                   static_cast<int>(i)) >= static_cast<int>(sizeof(buf))) {
         Eroute.Emsg("Config", "blackhole.seedfile: generated path too long");
         return false;
       }

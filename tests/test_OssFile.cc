@@ -538,7 +538,7 @@ static int runConfigure(XrdBlackholeOss* oss, const char* line) {
 }
 
 TEST_F(OssFileTest, SeedfileCreatesFile) {
-    runConfigure(s_oss, "blackhole.seedfile /test/cfg_1G.root 1G");
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_1G.root 1G"));
     EXPECT_TRUE(g_blackholeFS.exists("/test/cfg_1G.root"));
     auto stub = g_blackholeFS.getStub("/test/cfg_1G.root");
     ASSERT_NE(nullptr, stub);
@@ -547,11 +547,11 @@ TEST_F(OssFileTest, SeedfileCreatesFile) {
 }
 
 TEST_F(OssFileTest, SeedfileSuffixes) {
-    runConfigure(s_oss, "blackhole.seedfile /test/cfg_1K.root 1K");
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_1K.root 1K"));
     auto s1 = g_blackholeFS.getStub("/test/cfg_1K.root");
-    runConfigure(s_oss, "blackhole.seedfile /test/cfg_1M.root 1M");
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_1M.root 1M"));
     auto s2 = g_blackholeFS.getStub("/test/cfg_1M.root");
-    runConfigure(s_oss, "blackhole.seedfile /test/cfg_1T.root 1T");
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_1T.root 1T"));
     auto s3 = g_blackholeFS.getStub("/test/cfg_1T.root");
     ASSERT_NE(nullptr, s1); EXPECT_EQ(1024ULL,                      s1->m_size);
     ASSERT_NE(nullptr, s2); EXPECT_EQ(1024ULL * 1024,                s2->m_size);
@@ -562,7 +562,7 @@ TEST_F(OssFileTest, SeedfileSuffixes) {
 }
 
 TEST_F(OssFileTest, SeedfileCountExpandsFiles) {
-    runConfigure(s_oss, "blackhole.seedfile /test/f_%02d.root 512M count=3");
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/f_%02d.root 512M count=3"));
     EXPECT_TRUE(g_blackholeFS.exists("/test/f_00.root"));
     EXPECT_TRUE(g_blackholeFS.exists("/test/f_01.root"));
     EXPECT_TRUE(g_blackholeFS.exists("/test/f_02.root"));
@@ -573,7 +573,7 @@ TEST_F(OssFileTest, SeedfileCountExpandsFiles) {
 }
 
 TEST_F(OssFileTest, SeedfileTypeRandom) {
-    runConfigure(s_oss, "blackhole.seedfile /test/cfg_rand.root 4096 type=random");
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_rand.root 4096 type=random"));
     auto stub = g_blackholeFS.getStub("/test/cfg_rand.root");
     ASSERT_NE(nullptr, stub);
     EXPECT_EQ("random", stub->m_readtype);
@@ -581,7 +581,7 @@ TEST_F(OssFileTest, SeedfileTypeRandom) {
 }
 
 TEST_F(OssFileTest, SeedfileTypeZerosIsDefault) {
-    runConfigure(s_oss, "blackhole.seedfile /test/cfg_z.root 4096");
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_z.root 4096"));
     auto stub = g_blackholeFS.getStub("/test/cfg_z.root");
     ASSERT_NE(nullptr, stub);
     EXPECT_EQ("zeros", stub->m_readtype);
