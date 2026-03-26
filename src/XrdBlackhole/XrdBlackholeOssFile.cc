@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <chrono>
 #include <thread>
@@ -100,7 +101,19 @@ ssize_t XrdBlackholeOssFile::Read(void *buff, off_t offset, size_t blen) {
   // Guard against out-of-range offset to prevent size_t underflow.
   if (offset < 0 || static_cast<size_t>(offset) >= m_size) return 0;
   size_t n = std::min(blen, m_size - static_cast<size_t>(offset));
-  memset(buff, 0, n);
+
+  if (m_stub->m_readtype == "random") {
+    // Deterministic LCG fill seeded by offset and inode: same offset always
+    // returns the same bytes, enabling checksum verification by clients.
+    uint64_t state = static_cast<uint64_t>(offset) ^ m_stub->m_stat.st_ino;
+    auto *out = static_cast<uint8_t*>(buff);
+    for (size_t i = 0; i < n; i++) {
+      state = state * 6364136223846793005ULL + 1442695040888963407ULL;
+      out[i] = static_cast<uint8_t>(state >> 56);
+    }
+  } else {
+    memset(buff, 0, n);
+  }
 
   m_readBytes += n;
   m_readOps++;

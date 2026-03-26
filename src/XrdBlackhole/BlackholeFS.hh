@@ -47,7 +47,12 @@ class BlackholeFS {
 
     void close(const std::string& fname);
 
-    void create_defaults(const std::string & path); //! allow for a default set of files for reading ... 
+    void create_defaults(const std::string & path); //! allow for a default set of files for reading ...
+
+    // Create a single pre-seeded stub with the given size and read type.
+    // m_special is set to true; the stub is immediately available for reading.
+    void seed(const std::string& path, unsigned long long size,
+              const std::string& readtype = "zeros");
 
   private:
     std::map<std::string, std::shared_ptr<Stub>> m_files;

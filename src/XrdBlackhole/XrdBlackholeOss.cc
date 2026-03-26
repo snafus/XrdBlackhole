@@ -26,6 +26,7 @@
 #include <string>
 #include <sstream>
 #include <cerrno>
+#include <cstring>
 #include <fcntl.h>
 #include <limits.h>
 #include "XrdOuc/XrdOucEnv.hh"
@@ -84,11 +85,17 @@ int XrdBlackholeOss::Configure(const char *configfn, XrdSysError &Eroute) {
     { "blackhole.writespeedMiBps", &XrdBlackholeOss::cfg_writespeedMiBps },
     { "blackhole.defaultspath",    &XrdBlackholeOss::cfg_defaultspath    },
     { "blackhole.readtype",        &XrdBlackholeOss::cfg_readtype        },
+    { "blackhole.seedfile",        &XrdBlackholeOss::cfg_seedfile        },
   };
   static const int k_nDirectives = sizeof(k_directives) / sizeof(k_directives[0]);
   int NoGo = 0;
-  XrdOucEnv myEnv;
-  XrdOucStream Config(&Eroute, getenv("XRDINSTANCE"), &myEnv, "=====> ");
+  // Do not pass an XrdOucEnv to the stream: XrdOucStream::GetMyFirstWord()
+  // has a code path that, when myInst (XRDINSTANCE) is unset and myEnv is
+  // non-null, silently skips all directives except "set"/"setenv".
+  // XRDINSTANCE is always set by the XRootD daemon in production but is
+  // absent in unit-test processes.  XrdBlackhole config uses no $VARIABLE
+  // substitution so passing nullptr is safe and correct in all contexts.
+  XrdOucStream Config(&Eroute, getenv("XRDINSTANCE"), nullptr, "=====> ");
 
   // Disable POSC (Persist-On-Successful-Close): nothing is ever persisted.
   XrdOucEnv::Export("XRDXROOTD_NOPOSC", "1");
@@ -176,6 +183,91 @@ bool XrdBlackholeOss::cfg_readtype(XrdOucStream &cfg, XrdSysError &Eroute) {
     return false;
   }
   m_readtype = val;
+  return true;
+}
+
+bool XrdBlackholeOss::cfg_seedfile(XrdOucStream &cfg, XrdSysError &Eroute) {
+  // blackhole.seedfile <path> <size>[K|M|G|T] [count=N] [type=zeros|random]
+  const char *pathval = cfg.GetWord();
+  if (!pathval) {
+    Eroute.Emsg("Config", "blackhole.seedfile: missing path");
+    return false;
+  }
+  std::string path = pathval;
+
+  const char *sizeval = cfg.GetWord();
+  if (!sizeval) {
+    Eroute.Emsg("Config", "blackhole.seedfile: missing size");
+    return false;
+  }
+
+  // Parse size with optional K/M/G/T suffix (powers of 1024).
+  char *endp = nullptr;
+  errno = 0;
+  unsigned long long size = strtoull(sizeval, &endp, 10);
+  if (endp == sizeval || errno == ERANGE) {
+    Eroute.Emsg("Config", "blackhole.seedfile: invalid size:", sizeval);
+    return false;
+  }
+  if (*endp != '\0') {
+    switch (*endp | 0x20) {  // tolower
+      case 'k': size *= 1024ULL;                   break;
+      case 'm': size *= 1024ULL * 1024;             break;
+      case 'g': size *= 1024ULL * 1024 * 1024;      break;
+      case 't': size *= 1024ULL * 1024 * 1024 * 1024; break;
+      default:
+        Eroute.Emsg("Config", "blackhole.seedfile: unknown size suffix:", endp);
+        return false;
+    }
+  }
+
+  // Parse optional keyword arguments.
+  unsigned long long count = 1;
+  std::string readtype = "zeros";
+  const char *tok;
+  while ((tok = cfg.GetWord()) != nullptr) {
+    if (!strncmp(tok, "count=", 6)) {
+      char *ep = nullptr;
+      errno = 0;
+      count = strtoull(tok + 6, &ep, 10);
+      if (ep == tok + 6 || *ep != '\0' || errno == ERANGE || count == 0) {
+        Eroute.Emsg("Config", "blackhole.seedfile: invalid count=", tok + 6);
+        return false;
+      }
+    } else if (!strncmp(tok, "type=", 5)) {
+      readtype = tok + 5;
+      if (readtype != "zeros" && readtype != "random") {
+        Eroute.Emsg("Config", "blackhole.seedfile: unknown type (zeros|random):",
+                    readtype.c_str());
+        return false;
+      }
+    } else {
+      Eroute.Emsg("Config", "blackhole.seedfile: unknown option (ignored):", tok);
+    }
+  }
+
+  // Validate: count>1 requires a printf integer format specifier in the path.
+  if (count > 1 && path.find('%') == std::string::npos) {
+    Eroute.Emsg("Config",
+      "blackhole.seedfile: count>1 requires a printf format specifier in path",
+      path.c_str());
+    return false;
+  }
+
+  // Create the stubs.
+  if (count == 1) {
+    g_blackholeFS.seed(path, size, readtype);
+  } else {
+    char buf[4096];
+    for (unsigned long long i = 0; i < count; i++) {
+      if (snprintf(buf, sizeof(buf), path.c_str(),
+                   static_cast<int>(i)) >= static_cast<int>(sizeof(buf))) {
+        Eroute.Emsg("Config", "blackhole.seedfile: generated path too long");
+        return false;
+      }
+      g_blackholeFS.seed(buf, size, readtype);
+    }
+  }
   return true;
 }
 

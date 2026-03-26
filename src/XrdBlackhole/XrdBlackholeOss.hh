@@ -75,6 +75,10 @@ extern XrdOucTrace       XrdBlackholeTrace;
 //!                                   test files of fixed sizes at <path>.
 //!   blackhole.readtype        <type> Read pattern for pre-seeded files.
 //!                                   Currently only "zeros" is implemented.
+//!   blackhole.seedfile <path> <size>[K|M|G|T] [count=N] [type=zeros|random]
+//!                                   Create one (or N) pre-seeded file(s).
+//!                                   If count>1, path must contain a printf
+//!                                   integer format specifier (e.g. %04d).
 //------------------------------------------------------------------------------
 
 class XrdBlackholeOss : public XrdOss {
@@ -126,6 +130,7 @@ private:
   bool cfg_writespeedMiBps(XrdOucStream &, XrdSysError &);
   bool cfg_defaultspath   (XrdOucStream &, XrdSysError &);
   bool cfg_readtype       (XrdOucStream &, XrdSysError &);
+  bool cfg_seedfile       (XrdOucStream &, XrdSysError &);
 
   /// Log the effective configuration after parsing completes.
   void logConfig(XrdSysError &) const;

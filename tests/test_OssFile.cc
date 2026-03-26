@@ -2,6 +2,7 @@
 
 #include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "XrdSfs/XrdSfsAio.hh"
 #include "XrdOuc/XrdOucEnv.hh"
@@ -468,4 +469,121 @@ TEST_F(OssFileTest, ReadVFillsZeros) {
     vec[0].size   = 256;
     f->ReadV(vec, 1);
     for (auto b : buf) EXPECT_EQ('\0', b);
+}
+
+// ---------------------------------------------------------------------------
+// Read — random content type
+// ---------------------------------------------------------------------------
+
+TEST_F(OssFileTest, RandomReadIsNonZero) {
+    // Seed a random-type file directly into g_blackholeFS then open it.
+    static constexpr const char* kRandPath = "/test/rand.root";
+    g_blackholeFS.seed(kRandPath, 4096, "random");
+
+    XrdBlackholeOssFile rf(s_oss);
+    XrdOucEnv renv;
+    ASSERT_EQ(XrdOssOK, rf.Open(kRandPath, O_RDONLY, 0, renv));
+
+    char buf[256]{};
+    ssize_t n = rf.Read(buf, 0, sizeof(buf));
+    EXPECT_EQ(static_cast<ssize_t>(sizeof(buf)), n);
+
+    // At least some bytes should be non-zero (probability of all-zero is
+    // astronomically small with a good LCG over 256 bytes).
+    bool any_nonzero = false;
+    for (auto b : buf) if (b != '\0') { any_nonzero = true; break; }
+    EXPECT_TRUE(any_nonzero);
+
+    rf.Close();
+    g_blackholeFS.unlink(kRandPath);
+}
+
+TEST_F(OssFileTest, RandomReadIsDeterministic) {
+    static constexpr const char* kRandPath = "/test/rand2.root";
+    g_blackholeFS.seed(kRandPath, 4096, "random");
+
+    auto read_at = [&](off_t offset) {
+        XrdBlackholeOssFile rf(s_oss);
+        XrdOucEnv renv;
+        rf.Open(kRandPath, O_RDONLY, 0, renv);
+        char buf[256]{};
+        rf.Read(buf, offset, sizeof(buf));
+        rf.Close();
+        return std::string(buf, sizeof(buf));
+    };
+
+    // Two independent reads at the same offset must return identical bytes.
+    EXPECT_EQ(read_at(0),    read_at(0));
+    EXPECT_EQ(read_at(1024), read_at(1024));
+    // Different offsets should (almost certainly) differ.
+    EXPECT_NE(read_at(0), read_at(512));
+
+    g_blackholeFS.unlink(kRandPath);
+}
+
+// ---------------------------------------------------------------------------
+// cfg_seedfile — config directive parsing
+// ---------------------------------------------------------------------------
+
+// Helper: write a one-line config to a temp file, run Configure(), return rc.
+static int runConfigure(XrdBlackholeOss* oss, const char* line) {
+    char tmp[] = "/tmp/bhtest_XXXXXX";
+    int fd = mkstemp(tmp);
+    write(fd, line, strlen(line));
+    write(fd, "\n", 1);
+    close(fd);
+    int rc = oss->Configure(tmp, XrdBlackholeEroute);
+    unlink(tmp);
+    return rc;
+}
+
+TEST_F(OssFileTest, SeedfileCreatesFile) {
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_1G.root 1G"));
+    EXPECT_TRUE(g_blackholeFS.exists("/test/cfg_1G.root"));
+    auto stub = g_blackholeFS.getStub("/test/cfg_1G.root");
+    ASSERT_NE(nullptr, stub);
+    EXPECT_EQ(1ULL * 1024 * 1024 * 1024, stub->m_size);
+    g_blackholeFS.unlink("/test/cfg_1G.root");
+}
+
+TEST_F(OssFileTest, SeedfileSuffixes) {
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_1K.root 1K"));
+    auto s1 = g_blackholeFS.getStub("/test/cfg_1K.root");
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_1M.root 1M"));
+    auto s2 = g_blackholeFS.getStub("/test/cfg_1M.root");
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_1T.root 1T"));
+    auto s3 = g_blackholeFS.getStub("/test/cfg_1T.root");
+    ASSERT_NE(nullptr, s1); EXPECT_EQ(1024ULL,                      s1->m_size);
+    ASSERT_NE(nullptr, s2); EXPECT_EQ(1024ULL * 1024,                s2->m_size);
+    ASSERT_NE(nullptr, s3); EXPECT_EQ(1024ULL * 1024 * 1024 * 1024, s3->m_size);
+    g_blackholeFS.unlink("/test/cfg_1K.root");
+    g_blackholeFS.unlink("/test/cfg_1M.root");
+    g_blackholeFS.unlink("/test/cfg_1T.root");
+}
+
+TEST_F(OssFileTest, SeedfileCountExpandsFiles) {
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/f_%02d.root 512M count=3"));
+    EXPECT_TRUE(g_blackholeFS.exists("/test/f_00.root"));
+    EXPECT_TRUE(g_blackholeFS.exists("/test/f_01.root"));
+    EXPECT_TRUE(g_blackholeFS.exists("/test/f_02.root"));
+    EXPECT_FALSE(g_blackholeFS.exists("/test/f_03.root"));
+    g_blackholeFS.unlink("/test/f_00.root");
+    g_blackholeFS.unlink("/test/f_01.root");
+    g_blackholeFS.unlink("/test/f_02.root");
+}
+
+TEST_F(OssFileTest, SeedfileTypeRandom) {
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_rand.root 4096 type=random"));
+    auto stub = g_blackholeFS.getStub("/test/cfg_rand.root");
+    ASSERT_NE(nullptr, stub);
+    EXPECT_EQ("random", stub->m_readtype);
+    g_blackholeFS.unlink("/test/cfg_rand.root");
+}
+
+TEST_F(OssFileTest, SeedfileTypeZerosIsDefault) {
+    ASSERT_EQ(0, runConfigure(s_oss, "blackhole.seedfile /test/cfg_z.root 4096"));
+    auto stub = g_blackholeFS.getStub("/test/cfg_z.root");
+    ASSERT_NE(nullptr, stub);
+    EXPECT_EQ("zeros", stub->m_readtype);
+    g_blackholeFS.unlink("/test/cfg_z.root");
 }
