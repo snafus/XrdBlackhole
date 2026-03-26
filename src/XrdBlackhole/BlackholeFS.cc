@@ -118,30 +118,28 @@ void BlackholeFS::close(const std::string& fname) {
   citr->second->m_isOpenWrite = false;
 }
 
-void BlackholeFS::create_defaults(const std::string & path) {
+void BlackholeFS::seed(const std::string& path, unsigned long long size,
+                       const std::string& readtype) {
   std::unique_lock<std::mutex> lock(m_mutexFD);
+  unsigned long long tmp = ++m_fd_last;
+  auto stub = std::make_shared<Stub>();
+  stub->m_special       = true;
+  stub->m_readtype      = readtype;
+  stub->m_size          = size;
+  stub->m_stat.st_size  = static_cast<off_t>(size);
+  stub->m_stat.st_dev   = 1;
+  stub->m_stat.st_ino   = tmp;
+  m_files.insert({path, stub});
+  XrdBlackholeEroute.Say("blackhole: seed: ", path.c_str());
+}
 
+void BlackholeFS::create_defaults(const std::string & path) {
   struct FileSpec { const char* suffix; unsigned long long size; };
   static const FileSpec specs[] = {
     { "/testfile_zeros_1MiB",   1ULL * 1024 * 1024 },
     { "/testfile_zeros_1GiB",   1ULL * 1024 * 1024 * 1024 },
     { "/testfile_zeros_10GiB", 10ULL * 1024 * 1024 * 1024 },
   };
-
-  for (const auto& spec : specs) {
-    unsigned long long tmp = ++m_fd_last;
-    auto stub = std::make_shared<Stub>();
-    stub->m_flags = 0;
-    stub->m_mode = 0;
-    stub->m_special = true;
-    stub->m_readtype = "zeros";
-    stub->m_size = spec.size;
-    stub->m_stat.st_size = static_cast<off_t>(spec.size);
-    // XRootD treats a file as "offline" when both st_dev and st_ino are zero.
-    stub->m_stat.st_dev = 1;
-    stub->m_stat.st_ino = tmp;
-    std::string fullpath = path + spec.suffix;
-    m_files.insert({fullpath, stub});
-    XrdBlackholeEroute.Say("blackhole: create_defaults: ", fullpath.c_str());
-  }
+  for (const auto& spec : specs)
+    seed(path + spec.suffix, spec.size, "zeros");
 }

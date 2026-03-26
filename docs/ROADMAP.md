@@ -134,15 +134,12 @@ Metrics exposed: `blackhole_transfers_total`, `blackhole_bytes_written_total`,
 `blackhole_bytes_read_total`, `blackhole_errors_total`,
 `blackhole_write_throughput_MiBs_avg`, `blackhole_read_throughput_MiBs_avg`.
 
-### 3.3 Configurable pre-seeded file set
+### 3.3 Configurable pre-seeded file set ✅ DONE
 
-Replace the hard-coded `testfile_zeros_{1MiB,1GiB,10GiB}` triple with a
-flexible directive:
-
-```
-blackhole.seedfile /test/4GiB   4294967296
-blackhole.seedfile /test/100GiB 107374182400
-```
+`blackhole.seedfile <path> <size>[K|M|G|T] [count=N] [type=zeros|random]`
+creates one or N pre-seeded stubs. `count>1` requires a printf integer format
+specifier in the path (e.g. `%04d`). `type=random` fills reads with a
+deterministic LCG seeded by `offset ^ st_ino`. `defaultspath` is unchanged.
 
 ### 3.4 Read throughput throttle
 

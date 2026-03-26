@@ -176,6 +176,52 @@ TEST(BlackholeFS, StubSurvivesUnlinkWhileHeld) {
 }
 
 // ---------------------------------------------------------------------------
+// seed()
+// ---------------------------------------------------------------------------
+
+TEST(BlackholeFS, SeedCreatesFile) {
+  BlackholeFS fs;
+  fs.seed("/data/file.root", 1024 * 1024);
+  EXPECT_TRUE(fs.exists("/data/file.root"));
+}
+
+TEST(BlackholeFS, SeedSetsSize) {
+  BlackholeFS fs;
+  fs.seed("/data/file.root", 4ULL * 1024 * 1024 * 1024);
+  auto stub = fs.getStub("/data/file.root");
+  ASSERT_NE(nullptr, stub);
+  EXPECT_EQ(4ULL * 1024 * 1024 * 1024, stub->m_size);
+  EXPECT_EQ(static_cast<off_t>(4ULL * 1024 * 1024 * 1024), stub->m_stat.st_size);
+}
+
+TEST(BlackholeFS, SeedMarkedSpecial) {
+  BlackholeFS fs;
+  fs.seed("/data/file.root", 1024);
+  EXPECT_TRUE(fs.getStub("/data/file.root")->m_special);
+}
+
+TEST(BlackholeFS, SeedDefaultReadtypeIsZeros) {
+  BlackholeFS fs;
+  fs.seed("/data/file.root", 1024);
+  EXPECT_EQ("zeros", fs.getStub("/data/file.root")->m_readtype);
+}
+
+TEST(BlackholeFS, SeedRandomReadtype) {
+  BlackholeFS fs;
+  fs.seed("/data/file.root", 1024, "random");
+  EXPECT_EQ("random", fs.getStub("/data/file.root")->m_readtype);
+}
+
+TEST(BlackholeFS, SeedNonZeroInoAndDev) {
+  BlackholeFS fs;
+  fs.seed("/data/file.root", 1024);
+  auto stub = fs.getStub("/data/file.root");
+  ASSERT_NE(nullptr, stub);
+  EXPECT_NE(0UL, (unsigned long)stub->m_stat.st_ino);
+  EXPECT_NE(0UL, (unsigned long)stub->m_stat.st_dev);
+}
+
+// ---------------------------------------------------------------------------
 // create_defaults()
 // ---------------------------------------------------------------------------
 
