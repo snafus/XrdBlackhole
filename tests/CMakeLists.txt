@@ -56,7 +56,8 @@ add_executable( test_ossfile
   ${SRC}/XrdBlackholeOssFile.cc
   ${SRC}/BlackholeFS.cc
   ${SRC}/XrdBlackholeStats.cc
-  test_OssFile.cc )
+  test_OssFile.cc
+  test_OssDir.cc )
 
 target_include_directories( test_ossfile PRIVATE ${TEST_INCLUDES} )
 # XrdOss / XrdOssDF vtables and default method bodies (Connect, pgRead, etc.)

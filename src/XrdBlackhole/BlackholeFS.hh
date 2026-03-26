@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <vector>
 
 #include <XrdOss/XrdOss.hh>
 #include "XrdSys/XrdSysError.hh"
@@ -35,6 +36,10 @@ class BlackholeFS {
     std::shared_ptr<Stub> getStub(const std::string& fname);
 
     int rename(const std::string& from, const std::string& to);
+
+    // Populate entries with the names (not full paths) of direct children of
+    // path.  Returns a snapshot taken under the lock; callers iterate freely.
+    void readdir(const std::string& path, std::vector<std::string>& entries);
 
     int unlink(const std::string& fname);
 

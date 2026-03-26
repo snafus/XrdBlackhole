@@ -22,6 +22,8 @@
 // or submit itself to any jurisdiction.
 //------------------------------------------------------------------------------
 
+#include <string.h>
+
 #include "XrdBlackhole/XrdBlackholeOssDir.hh"
 #include "XrdSys/XrdSysError.hh"
 #include "XrdOuc/XrdOucTrace.hh"
@@ -31,13 +33,32 @@ extern XrdSysError XrdBlackholeEroute;
 XrdBlackholeOssDir::XrdBlackholeOssDir(XrdBlackholeOss *bhOss) : m_bhOss(bhOss) {}
 
 int XrdBlackholeOssDir::Opendir(const char *path, XrdOucEnv &env) {
-  return -ENOTSUP;
+  m_prefix = path;
+  m_entries.clear();
+  m_pos = 0;
+  g_blackholeFS.readdir(m_prefix, m_entries);
+  BHTRACE("Opendir path=" << path << " entries=" << m_entries.size());
+  return XrdOssOK;
 }
 
 int XrdBlackholeOssDir::Close(long long *retsz) {
+  m_entries.clear();
+  m_pos = 0;
   return XrdOssOK;
 }
 
 int XrdBlackholeOssDir::Readdir(char *buff, int blen) {
-  return -ENOTSUP;
+  if (m_pos >= m_entries.size()) {
+    // Signal end-of-directory with an empty string.
+    buff[0] = '\0';
+    return XrdOssOK;
+  }
+  const std::string& name = m_entries[m_pos++];
+  if (static_cast<int>(name.size()) >= blen) {
+    XrdBlackholeEroute.Emsg("Readdir", ENAMETOOLONG, "entry too long for buffer",
+                            name.c_str());
+    return -ENAMETOOLONG;
+  }
+  memcpy(buff, name.c_str(), name.size() + 1);
+  return XrdOssOK;
 }

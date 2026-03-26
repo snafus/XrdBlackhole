@@ -68,17 +68,12 @@ missing, atomically replaces the destination (POSIX semantics), then
 re-inserts the stub under the new name and erases the old entry. Tested
 with 6 new GoogleTest cases.
 
-### 2.4 Directory listing (`Opendir` / `Readdir`)
+### 2.4 Directory listing (`Opendir` / `Readdir`) ✅ DONE
 
-Required for `xrdfs ls`, HTTP browse, and any client that stat-walks a tree.
-
-**Implementation:**
-- `Opendir(path)`: record path prefix in `XrdBlackholeOssDir`.
-- `Readdir(buff, blen)`: iterate `BlackholeFS::m_files` returning entries
-  whose path starts with the stored prefix and has no further `/` separators
-  (i.e. direct children only).
-- `BlackholeFS` needs a new `readdir(prefix, cookie)` method that holds the
-  lock during the scan.
+`BlackholeFS::readdir()` takes a snapshot of direct children under the lock.
+`XrdBlackholeOssDir::Opendir()` stores the snapshot; `Readdir()` iterates it,
+signalling end-of-directory with an empty buffer. Tested with 6 BlackholeFS
+unit tests and 12 OssDir integration tests.
 
 ### 2.5 Checksum responses
 

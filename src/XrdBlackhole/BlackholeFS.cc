@@ -16,6 +16,22 @@ std::shared_ptr<Stub> BlackholeFS::getStub(const std::string& fname) {
   return citr->second;
 }
 
+void BlackholeFS::readdir(const std::string& path,
+                          std::vector<std::string>& entries) {
+  // Normalise: strip trailing slash unless the path is exactly "/".
+  std::string prefix = path;
+  if (prefix.size() > 1 && prefix.back() == '/') prefix.pop_back();
+
+  std::unique_lock<std::mutex> lock(m_mutexFD);
+  for (const auto& kv : m_files) {
+    const std::string& fpath = kv.first;
+    auto slash = fpath.rfind('/');
+    std::string parent = (slash == 0) ? "/" : fpath.substr(0, slash);
+    if (parent != prefix) continue;
+    entries.push_back(fpath.substr(slash + 1));
+  }
+}
+
 int BlackholeFS::rename(const std::string& from, const std::string& to) {
   std::unique_lock<std::mutex> lock(m_mutexFD);
   auto src = m_files.find(from);
