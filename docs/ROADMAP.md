@@ -38,11 +38,11 @@ into a clean AlmaLinux 9 runtime. Runtime image is ~200 MB.
   package builds cleanly whether or not XrdHttp headers are present
 - `_empty_manifest_terminate_build 0` prevents build failure on empty metrics list
 
-### 1.5 Release versioning
+### 1.5 Release versioning ✅ DONE
 
-Adopt a formal `MAJOR.MINOR.PATCH` version in `VERSION_INFO` and tag releases.
-Populate `docs/ReleaseNotes.txt` with a `0.2.0` entry covering all fixes made
-to date.
+`docs/ReleaseNotes.txt` populated with v0.1.0, v0.2.0, and v0.3.0 entries.
+Spec `%changelog` updated. Version is derived from `git tag vX.Y.Z` via
+`genversion.sh`; `VERSION_INFO` is populated by `git archive` export-subst.
 
 ---
 
@@ -227,7 +227,7 @@ layer or separate build path.
 | Version | Phase | Key deliverables |
 |---|---|---|
 | 0.2.0 | 1 | ✅ CI (Rocky 8+9), ✅ multi-stage Dockerfile, ✅ packaging fixes, ✅ Prometheus metrics; unit tests + versioning still outstanding |
-| 0.3.0 | 1+2 | ✅ Unit tests (1.1), ✅ AIO read (2.1), ✅ ReadV (2.2), ✅ Rename (2.3); release versioning (1.5) still outstanding |
+| 0.3.0 | 1+2 | ✅ Unit tests (1.1), ✅ AIO read (2.1), ✅ ReadV (2.2), ✅ Rename (2.3), ✅ Release versioning (1.5) |
 | 0.4.0 | 2+3 | Opendir/Readdir (2.4), Checksum (2.5), StatFS accuracy (2.6), per-path QoS (3.1), seed config (3.3) |
 | 1.0.0 | 3 | Full Phase 3 complete; stable API; docs site |
 | 1.x | 4 | Persistent namespace, error injection, integration tests |
