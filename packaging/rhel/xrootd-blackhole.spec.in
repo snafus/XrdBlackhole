@@ -156,6 +156,10 @@ rm -rf $RPM_BUILD_ROOT
 # Changelog
 #-------------------------------------------------------------------------------
 %changelog
+* Thu Mar 26 2026 James <james@snafus> - 0.3.1-1
+- Fix ofs.osslib/xattrlib path (remove /xrootd/ subdir) and drop -5 suffix
+  (XRootD auto-appends version; explicit -5 caused libXrdBlackhole-5-5.so warning)
+
 * Thu Mar 26 2026 James <james@snafus> - 0.3.0-1
 - AIO read (Read(XrdSfsAio*)) and vectored read (ReadV) implemented
 - Rename with POSIX atomic-replace semantics (required for GFAL2 atomic upload)

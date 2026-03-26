@@ -2,6 +2,18 @@ XrdBlackhole Release Notes
 ==========================
 
 --------------------------------------------------------------------------------
+v0.3.1  (2026-03-26)
+--------------------------------------------------------------------------------
+
+Bug fixes:
+  - ofs.osslib and ofs.xattrlib directives now use the correct library path
+    (/usr/lib64/) and omit the -5 version suffix (XRootD appends it
+    automatically; including it caused a warning and a failed double-versioned
+    lookup: libXrdBlackhole-5-5.so). Affected: config files, README, header.
+  - http.exthandler retains the full libXrdBlackholeMetrics-5.so filename
+    (dlopen-loaded directly, no auto-versioning).
+
+--------------------------------------------------------------------------------
 v0.3.0  (2026-03-26)
 --------------------------------------------------------------------------------
 
