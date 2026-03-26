@@ -10,13 +10,14 @@
 #include "XrdBlackhole/XrdBlackholeOss.hh"
 
 // ---------------------------------------------------------------------------
-// Minimal XrdSfsAio implementation for testing the AIO write path.
+// Minimal XrdSfsAio implementation for testing the AIO read/write paths.
 // ---------------------------------------------------------------------------
 
 class MockAio : public XrdSfsAio {
 public:
+    bool readCallbackFired{false};
     bool writeCallbackFired{false};
-    void doneRead()  override {}
+    void doneRead()  override { readCallbackFired  = true; }
     void doneWrite() override { writeCallbackFired = true; }
     void Recycle()   override {}
 };
@@ -319,4 +320,152 @@ TEST_F(OssFileTest, FsyncReturnsEnotsup) {
 TEST_F(OssFileTest, FtruncateReturnsEnotsup) {
     OpenWrite();
     EXPECT_EQ(-ENOTSUP, f->Ftruncate(1024));
+}
+
+// ---------------------------------------------------------------------------
+// Read — AIO path: Read(XrdSfsAio*)
+// ---------------------------------------------------------------------------
+
+TEST_F(OssFileTest, ReadAioCallsDoneRead) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    MockAio aio;
+    char buf[1024]{};
+    aio.sfsAio.aio_buf    = buf;
+    aio.sfsAio.aio_nbytes = sizeof(buf);
+    aio.sfsAio.aio_offset = 0;
+    f->Read(&aio);
+    EXPECT_TRUE(aio.readCallbackFired);
+}
+
+TEST_F(OssFileTest, ReadAioReturnsOssOK) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    MockAio aio;
+    char buf[512]{};
+    aio.sfsAio.aio_buf    = buf;
+    aio.sfsAio.aio_nbytes = sizeof(buf);
+    aio.sfsAio.aio_offset = 0;
+    EXPECT_EQ(XrdOssOK, f->Read(&aio));
+}
+
+TEST_F(OssFileTest, ReadAioSetsResultToBytesRead) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    MockAio aio;
+    char buf[1024]{};
+    aio.sfsAio.aio_buf    = buf;
+    aio.sfsAio.aio_nbytes = sizeof(buf);
+    aio.sfsAio.aio_offset = 0;
+    f->Read(&aio);
+    EXPECT_EQ(static_cast<ssize_t>(sizeof(buf)), aio.Result);
+}
+
+TEST_F(OssFileTest, ReadAioAtEofSetsResultToZero) {
+    OpenWrite();
+    WriteAndReopen(1024);
+    MockAio aio;
+    char buf[256]{};
+    aio.sfsAio.aio_buf    = buf;
+    aio.sfsAio.aio_nbytes = sizeof(buf);
+    aio.sfsAio.aio_offset = 1024;  // exactly at EOF
+    f->Read(&aio);
+    EXPECT_EQ(0, aio.Result);
+}
+
+TEST_F(OssFileTest, ReadAioClampedAtFileEnd) {
+    OpenWrite();
+    WriteAndReopen(1024);
+    MockAio aio;
+    char buf[512]{};
+    aio.sfsAio.aio_buf    = buf;
+    aio.sfsAio.aio_nbytes = sizeof(buf);
+    aio.sfsAio.aio_offset = 768;   // 256 bytes remain
+    f->Read(&aio);
+    EXPECT_EQ(256, aio.Result);
+}
+
+TEST_F(OssFileTest, ReadAioFillsZeros) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    MockAio aio;
+    char buf[256];
+    memset(buf, 0xFF, sizeof(buf));
+    aio.sfsAio.aio_buf    = buf;
+    aio.sfsAio.aio_nbytes = sizeof(buf);
+    aio.sfsAio.aio_offset = 0;
+    f->Read(&aio);
+    for (auto b : buf) EXPECT_EQ('\0', b);
+}
+
+// ---------------------------------------------------------------------------
+// Read — vectored path: ReadV(XrdOucIOVec*, int)
+// ---------------------------------------------------------------------------
+
+TEST_F(OssFileTest, ReadVEmptyVecReturnsZero) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    EXPECT_EQ(0, f->ReadV(nullptr, 0));
+}
+
+TEST_F(OssFileTest, ReadVNegativeNReturnsZero) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    EXPECT_EQ(0, f->ReadV(nullptr, -1));
+}
+
+TEST_F(OssFileTest, ReadVSingleSegmentReturnsBytes) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    char buf[1024]{};
+    XrdOucIOVec vec[1];
+    vec[0].data   = buf;
+    vec[0].offset = 0;
+    vec[0].size   = 1024;
+    EXPECT_EQ(1024, f->ReadV(vec, 1));
+}
+
+TEST_F(OssFileTest, ReadVMultipleSegmentsReturnsTotalBytes) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    char buf[4096]{};
+    XrdOucIOVec vec[3];
+    vec[0].data   = buf;        vec[0].offset = 0;    vec[0].size = 1024;
+    vec[1].data   = buf + 1024; vec[1].offset = 1024; vec[1].size = 1024;
+    vec[2].data   = buf + 2048; vec[2].offset = 2048; vec[2].size = 1024;
+    EXPECT_EQ(3072, f->ReadV(vec, 3));
+}
+
+TEST_F(OssFileTest, ReadVClampsLastSegmentAtEof) {
+    OpenWrite();
+    WriteAndReopen(1024);
+    char buf[1024]{};
+    XrdOucIOVec vec[2];
+    vec[0].data   = buf;       vec[0].offset = 0;   vec[0].size = 512;
+    vec[1].data   = buf + 512; vec[1].offset = 768; vec[1].size = 512;  // 256 remain
+    EXPECT_EQ(512 + 256, f->ReadV(vec, 2));
+}
+
+TEST_F(OssFileTest, ReadVSkipsZeroSizeEntries) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    char buf[4096]{};
+    XrdOucIOVec vec[3];
+    vec[0].data   = buf;        vec[0].offset = 0;    vec[0].size = 512;
+    vec[1].data   = buf + 512;  vec[1].offset = 512;  vec[1].size = 0;   // skipped
+    vec[2].data   = buf + 1024; vec[2].offset = 1024; vec[2].size = 512;
+    EXPECT_EQ(1024, f->ReadV(vec, 3));
+}
+
+TEST_F(OssFileTest, ReadVFillsZeros) {
+    OpenWrite();
+    WriteAndReopen(4096);
+    char buf[256];
+    memset(buf, 0xFF, sizeof(buf));
+    XrdOucIOVec vec[1];
+    vec[0].data   = buf;
+    vec[0].offset = 0;
+    vec[0].size   = 256;
+    f->ReadV(vec, 1);
+    for (auto b : buf) EXPECT_EQ('\0', b);
 }

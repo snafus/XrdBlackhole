@@ -11,25 +11,11 @@ starting the next.
 
 *Goal: make it safe to accept contributions and prevent regressions.*
 
-### 1.1 Unit test framework ⬅ **recommended next**
+### 1.1 Unit test framework ✅ DONE
 
-No tests exist. This is the single highest-risk gap.
-
-**What to build:**
-- CMake test target (`BUILD_TESTS` flag already wired in `CMakeLists.txt`)
-- Test harness that instantiates `BlackholeFS` and `XrdBlackholeOssFile`
-  without a live XRootD process (mock `XrdSysError`, `XrdOucEnv`)
-- Tests covering:
-  - `open` / `close` / `unlink` lifecycle
-  - Concurrent open + unlink (shared_ptr lifetime)
-  - `Read()` at boundary offsets (0, size-1, size, size+1, negative)
-  - Write throttle sleep duration at sub-MiB and multi-MiB sizes
-  - `create_defaults` path generation
-  - `TransferStats` values recorded at `Close()`
-  - `StatManager` aggregate accumulation and thread safety
-
-**Framework recommendation:** GoogleTest (already a common choice in XRootD
-ecosystem; lightweight; good CMake integration).
+GoogleTest via CMake FetchContent. Three test executables: `test_blackholefs`,
+`test_stats`, `test_ossfile`. CI runs `ctest --output-on-failure` on Rocky 8
+and Rocky 9.
 
 ### 1.2 CI pipeline ✅ DONE
 
@@ -64,30 +50,16 @@ to date.
 
 *Goal: pass end-to-end tests with the tools the HEP community actually uses.*
 
-### 2.1 AIO read (`Read(XrdSfsAio*)`) ⬅ **recommended next**
+### 2.1 AIO read (`Read(XrdSfsAio*)`) ✅ DONE
 
-Currently returns `-ENOTSUP`. XRootD's scheduler uses AIO for parallel chunk
-reads — without it, large file reads fall back to sequential single-buffer
-calls.
+Delegates to the sync `Read(void*, off_t, size_t)` path, sets `aiop->Result`,
+calls `aiop->doneRead()`. Tested with 6 new GoogleTest cases.
 
-**Implementation:**
-```cpp
-int XrdBlackholeOssFile::Read(XrdSfsAio *aiop) {
-  size_t blen   = aiop->sfsAio.aio_nbytes;
-  off_t  offset = aiop->sfsAio.aio_offset;
-  void  *buff   = (void*)aiop->sfsAio.aio_buf;
-  aiop->Result  = Read(buff, offset, blen);  // reuse sync path
-  aiop->doneRead();
-  return XrdOssOK;
-}
-```
+### 2.2 Vectored read (`ReadV`) ✅ DONE
 
-### 2.2 Vectored read (`ReadV`) ⬅ **recommended next**
-
-Used by GFAL2 and XRootD's `xrdcopy --parallel` to pipeline chunk requests.
-
-**Implementation:** iterate the `XrdOucIOVec` array, calling the sync
-`Read(buff, offset, blen)` for each entry, accumulate total bytes.
+Iterates the `XrdOucIOVec` array, calls sync `Read()` per entry, accumulates
+total bytes. Skips zero-size entries; propagates per-segment errors. Tested
+with 7 new GoogleTest cases.
 
 ### 2.3 Rename ⬅ **recommended next**
 
@@ -255,7 +227,7 @@ layer or separate build path.
 | Version | Phase | Key deliverables |
 |---|---|---|
 | 0.2.0 | 1 | ✅ CI (Rocky 8+9), ✅ multi-stage Dockerfile, ✅ packaging fixes, ✅ Prometheus metrics; unit tests + versioning still outstanding |
-| 0.3.0 | 1+2 | Unit tests (1.1), AIO read (2.1), ReadV (2.2), Rename (2.3), release versioning (1.5) |
+| 0.3.0 | 1+2 | ✅ Unit tests (1.1), ✅ AIO read (2.1), ✅ ReadV (2.2); Rename (2.3) and release versioning (1.5) still outstanding |
 | 0.4.0 | 2+3 | Opendir/Readdir (2.4), Checksum (2.5), StatFS accuracy (2.6), per-path QoS (3.1), seed config (3.3) |
 | 1.0.0 | 3 | Full Phase 3 complete; stable API; docs site |
 | 1.x | 4 | Persistent namespace, error injection, integration tests |
