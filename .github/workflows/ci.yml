@@ -8,7 +8,6 @@ on:
 jobs:
   # ---------------------------------------------------------------------------
   # Build: compile the plugin and verify it links correctly.
-  # No unit tests exist yet (roadmap Phase 1.1); this job validates the build.
   # ---------------------------------------------------------------------------
   build:
     name: Build / ${{ matrix.os }}
@@ -69,13 +68,70 @@ jobs:
           retention-days: 7
 
   # ---------------------------------------------------------------------------
+  # Test: build with ENABLE_TESTS=ON, fetch GoogleTest, run ctest.
+  # Runs in parallel with the build job (different cmake flags; independent).
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test / ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: rocky8
+            image: rockylinux:8
+            crb: powertools
+          - os: rocky9
+            image: rockylinux:9
+            crb: crb
+
+    steps:
+      - name: Install git
+        run: dnf -y install git
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mark workspace as git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Install build dependencies
+        run: |
+          dnf -y update
+          dnf -y install dnf-plugins-core epel-release
+          dnf config-manager --set-enabled ${{ matrix.crb }}
+          dnf -y install \
+            gcc gcc-c++ make cmake git \
+            openssl-devel zlib-devel curl-devel libuuid-devel
+          curl -sSL https://xrootd.web.cern.ch/xrootd.repo \
+            -o /etc/yum.repos.d/xrootd.repo
+          dnf -y install \
+            xrootd-server-devel \
+            xrootd-private-devel \
+            xrootd-client-devel \
+            xrootd-libs
+
+      - name: Build with tests
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_TESTS=ON
+          cmake --build build -j$(nproc)
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure -j$(nproc)
+
+  # ---------------------------------------------------------------------------
   # RPM: build an SRPM via the packaging script then rebuild to binary RPMs.
-  # Runs only after the build job passes (avoids wasting time on known-broken code).
+  # Runs only after both build and test jobs pass.
   # ---------------------------------------------------------------------------
   rpm:
     name: RPM / ${{ matrix.os }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, test]
     container:
       image: ${{ matrix.image }}
     strategy:
