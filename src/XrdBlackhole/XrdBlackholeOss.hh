@@ -66,7 +66,7 @@ extern XrdOucTrace       XrdBlackholeTrace;
 //! target storage throughput. The plugin should be loaded via the
 //! ofs.osslib directive:
 //!
-//!   ofs.osslib /path/to/libXrdBlackhole-<N>.so
+//!   ofs.osslib /path/to/libXrdBlackhole.so
 //!
 //! Supported configuration directives:
 //!   blackhole.writespeedMiBps <N>   Throttle writes to N MiB/s.
