@@ -3,7 +3,9 @@ site_description: XRootD blackhole storage backend for benchmarking and integrat
 site_url: https://snafus.github.io/XrdBlackhole/
 repo_url: https://github.com/snafus/XrdBlackhole
 repo_name: snafus/XrdBlackhole
-edit_uri: edit/main/docs/
+edit_uri: edit/main/
+
+docs_dir: .
 
 theme:
   name: material
@@ -33,11 +35,15 @@ theme:
     - search.highlight
 
 nav:
-  - Home: index.md
-  - Configuration: configuration.md
-  - Architecture: ARCHITECTURE.md
-  - Roadmap: ROADMAP.md
-  - Release Notes: release-notes.md
+  - Home: docs/index.md
+  - Configuration: docs/configuration.md
+  - Architecture: docs/ARCHITECTURE.md
+  - Roadmap: docs/ROADMAP.md
+  - Changelog: CHANGELOG.md
+
+exclude_docs: |
+  ReleaseNotes.txt
+  PreReleaseNotes.txt
 
 markdown_extensions:
   - admonition

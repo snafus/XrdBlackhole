@@ -40,7 +40,7 @@ into a clean AlmaLinux 9 runtime. Runtime image is ~200 MB.
 
 ### 1.5 Release versioning ✅ DONE
 
-`docs/ReleaseNotes.txt` populated with v0.1.0, v0.2.0, and v0.3.0 entries.
+`CHANGELOG.md` populated with v0.1.0, v0.2.0, and v0.3.0 entries.
 Spec `%changelog` updated. Version is derived from `git tag vX.Y.Z` via
 `genversion.sh`; `VERSION_INFO` is populated by `git archive` export-subst.
 
@@ -234,4 +234,4 @@ discuss the approach. All PRs must:
 1. Include or update unit tests for changed behaviour
 2. Pass CI (build + test)
 3. Follow the commit convention (`fix(oss):`, `feat(oss):`, etc.)
-4. Update `docs/ReleaseNotes.txt`
+4. Update `CHANGELOG.md`
