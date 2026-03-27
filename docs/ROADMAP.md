@@ -152,11 +152,11 @@ to simulate slow storage on reads.
 `Truncate` is currently `-ENOTSUP`. Implement by resizing `Stub::m_size` and
 `m_stat.st_size` under the `BlackholeFS` lock.
 
-### 3.6 Documentation site
+### 3.6 Documentation site ✅ DONE
 
-Publish the `README.md` and `docs/` tree as a GitHub Pages site using
-MkDocs or Sphinx. Target audience: storage engineers at WLCG sites who want
-to run benchmarks without provisioning real storage.
+MkDocs Material site built from `docs/` and deployed to GitHub Pages via
+a GitHub Actions workflow on push to `main`. Pages: Home (quick start),
+Configuration (full directive reference), Architecture, Roadmap, Release Notes.
 
 ---
 

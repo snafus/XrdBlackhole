@@ -25,9 +25,9 @@ xrootd process
 │       └── ofs.osslib  ←── XrdBlackholeOss  (replaces XrdOssSys)
 │               │
 │               ├── newFile()  → XrdBlackholeOssFile   (one per open fd)
-│               └── newDir()   → XrdBlackholeOssDir    (stub, all -ENOTSUP)
+│               └── newDir()   → XrdBlackholeOssDir    (Opendir/Readdir from in-memory snapshot)
 │
-└── ofs.xattrlib  ←── XrdBlackholeXAttr  (stub, all -ENOTSUP)
+└── ofs.xattrlib  ←── XrdBlackholeXAttr  (stub; all xattr ops -ENOTSUP)
 ```
 
 XRootD loads the plugin at startup via the `ofs.osslib` directive. The plugin
@@ -84,8 +84,9 @@ Config directives parsed in `Configure()`:
 | Directive | Type | Default | Effect |
 |---|---|---|---|
 | `blackhole.writespeedMiBps` | `unsigned long` | 0 (unlimited) | Throttle write throughput |
-| `blackhole.defaultspath` | `string` | (none) | Pre-seed read-only test files |
-| `blackhole.readtype` | `string` | `zeros` | Read fill pattern (only `zeros` implemented) |
+| `blackhole.defaultspath` | `string` | (none) | Pre-seed three fixed zero-filled test files |
+| `blackhole.seedfile` | `path size [count=N] [type=…]` | (none) | Pre-seed one or more stubs with custom path, size, and fill pattern |
+| `blackhole.readtype` | `string` | `zeros` | Default read fill pattern (`zeros` only) |
 
 ---
 
@@ -207,20 +208,33 @@ Client  ──xrootd protocol──►  XrdOfs  ──►  XrdBlackholeOssFile::
 
 ---
 
-## Pre-Seeded Files (`defaultspath`)
+## Pre-Seeded Files
 
-When `blackhole.defaultspath /test` is configured, `BlackholeFS::create_defaults()`
-inserts three read-only `Stub` objects at startup:
+Two config mechanisms create stubs at startup that are readable immediately
+without any prior write step. Both set `m_special = true` and
+`m_isOpenWrite = false`.
+
+### `blackhole.defaultspath`
+
+`BlackholeFS::create_defaults()` inserts three fixed zero-filled stubs:
 
 | Path | Size |
 |---|---|
-| `/test/testfile_zeros_1MiB` | 1 MiB |
-| `/test/testfile_zeros_1GiB` | 1 GiB |
-| `/test/testfile_zeros_10GiB` | 10 GiB |
+| `<path>/testfile_zeros_1MiB` | 1 MiB |
+| `<path>/testfile_zeros_1GiB` | 1 GiB |
+| `<path>/testfile_zeros_10GiB` | 10 GiB |
 
-These stubs are marked `m_special = true` and `m_isOpenWrite = false`. They
-are readable without a prior write and survive across server restart (within
-the same process lifetime).
+### `blackhole.seedfile`
+
+`BlackholeFS::seed(path, size, readtype)` creates a single stub with:
+- `m_size` and `m_stat.st_size` set to the configured size
+- `m_readtype` set to `"zeros"` or `"random"`
+- For `type=random`: reads use a deterministic LCG seeded by
+  `offset ^ st_ino` — the same offset always yields the same bytes
+
+`cfg_seedfile()` in `XrdBlackholeOss::Configure()` parses the directive,
+expands `count=N` into N calls to `seed()`, and validates that `count>1`
+requires a `printf` format specifier in the path.
 
 ---
 
@@ -257,13 +271,9 @@ Enable at runtime: `xrootd.trace all` in the XRootD config, or set
 
 | Limitation | Impact | Roadmap fix |
 |---|---|---|
-| No AIO read | Clients fall back to sync read; lower parallel throughput | Phase 2 |
-| No ReadV | Sequential read-only; WAN copy tools less efficient | Phase 2 |
-| No Rename | GFAL2 atomic upload fails | Phase 2 |
-| No Opendir/Readdir | `xrdfs ls` and HTTP browse fail | Phase 2 |
-| No Truncate | Some workflows can't resize files | Phase 3 |
-| Fixed pre-seeded file sizes | Only 1 MiB / 1 GiB / 10 GiB | Phase 3 |
-| No checksum responses | Pipelines requiring checksum verification fail | Phase 2 |
-| No per-path throttle | Single global speed limit | Phase 3 |
-| No unit tests | Regressions not caught automatically | Phase 1 |
-| Stub state not persistent | Namespace lost on server restart | Phase 4 |
+| No checksum responses | Pipelines requiring checksum verification fail | Phase 2 (2.5) |
+| StatFS reports zero free space | FTS3 space-token checks may fail | Phase 2 (2.6) |
+| No Truncate | Some workflows can't resize files | Phase 3 (3.5) |
+| No per-path throttle | Single global write speed limit | Phase 3 (3.1) |
+| No read throughput throttle | Read speed always at memory speed | Phase 3 (3.4) |
+| Stub state not persistent | Namespace lost on server restart | Phase 4 (4.1) |
