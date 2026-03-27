@@ -40,7 +40,7 @@ into a clean AlmaLinux 9 runtime. Runtime image is ~200 MB.
 
 ### 1.5 Release versioning ✅ DONE
 
-`docs/ReleaseNotes.txt` populated with v0.1.0, v0.2.0, and v0.3.0 entries.
+`CHANGELOG.md` populated with v0.1.0, v0.2.0, and v0.3.0 entries.
 Spec `%changelog` updated. Version is derived from `git tag vX.Y.Z` via
 `genversion.sh`; `VERSION_INFO` is populated by `git archive` export-subst.
 
@@ -152,11 +152,11 @@ to simulate slow storage on reads.
 `Truncate` is currently `-ENOTSUP`. Implement by resizing `Stub::m_size` and
 `m_stat.st_size` under the `BlackholeFS` lock.
 
-### 3.6 Documentation site
+### 3.6 Documentation site ✅ DONE
 
-Publish the `README.md` and `docs/` tree as a GitHub Pages site using
-MkDocs or Sphinx. Target audience: storage engineers at WLCG sites who want
-to run benchmarks without provisioning real storage.
+MkDocs Material site built from `docs/` and deployed to GitHub Pages via
+a GitHub Actions workflow on push to `main`. Pages: Home (quick start),
+Configuration (full directive reference), Architecture, Roadmap, Release Notes.
 
 ---
 
@@ -234,4 +234,4 @@ discuss the approach. All PRs must:
 1. Include or update unit tests for changed behaviour
 2. Pass CI (build + test)
 3. Follow the commit convention (`fix(oss):`, `feat(oss):`, etc.)
-4. Update `docs/ReleaseNotes.txt`
+4. Update `CHANGELOG.md`
