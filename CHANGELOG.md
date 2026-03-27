@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+---
+
+## [0.3.2] - 2026-03-27
+
 ### Added
 - Opendir / Readdir: `BlackholeFS::readdir()` takes a snapshot of direct
   children under the lock. `XrdBlackholeOssDir::Opendir()` stores the

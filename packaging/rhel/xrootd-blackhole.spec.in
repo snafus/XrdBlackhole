@@ -156,6 +156,15 @@ rm -rf $RPM_BUILD_ROOT
 # Changelog
 #-------------------------------------------------------------------------------
 %changelog
+* Fri Mar 27 2026 James <james@snafus> - 0.3.2-1
+- Opendir/Readdir: in-memory directory snapshot; enables xrdfs ls and HTTP browse
+- blackhole.seedfile directive: pre-seed stubs with configurable size, count, and
+  read pattern (zeros or deterministic LCG random for checksum verification)
+- Fix XrdOucStream env parameter causing all config directives to be silently
+  skipped in unit-test context (XRDINSTANCE unset + non-null XrdOucEnv)
+- MkDocs Material documentation site deployed to GitHub Pages
+- 29 new unit tests (readdir, seed, OssDir, cfg_seedfile)
+
 * Thu Mar 26 2026 James <james@snafus> - 0.3.1-1
 - Fix ofs.osslib/xattrlib path (remove /xrootd/ subdir) and drop -5 suffix
   (XRootD auto-appends version; explicit -5 caused libXrdBlackhole-5-5.so warning)
