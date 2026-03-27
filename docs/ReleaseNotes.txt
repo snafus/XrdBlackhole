@@ -2,6 +2,30 @@ XrdBlackhole Release Notes
 ==========================
 
 --------------------------------------------------------------------------------
+v0.4.0  (unreleased)
+--------------------------------------------------------------------------------
+
+New features:
+  - Opendir / Readdir: BlackholeFS::readdir() takes a snapshot of direct
+    children under the lock. XrdBlackholeOssDir::Opendir() stores the
+    snapshot; Readdir() iterates it, signalling end-of-directory with an
+    empty name. Enables xrdfs ls and HTTP directory browse.
+  - blackhole.seedfile directive: create one or more pre-seeded stubs with
+    full control over path, size (K/M/G/T suffix), count (count=N with
+    printf format in path), and content type (type=zeros|random).
+    type=random fills reads with a deterministic LCG stream seeded by
+    offset ^ st_ino, enabling client-side checksum verification.
+
+Testing:
+  - 29 new tests: 6 readdir() and 6 seed() tests in test_BlackholeFS;
+    12 OssDir integration tests in test_OssDir; 5 cfg_seedfile
+    config-parsing tests in test_OssFile.
+  - Fixed XrdOucStream::GetMyFirstWord() silent-skip bug in test context:
+    passing a non-null XrdOucEnv* with a null XRDINSTANCE caused all
+    non-set/setenv config directives to be skipped silently. Fixed by
+    passing nullptr for the env parameter.
+
+--------------------------------------------------------------------------------
 v0.3.1  (2026-03-26)
 --------------------------------------------------------------------------------
 

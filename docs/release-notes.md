@@ -19,9 +19,9 @@ New features:
 
 Testing:
 
-- 18 new unit tests: 6 `rename()` tests, 6 `readdir()` tests, 6 `seed()`
-  tests in `test_BlackholeFS`; 12 `OssDir` integration tests in `test_OssDir`;
-  5 `cfg_seedfile` config-parsing tests in `test_OssFile`.
+- 29 new tests: 6 `readdir()` and 6 `seed()` tests in `test_BlackholeFS`;
+  12 `OssDir` integration tests in `test_OssDir`; 5 `cfg_seedfile`
+  config-parsing tests in `test_OssFile`.
 - Fixed `XrdOucStream::GetMyFirstWord()` silent-skip bug in test context:
   passing a non-null `XrdOucEnv*` with a null `XRDINSTANCE` caused all
   non-`set`/`setenv` config directives to be skipped silently. Fixed by
