@@ -1,0 +1,1284 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="XRootD blackhole storage backend for benchmarking and integration testing">
+      
+      
+      
+        <link rel="canonical" href="https://snafus.github.io/XrdBlackhole/ARCHITECTURE/">
+      
+      
+        <link rel="prev" href="../configuration/">
+      
+      
+        <link rel="next" href="../ROADMAP/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Architecture - XrdBlackhole</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xrdblackhole-architecture-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="XrdBlackhole" class="md-header__button md-logo" aria-label="XrdBlackhole" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            XrdBlackhole
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/snafus/XrdBlackhole" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    snafus/XrdBlackhole
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="XrdBlackhole" class="md-nav__button md-logo" aria-label="XrdBlackhole" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    XrdBlackhole
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/snafus/XrdBlackhole" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    snafus/XrdBlackhole
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xrootd-plugin-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XRootD Plugin Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Map
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Component Map">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blackholefs-blackholefshhcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BlackholeFS (BlackholeFS.hh/.cc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xrdblackholeoss-xrdblackholeosshhcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XrdBlackholeOss (XrdBlackholeOss.hh/.cc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xrdblackholeossfile-xrdblackholeossfilehhcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XrdBlackholeOssFile (XrdBlackholeOssFile.hh/.cc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xrdblackholestatsmanager-xrdblackholestatshhcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XrdBlackholeStatsManager (XrdBlackholeStats.hh/.cc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thread-safety-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread Safety Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#write-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write Data Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read Data Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pre-seeded-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-Seeded Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pre-Seeded Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blackholedefaultspath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blackhole.defaultspath
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blackholeseedfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blackhole.seedfile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#global-singletons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Singletons
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tracing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tracing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xrootd-plugin-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XRootD Plugin Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Map
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Component Map">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blackholefs-blackholefshhcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BlackholeFS (BlackholeFS.hh/.cc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xrdblackholeoss-xrdblackholeosshhcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XrdBlackholeOss (XrdBlackholeOss.hh/.cc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xrdblackholeossfile-xrdblackholeossfilehhcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XrdBlackholeOssFile (XrdBlackholeOssFile.hh/.cc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xrdblackholestatsmanager-xrdblackholestatshhcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XrdBlackholeStatsManager (XrdBlackholeStats.hh/.cc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thread-safety-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread Safety Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#write-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write Data Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read Data Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pre-seeded-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-Seeded Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pre-Seeded Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#blackholedefaultspath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blackhole.defaultspath
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blackholeseedfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        blackhole.seedfile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#global-singletons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Singletons
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tracing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tracing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="xrdblackhole-architecture-reference">XrdBlackhole — Architecture Reference<a class="headerlink" href="#xrdblackhole-architecture-reference" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>XrdBlackhole is an XRootD <strong>OSS (Object Storage System) plugin</strong>. It replaces
+the default POSIX storage layer with an in-memory virtual filesystem whose
+write path discards all data and whose read path synthesises zero-filled
+responses. No data is ever persisted to disk.</p>
+<p>Primary use cases:
+- Storage throughput benchmarking (saturate the network without disk I/O)
+- Protocol and middleware correctness testing (GFAL2, XRootD clients, FTS3)
+- CI pipeline testing requiring a live XRootD endpoint without storage</p>
+<hr />
+<h2 id="xrootd-plugin-architecture">XRootD Plugin Architecture<a class="headerlink" href="#xrootd-plugin-architecture" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>xrootd process
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── XrdSfs  (XRootD filesystem abstraction)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   └── XrdOfs  (default OFS layer — handles protocol, auth, permissions)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│       │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│       └── ofs.osslib  ←── XrdBlackholeOss  (replaces XrdOssSys)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│               │
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│               ├── newFile()  → XrdBlackholeOssFile   (one per open fd)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│               └── newDir()   → XrdBlackholeOssDir    (Opendir/Readdir from in-memory snapshot)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>└── ofs.xattrlib  ←── XrdBlackholeXAttr  (stub; all xattr ops -ENOTSUP)
+</code></pre></div>
+<p>XRootD loads the plugin at startup via the <code>ofs.osslib</code> directive. The plugin
+exports the C symbol <code>XrdOssGetStorageSystem</code>, which returns an <code>XrdOss*</code>.
+XRootD then calls all storage operations through that interface.</p>
+<hr />
+<h2 id="component-map">Component Map<a class="headerlink" href="#component-map" title="Permanent link">&para;</a></h2>
+<h3 id="blackholefs-blackholefshhcc"><code>BlackholeFS</code>  (<code>BlackholeFS.hh/.cc</code>)<a class="headerlink" href="#blackholefs-blackholefshhcc" title="Permanent link">&para;</a></h3>
+<p>The in-memory virtual filesystem. Owns all <code>Stub</code> objects.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>BlackholeFS
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── m_files  :  map&lt;string, shared_ptr&lt;Stub&gt;&gt;   // path → file metadata
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>├── m_fd_last : uint64                           // monotonic fd counter
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>└── m_mutexFD : mutex                            // serialises all map ops
+</code></pre></div>
+<p><strong><code>Stub</code></strong> — one per file in the namespace:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">struct</span><span class="w"> </span><span class="nc">Stub</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="kt">bool</span><span class="w">   </span><span class="n">m_isOpen</span><span class="p">;</span><span class="w">           </span><span class="c1">// currently open</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="kt">bool</span><span class="w">   </span><span class="n">m_isOpenWrite</span><span class="p">;</span><span class="w">      </span><span class="c1">// opened for write</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="kt">int</span><span class="w">    </span><span class="n">m_flags</span><span class="p">,</span><span class="w"> </span><span class="n">m_mode</span><span class="p">;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="kt">size_t</span><span class="w"> </span><span class="n">m_size</span><span class="p">;</span><span class="w">             </span><span class="c1">// logical size (updated on close)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="k">struct</span><span class="w"> </span><span class="nc">stat</span><span class="w"> </span><span class="n">m_stat</span><span class="p">;</span><span class="w">        </span><span class="c1">// returned by Stat()/Fstat()</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">m_fd</span><span class="p">;</span><span class="w">             </span><span class="c1">// unique inode / fd value</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="kt">bool</span><span class="w">   </span><span class="n">m_special</span><span class="p">;</span><span class="w">          </span><span class="c1">// true for defaultspath pre-seeded files</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="n">string</span><span class="w"> </span><span class="n">m_readtype</span><span class="p">;</span><span class="w">         </span><span class="c1">// &quot;zeros&quot; (only value supported)</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="n">map</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span><span class="n">string</span><span class="o">&gt;</span><span class="w"> </span><span class="n">m_checksums</span><span class="p">;</span><span class="w"> </span><span class="c1">// populated in future</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">};</span>
+</code></pre></div></p>
+<p>All <code>BlackholeFS</code> methods acquire <code>m_mutexFD</code> for their <strong>entire duration</strong>
+to prevent TOCTOU races between existence checks and map mutations.</p>
+<hr />
+<h3 id="xrdblackholeoss-xrdblackholeosshhcc"><code>XrdBlackholeOss</code>  (<code>XrdBlackholeOss.hh/.cc</code>)<a class="headerlink" href="#xrdblackholeoss-xrdblackholeosshhcc" title="Permanent link">&para;</a></h3>
+<p>Implements <code>XrdOss</code>. Entry point for the plugin.</p>
+<p>Responsibilities:
+- Parse config directives from the XRootD config file
+- Implement directory-level operations (<code>Mkdir</code>, <code>Remdir</code>, <code>Stat</code>, <code>Unlink</code>, …)
+- Factory for <code>XrdBlackholeOssFile</code> and <code>XrdBlackholeOssDir</code> handles
+- Log effective config on startup; call <code>g_statsManager.logSummary()</code> on shutdown</p>
+<p>Config directives parsed in <code>Configure()</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Type</th>
+<th>Default</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>blackhole.writespeedMiBps</code></td>
+<td><code>unsigned long</code></td>
+<td>0 (unlimited)</td>
+<td>Throttle write throughput</td>
+</tr>
+<tr>
+<td><code>blackhole.defaultspath</code></td>
+<td><code>string</code></td>
+<td>(none)</td>
+<td>Pre-seed three fixed zero-filled test files</td>
+</tr>
+<tr>
+<td><code>blackhole.seedfile</code></td>
+<td><code>path size [count=N] [type=…]</code></td>
+<td>(none)</td>
+<td>Pre-seed one or more stubs with custom path, size, and fill pattern</td>
+</tr>
+<tr>
+<td><code>blackhole.readtype</code></td>
+<td><code>string</code></td>
+<td><code>zeros</code></td>
+<td>Default read fill pattern (<code>zeros</code> only)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="xrdblackholeossfile-xrdblackholeossfilehhcc"><code>XrdBlackholeOssFile</code>  (<code>XrdBlackholeOssFile.hh/.cc</code>)<a class="headerlink" href="#xrdblackholeossfile-xrdblackholeossfilehhcc" title="Permanent link">&para;</a></h3>
+<p>Implements <code>XrdOssDF</code>. One instance per open file descriptor.</p>
+<p><strong>Lifecycle:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>newFile(tident)
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    │
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    ▼
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>Open(path, flags, mode, env)
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    ├── g_blackholeFS.open(path, flags, mode)   // creates/finds Stub
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    ├── m_stub = g_blackholeFS.getStub(path)    // shared_ptr keeps Stub alive
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    └── initialise atomic counters + m_stats
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    │  (zero or more I/O calls — may be concurrent)
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    ▼
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>Read(buff, offset, blen)          Write(buff, offset, blen)
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    ├── bounds-check offset            ├── optional throttle sleep
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    ├── memset(buff, 0, n)             └── m_writeBytes += blen  (atomic)
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    └── m_readBytes += n   (atomic)
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>Close(retsz)
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    ├── update Stub size from m_writeBytes + m_writeBytesAIO
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    ├── populate TransferStats from atomics
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    ├── g_statsManager.recordTransfer(m_stats)
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    ├── g_blackholeFS.close(path)
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    └── m_stub.reset()
+</code></pre></div>
+<p><strong>Atomic counters</strong> (all <code>std::atomic</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Updated by</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>m_writeBytes</code></td>
+<td><code>Write(sync)</code></td>
+<td>Sync write bytes</td>
+</tr>
+<tr>
+<td><code>m_writeBytesAIO</code></td>
+<td><code>Write(AIO)</code></td>
+<td>AIO write bytes</td>
+</tr>
+<tr>
+<td><code>m_readBytes</code></td>
+<td><code>Read(sync)</code></td>
+<td>Read bytes</td>
+</tr>
+<tr>
+<td><code>m_writeOps</code></td>
+<td><code>Write(sync)</code></td>
+<td>Sync write call count</td>
+</tr>
+<tr>
+<td><code>m_writeAioOps</code></td>
+<td><code>Write(AIO)</code></td>
+<td>AIO write call count</td>
+</tr>
+<tr>
+<td><code>m_readOps</code></td>
+<td><code>Read(sync)</code></td>
+<td>Read call count</td>
+</tr>
+<tr>
+<td><code>m_errors</code></td>
+<td><code>Read</code>, <code>Read(pre)</code></td>
+<td>Error count</td>
+</tr>
+</tbody>
+</table>
+<p>All counters are reset to zero in <code>Open()</code> and read into <code>TransferStats</code>
+exactly once in <code>Close()</code>, so <code>recordTransfer()</code> always sees a consistent
+snapshot.</p>
+<hr />
+<h3 id="xrdblackholestatsmanager-xrdblackholestatshhcc"><code>XrdBlackholeStatsManager</code>  (<code>XrdBlackholeStats.hh/.cc</code>)<a class="headerlink" href="#xrdblackholestatsmanager-xrdblackholestatshhcc" title="Permanent link">&para;</a></h3>
+<p>Global singleton (<code>g_statsManager</code>). Thread-safe via <code>m_mutex</code>.</p>
+<p><strong><code>recordTransfer(TransferStats)</code></strong> — called from <code>Close()</code>:
+- Logs a <code>[XFER]</code> line with path, op, bytes, duration, throughput, op counts
+- Accumulates global aggregate counters under lock</p>
+<p><strong><code>logSummary()</code></strong> — called from <code>~XrdBlackholeOss()</code>:
+- Logs one <code>[STATS]</code> line with lifetime totals and averages</p>
+<p>Log format:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>[XFER] path=/foo/bar op=write written=1073741824 read=0 duration_us=1048576
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>       write_MiBs=1024.00 read_MiBs=0.00 write_ops=256 aio_ops=0 read_ops=0 errors=0
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>[STATS] transfers=42 written=42949672960 read=0 errors=0
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        avg_write_MiBs=987.23 avg_read_MiBs=0.00
+</code></pre></div></p>
+<hr />
+<h2 id="thread-safety-model">Thread Safety Model<a class="headerlink" href="#thread-safety-model" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Protected by</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BlackholeFS::m_files</code></td>
+<td><code>BlackholeFS::m_mutexFD</code></td>
+<td>Whole-operation lock (no TOCTOU)</td>
+</tr>
+<tr>
+<td><code>Stub</code> fields</td>
+<td>Not locked</td>
+<td>Mutated only within <code>BlackholeFS</code> lock or by the single owning file handle</td>
+</tr>
+<tr>
+<td><code>XrdBlackholeOssFile</code> byte/op counters</td>
+<td><code>std::atomic</code></td>
+<td>Lock-free concurrent R/W</td>
+</tr>
+<tr>
+<td><code>XrdBlackholeStatsManager</code> aggregates</td>
+<td><code>m_mutex</code></td>
+<td>Per-transfer lock</td>
+</tr>
+<tr>
+<td><code>Stub</code> lifetime</td>
+<td><code>shared_ptr</code> ref count</td>
+<td>File handle keeps Stub alive through Close even if unlinked concurrently</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key design decision</strong>: <code>getStub()</code> returns <code>shared_ptr&lt;Stub&gt;</code>. This means
+that even if <code>unlink()</code> removes the entry from the map between the caller's
+null-check and the first field access, the <code>Stub</code> object itself is not
+destroyed until the last <code>shared_ptr</code> drops — preventing use-after-free.</p>
+<hr />
+<h2 id="write-data-flow">Write Data Flow<a class="headerlink" href="#write-data-flow" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Client  ──xrootd protocol──►  XrdOfs  ──►  XrdBlackholeOssFile::Write()
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>                                                    │
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>                              ┌─────────────────────┘
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>                              │  if writespeedMiBps &gt; 0:
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>                              │    sleep( blen / speed )   // µs precision
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>                              │
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>                              │  m_writeBytes += blen      // atomic
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>                              │  m_writeOps++              // atomic
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>                              │
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>                              └──► return blen             // success, data discarded
+</code></pre></div>
+<h2 id="read-data-flow">Read Data Flow<a class="headerlink" href="#read-data-flow" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>Client  ──xrootd protocol──►  XrdOfs  ──►  XrdBlackholeOssFile::Read()
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>                                                    │
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>                              ┌─────────────────────┘
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>                              │  if offset &gt;= m_size: return 0   // EOF guard
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>                              │  n = min(blen, m_size - offset)
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>                              │  memset(buff, 0, n)              // synthesise zeros
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>                              │  m_readBytes += n                // atomic
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>                              │  m_readOps++                     // atomic
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>                              └──► return n
+</code></pre></div>
+<hr />
+<h2 id="pre-seeded-files">Pre-Seeded Files<a class="headerlink" href="#pre-seeded-files" title="Permanent link">&para;</a></h2>
+<p>Two config mechanisms create stubs at startup that are readable immediately
+without any prior write step. Both set <code>m_special = true</code> and
+<code>m_isOpenWrite = false</code>.</p>
+<h3 id="blackholedefaultspath"><code>blackhole.defaultspath</code><a class="headerlink" href="#blackholedefaultspath" title="Permanent link">&para;</a></h3>
+<p><code>BlackholeFS::create_defaults()</code> inserts three fixed zero-filled stubs:</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;path&gt;/testfile_zeros_1MiB</code></td>
+<td>1 MiB</td>
+</tr>
+<tr>
+<td><code>&lt;path&gt;/testfile_zeros_1GiB</code></td>
+<td>1 GiB</td>
+</tr>
+<tr>
+<td><code>&lt;path&gt;/testfile_zeros_10GiB</code></td>
+<td>10 GiB</td>
+</tr>
+</tbody>
+</table>
+<h3 id="blackholeseedfile"><code>blackhole.seedfile</code><a class="headerlink" href="#blackholeseedfile" title="Permanent link">&para;</a></h3>
+<p><code>BlackholeFS::seed(path, size, readtype)</code> creates a single stub with:
+- <code>m_size</code> and <code>m_stat.st_size</code> set to the configured size
+- <code>m_readtype</code> set to <code>"zeros"</code> or <code>"random"</code>
+- For <code>type=random</code>: reads use a deterministic LCG seeded by
+  <code>offset ^ st_ino</code> — the same offset always yields the same bytes</p>
+<p><code>cfg_seedfile()</code> in <code>XrdBlackholeOss::Configure()</code> parses the directive,
+expands <code>count=N</code> into N calls to <code>seed()</code>, and validates that <code>count&gt;1</code>
+requires a <code>printf</code> format specifier in the path.</p>
+<hr />
+<h2 id="global-singletons">Global Singletons<a class="headerlink" href="#global-singletons" title="Permanent link">&para;</a></h2>
+<p>Declared in <code>XrdBlackholeOss.hh</code>, defined in <code>XrdBlackholeOss.cc</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">BlackholeFS</span><span class="w">              </span><span class="n">g_blackholeFS</span><span class="p">;</span><span class="w">    </span><span class="c1">// in-memory namespace</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">XrdSysError</span><span class="w">              </span><span class="n">XrdBlackholeEroute</span><span class="p">;</span><span class="w"> </span><span class="c1">// XRootD logger</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">XrdOucTrace</span><span class="w">              </span><span class="n">XrdBlackholeTrace</span><span class="p">;</span><span class="w">  </span><span class="c1">// trace-gated logger</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">XrdBlackholeStatsManager</span><span class="w"> </span><span class="n">g_statsManager</span><span class="p">;</span><span class="w">    </span><span class="c1">// defined in XrdBlackholeStats.cc</span>
+</code></pre></div>
+<hr />
+<h2 id="tracing">Tracing<a class="headerlink" href="#tracing" title="Permanent link">&para;</a></h2>
+<p>Trace-gated I/O logging uses the <code>BHTRACE(expr)</code> macro:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="cp">#define BHTRACE(x) \</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="cp">  if (XrdBlackholeTrace.What &amp; BHTRACE_IO) { \</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="cp">    std::ostringstream _bh_oss; _bh_oss &lt;&lt; x; \</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="cp">    XrdBlackholeEroute.Say(_bh_oss.str().c_str()); }</span>
+</code></pre></div>
+<p>Enable at runtime: <code>xrootd.trace all</code> in the XRootD config, or set
+<code>XrdBlackholeTrace.What |= BHTRACE_IO</code> programmatically.</p>
+<hr />
+<h2 id="known-limitations">Known Limitations<a class="headerlink" href="#known-limitations" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Limitation</th>
+<th>Impact</th>
+<th>Roadmap fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No checksum responses</td>
+<td>Pipelines requiring checksum verification fail</td>
+<td>Phase 2 (2.5)</td>
+</tr>
+<tr>
+<td>StatFS reports zero free space</td>
+<td>FTS3 space-token checks may fail</td>
+<td>Phase 2 (2.6)</td>
+</tr>
+<tr>
+<td>No Truncate</td>
+<td>Some workflows can't resize files</td>
+<td>Phase 3 (3.5)</td>
+</tr>
+<tr>
+<td>No per-path throttle</td>
+<td>Single global write speed limit</td>
+<td>Phase 3 (3.1)</td>
+</tr>
+<tr>
+<td>No read throughput throttle</td>
+<td>Read speed always at memory speed</td>
+<td>Phase 3 (3.4)</td>
+</tr>
+<tr>
+<td>Stub state not persistent</td>
+<td>Namespace lost on server restart</td>
+<td>Phase 4 (4.1)</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
