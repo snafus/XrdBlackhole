@@ -80,6 +80,16 @@ if( XRDHTTP_INCLUDE_DIR )
     ${LIB_XRD_BLACKHOLE_METRICS}
     ${XROOTD_LIBRARIES} )
 
+  # g_statsManager is defined in libXrdBlackhole-5.so.  Add an explicit
+  # DT_NEEDED so the dynamic linker resolves it when the metrics plugin is
+  # dlopen'd (XRootD loads plugins with RTLD_LOCAL, so symbols are not
+  # shared between plugins without an explicit dependency).
+  # add_dependencies ensures libXrdBlackhole-5.so is built before linking.
+  add_dependencies(${LIB_XRD_BLACKHOLE_METRICS} ${LIB_XRD_BLACKHOLE})
+  target_link_options(
+    ${LIB_XRD_BLACKHOLE_METRICS}
+    PRIVATE $<TARGET_FILE:${LIB_XRD_BLACKHOLE}> )
+
   set_target_properties(
     ${LIB_XRD_BLACKHOLE_METRICS}
     PROPERTIES

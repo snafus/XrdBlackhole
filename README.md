@@ -368,7 +368,7 @@ xrd.protocol XrdHttp:1094 libXrdHttp.so
 ofs.osslib   /usr/lib64/libXrdBlackhole.so
 ofs.xattrlib /usr/lib64/libXrdBlackholeXattr.so
 
-http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics-5.so
+http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics.so
 
 blackhole.writespeedMiBps 500
 blackhole.defaultspath /test

@@ -25,12 +25,8 @@ Optional Prometheus metrics endpoint (requires XrdHttp to be enabled):
 
 ```
 xrd.protocol XrdHttp:1094 libXrdHttp.so
-http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics-5.so
+http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics.so
 ```
-
-!!! note
-    `http.exthandler` is loaded via `dlopen` directly (not through XRootD's
-    versioned lookup), so the full filename including `-5` **is** required here.
 
 ---
 
@@ -161,7 +157,7 @@ xrd.protocol XrdHttp:1094 libXrdHttp.so
 ofs.osslib   /usr/lib64/libXrdBlackhole.so
 ofs.xattrlib /usr/lib64/libXrdBlackholeXattr.so
 
-http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics-5.so
+http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics.so
 
 blackhole.writespeedMiBps 500
 blackhole.defaultspath /test
