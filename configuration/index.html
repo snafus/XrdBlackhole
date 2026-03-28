@@ -916,13 +916,8 @@ the library. Do <strong>not</strong> include it in the directive — specifying
 </code></pre></div>
 <p>Optional Prometheus metrics endpoint (requires XrdHttp to be enabled):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>xrd.protocol XrdHttp:1094 libXrdHttp.so
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics-5.so
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics.so
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code>http.exthandler</code> is loaded via <code>dlopen</code> directly (not through XRootD's
-versioned lookup), so the full filename including <code>-5</code> <strong>is</strong> required here.</p>
-</div>
 <hr />
 <h2 id="directives">Directives<a class="headerlink" href="#directives" title="Permanent link">&para;</a></h2>
 <h3 id="blackholewritespeedmibps-n"><code>blackhole.writespeedMiBps &lt;N&gt;</code><a class="headerlink" href="#blackholewritespeedmibps-n" title="Permanent link">&para;</a></h3>
@@ -1054,7 +1049,7 @@ extension.</p>
 <a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>ofs.osslib   /usr/lib64/libXrdBlackhole.so
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>ofs.xattrlib /usr/lib64/libXrdBlackholeXattr.so
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics-5.so
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics.so
 <a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
 <a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>blackhole.writespeedMiBps 500
 <a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>blackhole.defaultspath /test

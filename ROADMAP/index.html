@@ -1240,7 +1240,7 @@ walks the list and stores the matched speeds for the lifetime of the handle.</p>
 exposes a Prometheus text format <code>/metrics</code> endpoint. Built when
 <code>XrdHttp/XrdHttpExtHandler.hh</code> is found at configure time; packaged in the
 <code>xrootd-blackhole-metrics</code> RPM subpackage. Load with:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>http.exthandler bhmetrics /usr/lib64/xrootd/libXrdBlackholeMetrics-5.so
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics.so
 </code></pre></div>
 Metrics exposed: <code>blackhole_transfers_total</code>, <code>blackhole_bytes_written_total</code>,
 <code>blackhole_bytes_read_total</code>, <code>blackhole_errors_total</code>,

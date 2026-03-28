@@ -444,6 +444,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -470,7 +487,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
+  <a href="#fixed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -509,7 +526,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#fixed_1" class="md-nav__link">
+  <a href="#fixed_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -576,7 +593,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed_2" class="md-nav__link">
+  <a href="#fixed_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -673,6 +690,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -699,7 +733,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
+  <a href="#fixed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -738,7 +772,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#fixed_1" class="md-nav__link">
+  <a href="#fixed_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -805,7 +839,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed_2" class="md-nav__link">
+  <a href="#fixed_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -884,6 +918,15 @@
 The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>.</p>
 <hr />
 <h2 id="unreleased">[Unreleased]<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>libXrdBlackholeMetrics</code> now links explicitly against <code>libXrdBlackhole-5.so</code>
+  so that <code>g_statsManager</code> resolves when the metrics plugin is dlopen'd
+  (XRootD loads plugins with <code>RTLD_LOCAL</code>; symbols do not leak between plugins
+  without an explicit DT_NEEDED).</li>
+<li><code>http.exthandler</code> directive updated to omit the <code>-5</code> version suffix —
+  XRootD auto-appends it (same behaviour as <code>ofs.osslib</code>).</li>
+</ul>
 <hr />
 <h2 id="032-2026-03-27">[0.3.2] - 2026-03-27<a class="headerlink" href="#032-2026-03-27" title="Permanent link">&para;</a></h2>
 <h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
@@ -900,7 +943,7 @@ The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Cha
 <li>MkDocs Material documentation site deployed to GitHub Pages via GitHub
   Actions on push to <code>main</code>.</li>
 </ul>
-<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>XrdOucStream::GetMyFirstWord()</code> silent-skip bug in unit-test context:
   passing a non-null <code>XrdOucEnv*</code> when <code>XRDINSTANCE</code> is unset caused all
@@ -916,7 +959,7 @@ The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Cha
 </ul>
 <hr />
 <h2 id="031-2026-03-26">[0.3.1] - 2026-03-26<a class="headerlink" href="#031-2026-03-26" title="Permanent link">&para;</a></h2>
-<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_2">Fixed<a class="headerlink" href="#fixed_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>ofs.osslib</code> and <code>ofs.xattrlib</code> directives now use the correct library
   path (<code>/usr/lib64/</code>) and omit the <code>-5</code> version suffix (XRootD appends it
@@ -962,7 +1005,7 @@ The format is based on <a href="https://keepachangelog.com/en/1.1.0/">Keep a Cha
 <li><code>BHTRACE</code> macro for per-operation I/O tracing (gated on
   <code>xrootd.trace all</code>).</li>
 </ul>
-<h3 id="fixed_2">Fixed<a class="headerlink" href="#fixed_2" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_3">Fixed<a class="headerlink" href="#fixed_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li>POSC disabled (<code>XRDXROOTD_NOPOSC=1</code>) to prevent spurious unlink on close.</li>
 <li>Read boundary guard: <code>offset &gt;= m_size</code> and negative offsets return 0
