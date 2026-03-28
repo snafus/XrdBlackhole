@@ -9,6 +9,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.3.6] - 2026-03-28
+
+### Fixed
+- `libXrdBlackholeMetrics` now links against `libXrdHttpUtils` (the shared
+  library) instead of `libXrdHttp` (the dlopen module). `XrdHttpExtReq::SendSimpleResp`
+  and all `XrdHttpExt*` class implementations live in `libXrdHttpUtils`; this
+  is the same pattern used by `XrdHttpTPC` in the XRootD source tree. The
+  XRootD CMakeLists.txt states explicitly: *"XrdHttpUtils is marked as a shared
+  library as XrdHttp plugins are expected to link against it for the XrdHttpExt
+  class implementations."*
+- Metrics build is now gated on both `XrdHttp/XrdHttpExtHandler.hh` headers
+  and `libXrdHttpUtils` being found at configure time.
+
+---
+
 ## [0.3.5] - 2026-03-28
 
 ### Fixed
