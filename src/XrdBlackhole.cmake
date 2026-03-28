@@ -60,7 +60,14 @@ find_path( XRDHTTP_INCLUDE_DIR
                  /usr/include/xrootd
                  /usr/local/include/xrootd )
 
+find_library( XRDHTTP_LIBRARY
+              NAMES XrdHttp-${PLUGIN_VERSION} XrdHttp
+              HINTS ${XROOTD_LIBRARY_DIR}
+                    /usr/lib64
+                    /usr/local/lib64 )
+
 message( STATUS "  XRDHTTP_INCLUDE_DIR = ${XRDHTTP_INCLUDE_DIR}" )
+message( STATUS "  XRDHTTP_LIBRARY     = ${XRDHTTP_LIBRARY}" )
 
 if( XRDHTTP_INCLUDE_DIR )
   message( STATUS "XrdHttp headers found — building XrdBlackholeMetrics" )
@@ -78,7 +85,8 @@ if( XRDHTTP_INCLUDE_DIR )
 
   target_link_libraries(
     ${LIB_XRD_BLACKHOLE_METRICS}
-    ${XROOTD_LIBRARIES} )
+    ${XROOTD_LIBRARIES}
+    $<$<BOOL:${XRDHTTP_LIBRARY}>:${XRDHTTP_LIBRARY}> )
 
   # g_statsManager is defined in libXrdBlackhole-5.so.  Add an explicit
   # DT_NEEDED so the dynamic linker resolves it when the metrics plugin is
