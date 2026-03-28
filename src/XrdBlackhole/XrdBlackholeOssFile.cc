@@ -38,7 +38,11 @@ int XrdBlackholeOssFile::Open(const char *path, int flags, mode_t mode, XrdOucEn
   m_writeAioOps   = 0;
   m_readOps       = 0;
   m_errors        = 0;
-  m_size          = m_stub ? m_stub->m_size : 0;
+  m_size               = m_stub ? m_stub->m_size : 0;
+  m_isRandom           = m_stub && m_stub->m_readtype == "random";
+  m_ino                = m_stub ? m_stub->m_stat.st_ino : 0;
+  const double speed   = static_cast<double>(m_bhOss->writespeedMiBs());
+  m_throttleBytesPerUs = speed > 0.0 ? speed * 1024.0 * 1024.0 / 1e6 : 0.0;
 
   // Initialise per-transfer stats.
   m_stats           = TransferStats{};
@@ -98,27 +102,48 @@ ssize_t XrdBlackholeOssFile::Read(void *buff, off_t offset, size_t blen) {
     m_errors++;
     return -EINVAL;
   }
-  // Guard against out-of-range offset to prevent size_t underflow.
+  ssize_t n = ReadInner(buff, offset, blen);
+  if (n > 0) {
+    m_readBytes += n;
+    m_readOps++;
+  }
+  BHTRACE("Read " << n << " bytes @ " << offset << " path=" << m_path);
+  return n;
+}
+
+// Fill [buff, buff+blen) from the virtual file at [offset, offset+blen).
+// Uses cached m_isRandom / m_ino set at Open() — no string comparison on the
+// hot path.  The random branch unrolls the LCG 8 bytes per iteration to
+// reduce loop overhead while preserving byte-identical output.
+ssize_t XrdBlackholeOssFile::ReadInner(void *buff, off_t offset, size_t blen) const {
   if (offset < 0 || static_cast<size_t>(offset) >= m_size) return 0;
   size_t n = std::min(blen, m_size - static_cast<size_t>(offset));
-
-  if (m_stub->m_readtype == "random") {
-    // Deterministic LCG fill seeded by offset and inode: same offset always
-    // returns the same bytes, enabling checksum verification by clients.
-    uint64_t state = static_cast<uint64_t>(offset) ^ m_stub->m_stat.st_ino;
+  if (m_isRandom) {
+    static constexpr uint64_t K = 6364136223846793005ULL;
+    static constexpr uint64_t C = 1442695040888963407ULL;
+    uint64_t state = static_cast<uint64_t>(offset) ^ m_ino;
     auto *out = static_cast<uint8_t*>(buff);
-    for (size_t i = 0; i < n; i++) {
-      state = state * 6364136223846793005ULL + 1442695040888963407ULL;
+    size_t i = 0;
+    for (; i + 8 <= n; i += 8) {
+      state = state * K + C; const uint8_t b0 = static_cast<uint8_t>(state >> 56);
+      state = state * K + C; const uint8_t b1 = static_cast<uint8_t>(state >> 56);
+      state = state * K + C; const uint8_t b2 = static_cast<uint8_t>(state >> 56);
+      state = state * K + C; const uint8_t b3 = static_cast<uint8_t>(state >> 56);
+      state = state * K + C; const uint8_t b4 = static_cast<uint8_t>(state >> 56);
+      state = state * K + C; const uint8_t b5 = static_cast<uint8_t>(state >> 56);
+      state = state * K + C; const uint8_t b6 = static_cast<uint8_t>(state >> 56);
+      state = state * K + C; const uint8_t b7 = static_cast<uint8_t>(state >> 56);
+      out[i]   = b0; out[i+1] = b1; out[i+2] = b2; out[i+3] = b3;
+      out[i+4] = b4; out[i+5] = b5; out[i+6] = b6; out[i+7] = b7;
+    }
+    for (; i < n; i++) {
+      state = state * K + C;
       out[i] = static_cast<uint8_t>(state >> 56);
     }
   } else {
     memset(buff, 0, n);
   }
-
-  m_readBytes += n;
-  m_readOps++;
-  BHTRACE("Read " << n << " bytes @ " << offset << " path=" << m_path);
-  return n;
+  return static_cast<ssize_t>(n);
 }
 
 int XrdBlackholeOssFile::Read(XrdSfsAio *aiop) {
@@ -138,15 +163,25 @@ ssize_t XrdBlackholeOssFile::ReadRaw(void *buff, off_t offset, size_t blen) {
 
 ssize_t XrdBlackholeOssFile::ReadV(XrdOucIOVec *readV, int n) {
   if (n <= 0) return 0;
-  ssize_t total = 0;
+  if (!m_stub) {
+    XrdBlackholeEroute.Emsg("ReadV", EINVAL, "no open stub for", m_path.c_str());
+    m_errors++;
+    return -EINVAL;
+  }
+  // Accumulate totals locally and update atomics once after the loop.
+  ssize_t  total = 0;
+  uint32_t ops   = 0;
   for (int i = 0; i < n; i++) {
     if (readV[i].size <= 0) continue;
-    ssize_t rc = Read(readV[i].data,
-                      static_cast<off_t>(readV[i].offset),
-                      static_cast<size_t>(readV[i].size));
+    ssize_t rc = ReadInner(readV[i].data,
+                           static_cast<off_t>(readV[i].offset),
+                           static_cast<size_t>(readV[i].size));
     if (rc < 0) return rc;
     total += rc;
+    ops++;
   }
+  m_readBytes += total;
+  m_readOps   += ops;
   BHTRACE("ReadV " << n << " segs total=" << total << " path=" << m_path);
   return total;
 }
@@ -162,10 +197,9 @@ int XrdBlackholeOssFile::Fstat(struct stat *buf) {
 }
 
 ssize_t XrdBlackholeOssFile::Write(const void *buff, off_t offset, size_t blen) {
-  if (m_bhOss->writespeedMiBs() > 0) {
+  if (m_throttleBytesPerUs > 0.0) {
     auto delay_us = static_cast<long long>(
-      static_cast<double>(blen) /
-      (static_cast<double>(m_bhOss->writespeedMiBs()) * 1024.0 * 1024.0) * 1e6);
+      static_cast<double>(blen) / m_throttleBytesPerUs);
     std::this_thread::sleep_for(std::chrono::microseconds(delay_us));
   }
   m_writeBytes += blen;
@@ -178,10 +212,9 @@ int XrdBlackholeOssFile::Write(XrdSfsAio *aiop) {
   // aio_nbytes is size_t (unsigned); keep it unsigned to avoid ssize_t truncation
   // for large (>SSIZE_MAX) write requests.
   const size_t nbytes = aiop->sfsAio.aio_nbytes;
-  if (m_bhOss->writespeedMiBs() > 0) {
+  if (m_throttleBytesPerUs > 0.0) {
     auto delay_us = static_cast<long long>(
-      static_cast<double>(nbytes) /
-      (static_cast<double>(m_bhOss->writespeedMiBs()) * 1024.0 * 1024.0) * 1e6);
+      static_cast<double>(nbytes) / m_throttleBytesPerUs);
     std::this_thread::sleep_for(std::chrono::microseconds(delay_us));
   }
   aiop->Result = static_cast<ssize_t>(nbytes);
