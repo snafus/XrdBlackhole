@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- `libXrdBlackholeMetrics` now links explicitly against `libXrdBlackhole-5.so`
+  so that `g_statsManager` resolves when the metrics plugin is dlopen'd
+  (XRootD loads plugins with `RTLD_LOCAL`; symbols do not leak between plugins
+  without an explicit DT_NEEDED).
+- `http.exthandler` directive updated to omit the `-5` version suffix —
+  XRootD auto-appends it (same behaviour as `ofs.osslib`).
+
 ---
 
 ## [0.3.2] - 2026-03-27

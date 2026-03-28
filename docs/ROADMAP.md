@@ -128,7 +128,7 @@ exposes a Prometheus text format `/metrics` endpoint. Built when
 `XrdHttp/XrdHttpExtHandler.hh` is found at configure time; packaged in the
 `xrootd-blackhole-metrics` RPM subpackage. Load with:
 ```
-http.exthandler bhmetrics /usr/lib64/xrootd/libXrdBlackholeMetrics-5.so
+http.exthandler bhmetrics /usr/lib64/libXrdBlackholeMetrics.so
 ```
 Metrics exposed: `blackhole_transfers_total`, `blackhole_bytes_written_total`,
 `blackhole_bytes_read_total`, `blackhole_errors_total`,

@@ -71,7 +71,7 @@ Requires: xrootd-server-libs%{?_isa} >= 1:5.3.3
 Optional XrdHttpExtHandler plug-in that exposes a Prometheus-compatible
 metrics endpoint at GET /metrics for the xrootd-blackhole server.
 Requires XrdHttp headers at build time (xrootd-server-devel).
-Load via: http.exthandler bhmetrics %{_libdir}/libXrdBlackholeMetrics-5.so
+Load via: http.exthandler bhmetrics %{_libdir}/libXrdBlackholeMetrics.so
 
 #-------------------------------------------------------------------------------
 # Build instructions
@@ -156,6 +156,11 @@ rm -rf $RPM_BUILD_ROOT
 # Changelog
 #-------------------------------------------------------------------------------
 %changelog
+* Sat Mar 28 2026 James <james@snafus> - 0.3.3-1
+- Fix libXrdBlackholeMetrics undefined symbol g_statsManager: add explicit
+  DT_NEEDED on libXrdBlackhole-5.so via target_link_options in CMake
+- Fix http.exthandler directive: omit -5 suffix (XRootD auto-appends it)
+
 * Fri Mar 27 2026 James <james@snafus> - 0.3.2-1
 - Opendir/Readdir: in-memory directory snapshot; enables xrdfs ls and HTTP browse
 - blackhole.seedfile directive: pre-seed stubs with configurable size, count, and
