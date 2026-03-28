@@ -60,17 +60,21 @@ find_path( XRDHTTP_INCLUDE_DIR
                  /usr/include/xrootd
                  /usr/local/include/xrootd )
 
-find_library( XRDHTTP_LIBRARY
-              NAMES XrdHttp-${PLUGIN_VERSION} XrdHttp
+# XrdHttpExtHandler plugins must link against XrdHttpUtils (the SHARED lib),
+# not XrdHttp (the MODULE plugin).  XrdHttpUtils contains SendSimpleResp and
+# all XrdHttpExt* class implementations.  This mirrors how XrdHttpTPC is built
+# in the XRootD source tree.
+find_library( XRDHTTP_UTILS_LIBRARY
+              NAMES XrdHttpUtils
               HINTS ${XROOTD_LIBRARY_DIR}
                     /usr/lib64
                     /usr/local/lib64 )
 
-message( STATUS "  XRDHTTP_INCLUDE_DIR = ${XRDHTTP_INCLUDE_DIR}" )
-message( STATUS "  XRDHTTP_LIBRARY     = ${XRDHTTP_LIBRARY}" )
+message( STATUS "  XRDHTTP_INCLUDE_DIR   = ${XRDHTTP_INCLUDE_DIR}" )
+message( STATUS "  XRDHTTP_UTILS_LIBRARY = ${XRDHTTP_UTILS_LIBRARY}" )
 
-if( XRDHTTP_INCLUDE_DIR )
-  message( STATUS "XrdHttp headers found — building XrdBlackholeMetrics" )
+if( XRDHTTP_INCLUDE_DIR AND XRDHTTP_UTILS_LIBRARY )
+  message( STATUS "XrdHttp headers and XrdHttpUtils found — building XrdBlackholeMetrics" )
 
   set( LIB_XRD_BLACKHOLE_METRICS XrdBlackholeMetrics-${PLUGIN_VERSION} )
 
@@ -86,7 +90,7 @@ if( XRDHTTP_INCLUDE_DIR )
   target_link_libraries(
     ${LIB_XRD_BLACKHOLE_METRICS}
     ${XROOTD_LIBRARIES}
-    $<$<BOOL:${XRDHTTP_LIBRARY}>:${XRDHTTP_LIBRARY}> )
+    $<$<BOOL:${XRDHTTP_UTILS_LIBRARY}>:${XRDHTTP_UTILS_LIBRARY}> )
 
   # g_statsManager is defined in libXrdBlackhole-5.so.  Add an explicit
   # DT_NEEDED so the dynamic linker resolves it when the metrics plugin is
@@ -113,7 +117,7 @@ if( XRDHTTP_INCLUDE_DIR )
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
 
 else()
-  message( STATUS "XrdHttp headers not found — skipping XrdBlackholeMetrics" )
+  message( STATUS "XrdHttp headers or XrdHttpUtils not found — skipping XrdBlackholeMetrics" )
 endif()
 
 #-------------------------------------------------------------------------------
