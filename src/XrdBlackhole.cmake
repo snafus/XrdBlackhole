@@ -84,11 +84,15 @@ if( XRDHTTP_INCLUDE_DIR )
   # DT_NEEDED so the dynamic linker resolves it when the metrics plugin is
   # dlopen'd (XRootD loads plugins with RTLD_LOCAL, so symbols are not
   # shared between plugins without an explicit dependency).
-  # add_dependencies ensures libXrdBlackhole-5.so is built before linking.
+  # Use -L<dir> -l<name> so the DT_NEEDED entry contains only the bare
+  # library name (libXrdBlackhole-5.so), not the build-time absolute path.
+  # add_dependencies ensures libXrdBlackhole-5.so is built first.
   add_dependencies(${LIB_XRD_BLACKHOLE_METRICS} ${LIB_XRD_BLACKHOLE})
   target_link_options(
     ${LIB_XRD_BLACKHOLE_METRICS}
-    PRIVATE $<TARGET_FILE:${LIB_XRD_BLACKHOLE}> )
+    PRIVATE
+    -L$<TARGET_FILE_DIR:${LIB_XRD_BLACKHOLE}>
+    -lXrdBlackhole-${PLUGIN_VERSION} )
 
   set_target_properties(
     ${LIB_XRD_BLACKHOLE_METRICS}
