@@ -1,0 +1,1484 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="XRootD blackhole storage backend for benchmarking and integration testing">
+      
+      
+      
+        <link rel="canonical" href="https://snafus.github.io/XrdBlackhole/exthandler-guide/">
+      
+      
+        <link rel="prev" href="../ARCHITECTURE/">
+      
+      
+        <link rel="next" href="../ROADMAP/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ExtHandler Guide - XrdBlackhole</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xrootd-http-exthandler-plugin-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="XrdBlackhole" class="md-header__button md-logo" aria-label="XrdBlackhole" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            XrdBlackhole
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ExtHandler Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/snafus/XrdBlackhole" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    snafus/XrdBlackhole
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="XrdBlackhole" class="md-nav__button md-logo" aria-label="XrdBlackhole" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    XrdBlackhole
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/snafus/XrdBlackhole" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    snafus/XrdBlackhole
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ExtHandler Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ExtHandler Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-an-exthandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is an ExtHandler?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How It Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-dispatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request dispatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xrdhttpextreq-the-requestresponse-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XrdHttpExtReq — the request/response object
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-plugin-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Plugin Template
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Plugin Template">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#header-myhandlerhh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Header — MyHandler.hh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-myhandlercc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation — MyHandler.cc
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMake
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rpm-build-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPM build dependency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gotchas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gotchas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gotchas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-link-against-xrdhttputils-not-xrdhttp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Link against XrdHttpUtils, not XrdHttp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-omit-the-5-version-suffix-from-httpexthandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Omit the -5 version suffix from http.exthandler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-symbols-are-not-shared-between-plugins-rtld_local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Symbols are not shared between plugins (RTLD_LOCAL)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-xrdversioninfo-is-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. XrdVERSIONINFO is required
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-matchespath-is-called-for-every-request-keep-it-o1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. MatchesPath is called for every request — keep it O(1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-init-is-called-before-matchespath-or-processreq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Init is called before MatchesPath or ProcessReq
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-processreq-must-always-send-a-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. ProcessReq must always send a response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-private-headers-may-not-be-installed-by-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Private headers may not be installed by default
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-for-a-new-exthandler-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checklist for a new exthandler plugin
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ROADMAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-an-exthandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is an ExtHandler?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How It Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-dispatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request dispatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xrdhttpextreq-the-requestresponse-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XrdHttpExtReq — the request/response object
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-plugin-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete Plugin Template
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Complete Plugin Template">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#header-myhandlerhh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Header — MyHandler.hh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-myhandlercc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation — MyHandler.cc
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMake
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rpm-build-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RPM build dependency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gotchas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gotchas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gotchas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-link-against-xrdhttputils-not-xrdhttp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Link against XrdHttpUtils, not XrdHttp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-omit-the-5-version-suffix-from-httpexthandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Omit the -5 version suffix from http.exthandler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-symbols-are-not-shared-between-plugins-rtld_local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Symbols are not shared between plugins (RTLD_LOCAL)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-xrdversioninfo-is-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. XrdVERSIONINFO is required
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-matchespath-is-called-for-every-request-keep-it-o1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. MatchesPath is called for every request — keep it O(1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-init-is-called-before-matchespath-or-processreq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Init is called before MatchesPath or ProcessReq
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-processreq-must-always-send-a-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. ProcessReq must always send a response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-private-headers-may-not-be-installed-by-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Private headers may not be installed by default
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-for-a-new-exthandler-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checklist for a new exthandler plugin
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="xrootd-http-exthandler-plugin-guide">XRootD HTTP ExtHandler Plugin Guide<a class="headerlink" href="#xrootd-http-exthandler-plugin-guide" title="Permanent link">&para;</a></h1>
+<p>This guide covers what exthandler plugins are, how they work, how to build
+one correctly, and the gotchas discovered while building
+<code>libXrdBlackholeMetrics</code>.</p>
+<hr />
+<h2 id="what-is-an-exthandler">What is an ExtHandler?<a class="headerlink" href="#what-is-an-exthandler" title="Permanent link">&para;</a></h2>
+<p><code>XrdHttpExtHandler</code> is an XRootD plugin interface that lets you intercept
+HTTP requests <strong>before</strong> they reach the OFS filesystem layer. The HTTP
+protocol handler (<code>libXrdHttp-5.so</code>) calls each registered exthandler in
+declaration order; the first one whose <code>MatchesPath()</code> returns <code>true</code> gets
+to handle the request exclusively.</p>
+<p>Typical uses:</p>
+<table>
+<thead>
+<tr>
+<th>Use case</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Monitoring / metrics</td>
+<td><code>GET /metrics</code> → Prometheus text</td>
+</tr>
+<tr>
+<td>Third-party copy</td>
+<td><code>COPY</code> with <code>Source:</code> header → XrdHttpTPC</td>
+</tr>
+<tr>
+<td>Custom REST APIs</td>
+<td><code>GET /api/status</code> → JSON response</td>
+</tr>
+<tr>
+<td>WebDAV extensions</td>
+<td>Custom <code>PROPFIND</code> handling</td>
+</tr>
+</tbody>
+</table>
+<p>Without an exthandler, any HTTP <code>GET /metrics</code> would fall through to the OFS
+layer, which tries to open <code>/metrics</code> as a file and returns
+<em>"Opening path '/metrics' is disallowed"</em>.</p>
+<hr />
+<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<h3 id="request-dispatch">Request dispatch<a class="headerlink" href="#request-dispatch" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>HTTP client
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    ▼
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>XrdHttpProtocol (libXrdHttp-5.so, loaded as xrd.protocol)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    ├── for each registered exthandler (declaration order):
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    │       if handler.MatchesPath(verb, path):
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    │           handler.ProcessReq(req)   ← your code runs here
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    │           return                    ← OFS never sees the request
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    │
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    └── fall-through → XrdOfs → XrdOss   ← normal file operations
+</code></pre></div>
+<h3 id="plugin-loading">Plugin loading<a class="headerlink" href="#plugin-loading" title="Permanent link">&para;</a></h3>
+<p>XRootD loads the plugin via <code>http.exthandler</code> <strong>after</strong> <code>xrd.protocol XrdHttp</code>
+is active. The entry point <code>XrdHttpGetExtHandler</code> is resolved by <code>dlopen</code>.</p>
+<hr />
+<h2 id="the-interface">The Interface<a class="headerlink" href="#the-interface" title="Permanent link">&para;</a></h2>
+<p>From <code>XrdHttp/XrdHttpExtHandler.hh</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">XrdHttpExtHandler</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">public</span><span class="o">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="c1">/// Return true if this handler owns the given verb+path combination.</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="c1">/// Handle the request. Send a response via req.SendSimpleResp() (or the</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="c1">/// chunked / streaming variants). Return 0 on success, non-zero on error.</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="c1">/// Called once at startup with the path of the xrootd config file.</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="c1">/// Return 0 on success, non-zero to abort loading.</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">Init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cfgfile</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">XrdHttpExtHandler</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">};</span>
+</code></pre></div>
+<h3 id="xrdhttpextreq-the-requestresponse-object"><code>XrdHttpExtReq</code> — the request/response object<a class="headerlink" href="#xrdhttpextreq-the-requestresponse-object" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>verb</code></td>
+<td>HTTP method string (<code>"GET"</code>, <code>"POST"</code>, …)</td>
+</tr>
+<tr>
+<td><code>resource</code></td>
+<td>Path component of the URL (<code>"/metrics"</code>)</td>
+</tr>
+<tr>
+<td><code>headers</code></td>
+<td><code>map&lt;string,string&gt;</code> of all request headers</td>
+</tr>
+<tr>
+<td><code>length</code></td>
+<td>Content-Length of the request body</td>
+</tr>
+<tr>
+<td><code>clientdn</code> / <code>clienthost</code></td>
+<td>Client identity from TLS/auth</td>
+</tr>
+<tr>
+<td><code>BuffgetData(blen, &amp;data, wait)</code></td>
+<td>Read up to <code>blen</code> bytes of request body</td>
+</tr>
+<tr>
+<td><code>SendSimpleResp(code, desc, headers, body, bodylen)</code></td>
+<td>Send a complete response</td>
+</tr>
+<tr>
+<td><code>StartSimpleResp(…)</code> + <code>SendData(…)</code></td>
+<td>Stream a response in chunks</td>
+</tr>
+<tr>
+<td><code>StartChunkedResp(…)</code> + <code>ChunkResp(…)</code></td>
+<td>HTTP chunked transfer encoding</td>
+</tr>
+<tr>
+<td><code>GetSecEntity()</code></td>
+<td>Full <code>XrdSecEntity</code> (roles, groups, DN)</td>
+</tr>
+</tbody>
+</table>
+<p>All <code>Send*</code> and <code>Chunk*</code> methods are <strong>defined in <code>libXrdHttpUtils.so.2</code></strong>,
+not in <code>libXrdHttp-5.so</code>. See <a href="#build-requirements">Build requirements</a> below.</p>
+<hr />
+<h2 id="complete-plugin-template">Complete Plugin Template<a class="headerlink" href="#complete-plugin-template" title="Permanent link">&para;</a></h2>
+<h3 id="header-myhandlerhh">Header — <code>MyHandler.hh</code><a class="headerlink" href="#header-myhandlerhh" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="cp">#pragma once</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdHttp/XrdHttpExtHandler.hh&quot;</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdSys/XrdSysError.hh&quot;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyHandler</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">XrdHttpExtHandler</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">public</span><span class="o">:</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">MyHandler</span><span class="p">(</span><span class="n">XrdSysError</span><span class="w"> </span><span class="o">*</span><span class="n">log</span><span class="p">);</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="o">~</span><span class="n">MyHandler</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="nf">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="kt">int</span><span class="w">  </span><span class="nf">ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">  </span><span class="kt">int</span><span class="w">  </span><span class="nf">Init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cfgfile</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="k">private</span><span class="o">:</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">  </span><span class="n">XrdSysError</span><span class="w"> </span><span class="o">*</span><span class="n">m_log</span><span class="p">;</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="p">};</span>
+</code></pre></div>
+<h3 id="implementation-myhandlercc">Implementation — <code>MyHandler.cc</code><a class="headerlink" href="#implementation-myhandlercc" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;MyHandler.hh&quot;</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdVersion.hh&quot;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">// Required: declares ABI version used at compile time.</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1">// Second argument is a 1–15 character plugin identifier.</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">XrdVERSIONINFO</span><span class="p">(</span><span class="n">XrdHttpGetExtHandler</span><span class="p">,</span><span class="w"> </span><span class="n">MyHandler</span><span class="p">);</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">MyHandler</span><span class="o">::</span><span class="n">MyHandler</span><span class="p">(</span><span class="n">XrdSysError</span><span class="w"> </span><span class="o">*</span><span class="n">log</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">m_log</span><span class="p">(</span><span class="n">log</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="n">m_log</span><span class="o">-&gt;</span><span class="n">Say</span><span class="p">(</span><span class="s">&quot;myhandler: initialised&quot;</span><span class="p">);</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="kt">bool</span><span class="w"> </span><span class="n">MyHandler</span><span class="o">::</span><span class="n">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">  </span><span class="c1">// Called for every HTTP request — keep this fast.</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;GET&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/my-endpoint&quot;</span><span class="p">);</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="p">}</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="kt">int</span><span class="w"> </span><span class="n">MyHandler</span><span class="o">::</span><span class="n">ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hello from MyHandler</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;OK&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="s">&quot;Content-Type: text/plain</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">    </span><span class="n">body</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">    </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">body</span><span class="p">.</span><span class="n">size</span><span class="p">()));</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="p">}</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="kt">int</span><span class="w"> </span><span class="n">MyHandler</span><span class="o">::</span><span class="n">Init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cfgfile</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">  </span><span class="c1">// Parse plugin-specific directives from cfgfile if needed.</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">  </span><span class="c1">// Return 0 on success, non-zero to abort.</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="p">}</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="c1">// Plugin entry point — must have exactly this name.</span>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="n">XrdHttpExtHandler</span><span class="w"> </span><span class="o">*</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="n">XrdHttpGetExtHandler</span><span class="p">(</span><span class="n">XrdSysError</span><span class="w">  </span><span class="o">*</span><span class="n">eDest</span><span class="p">,</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="w">                     </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w">   </span><span class="o">*</span><span class="w"> </span><span class="cm">/*confg*/</span><span class="p">,</span>
+<a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span class="w">                     </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w">   </span><span class="o">*</span><span class="w"> </span><span class="cm">/*parms*/</span><span class="p">,</span>
+<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a><span class="w">                     </span><span class="n">XrdOucEnv</span><span class="w">    </span><span class="o">*</span><span class="w"> </span><span class="cm">/*myEnv*/</span><span class="p">)</span>
+<a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a><span class="p">{</span>
+<a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">MyHandler</span><span class="p">(</span><span class="n">eDest</span><span class="p">);</span>
+<a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="build-requirements">Build Requirements<a class="headerlink" href="#build-requirements" title="Permanent link">&para;</a></h2>
+<h3 id="cmake">CMake<a class="headerlink" href="#cmake" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c"># 1. Find the XrdHttp private headers (XrdHttpExtHandler.hh lives there).</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">find_path</span><span class="p">(</span><span class="s">XRDHTTP_INCLUDE_DIR</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">          </span><span class="s">NAMES</span><span class="w"> </span><span class="s">XrdHttp/XrdHttpExtHandler.hh</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">          </span><span class="s">HINTS</span><span class="w"> </span><span class="o">${</span><span class="nv">XROOTD_INCLUDE_DIR</span><span class="o">}</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">                </span><span class="o">${</span><span class="nv">XROOTD_INCLUDE_DIR</span><span class="o">}</span><span class="s">/private</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">                </span><span class="s">/usr/include/xrootd</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">                </span><span class="s">/usr/local/include/xrootd</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="c"># 2. Find libXrdHttpUtils — the SHARED library that contains SendSimpleResp</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c">#    and all XrdHttpExt* implementations. Do NOT use libXrdHttp (the module).</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="nb">find_library</span><span class="p">(</span><span class="s">XRDHTTP_UTILS_LIBRARY</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">             </span><span class="s">NAMES</span><span class="w"> </span><span class="s">XrdHttpUtils</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">             </span><span class="s">HINTS</span><span class="w"> </span><span class="s">/usr/lib64</span><span class="w"> </span><span class="s">/usr/local/lib64</span><span class="p">)</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="nb">if</span><span class="p">(</span><span class="s">XRDHTTP_INCLUDE_DIR</span><span class="w"> </span><span class="s">AND</span><span class="w"> </span><span class="s">XRDHTTP_UTILS_LIBRARY</span><span class="p">)</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">  </span><span class="nb">set</span><span class="p">(</span><span class="s">PLUGIN_VERSION</span><span class="w"> </span><span class="s">5</span><span class="p">)</span><span class="w">   </span><span class="c"># match your XRootD major version</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">  </span><span class="nb">add_library</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span><span class="w"> </span><span class="s">MODULE</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">    </span><span class="s">MyHandler.cc</span><span class="w"> </span><span class="s">MyHandler.hh</span><span class="p">)</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">  </span><span class="nb">target_include_directories</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">    </span><span class="s">PRIVATE</span><span class="w"> </span><span class="o">${</span><span class="nv">XRDHTTP_INCLUDE_DIR</span><span class="o">}</span><span class="p">)</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">  </span><span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">    </span><span class="o">${</span><span class="nv">XROOTD_LIBRARIES</span><span class="o">}</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">    </span><span class="o">${</span><span class="nv">XRDHTTP_UTILS_LIBRARY</span><span class="o">}</span><span class="p">)</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">  </span><span class="c"># Prevent CMake from propagating link dependencies to consumers.</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">  </span><span class="nb">set_target_properties</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span><span class="w"> </span><span class="s">PROPERTIES</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">    </span><span class="s">INTERFACE_LINK_LIBRARIES</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">    </span><span class="s">LINK_INTERFACE_LIBRARIES</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">  </span><span class="nb">install</span><span class="p">(</span><span class="s">TARGETS</span><span class="w"> </span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span>
+<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="w">    </span><span class="s">LIBRARY</span><span class="w"> </span><span class="s">DESTINATION</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_INSTALL_LIBDIR</span><span class="o">}</span><span class="p">)</span>
+<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a>
+<a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="nb">endif</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="rpm-build-dependency">RPM build dependency<a class="headerlink" href="#rpm-build-dependency" title="Permanent link">&para;</a></h3>
+<p>The <code>XrdHttpExtHandler.hh</code> header ships in the <strong>private</strong> headers of
+<code>xrootd-server-devel</code>. Ensure it is listed in your spec's <code>BuildRequires</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="gh">BuildRequires</span><span class="p">:</span><span class="w"> </span>xrootd-server-devel
+</code></pre></div>
+<hr />
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a># Load the XrdHttp protocol on port 1094.
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>xrd.protocol XrdHttp:1094 libXrdHttp.so
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a># Register the exthandler.  XRootD auto-appends the version suffix (-5),
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a># so do NOT include it in the path.
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>http.exthandler myhandler /usr/lib64/libMyHandler.so
+</code></pre></div>
+<p>Multiple exthandlers can be registered; they are tested in declaration order.</p>
+<hr />
+<h2 id="gotchas">Gotchas<a class="headerlink" href="#gotchas" title="Permanent link">&para;</a></h2>
+<h3 id="1-link-against-xrdhttputils-not-xrdhttp">1. Link against <code>XrdHttpUtils</code>, not <code>XrdHttp</code><a class="headerlink" href="#1-link-against-xrdhttputils-not-xrdhttp" title="Permanent link">&para;</a></h3>
+<p><code>libXrdHttp-5.so</code> is a dlopen MODULE — it is the HTTP protocol handler
+itself and is not designed to be linked against. All <code>XrdHttpExt*</code> class
+implementations (<code>SendSimpleResp</code>, <code>SendData</code>, <code>ChunkResp</code>, etc.) live in
+<code>libXrdHttpUtils.so.2</code> (a proper SHARED library). The XRootD source tree
+states this explicitly:</p>
+<blockquote>
+<p><em>"XrdHttpUtils is marked as a shared library as XrdHttp plugins are
+expected to link against it for the XrdHttpExt class implementations."</em></p>
+</blockquote>
+<p><code>XrdHttpTPC</code> — the canonical reference exthandler in the XRootD tree — links
+against <code>XrdHttpUtils</code>. Follow that pattern.</p>
+<h3 id="2-omit-the-5-version-suffix-from-httpexthandler">2. Omit the <code>-5</code> version suffix from <code>http.exthandler</code><a class="headerlink" href="#2-omit-the-5-version-suffix-from-httpexthandler" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a># Wrong — causes double-versioning: libMyHandler-5-5.so not found
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>http.exthandler myhandler /usr/lib64/libMyHandler-5.so
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a># Correct — XRootD appends -5 automatically
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>http.exthandler myhandler /usr/lib64/libMyHandler.so
+</code></pre></div>
+<p>This applies to all plugin directives (<code>ofs.osslib</code>, <code>ofs.xattrlib</code>,
+<code>http.exthandler</code>).</p>
+<h3 id="3-symbols-are-not-shared-between-plugins-rtld_local">3. Symbols are not shared between plugins (<code>RTLD_LOCAL</code>)<a class="headerlink" href="#3-symbols-are-not-shared-between-plugins-rtld_local" title="Permanent link">&para;</a></h3>
+<p>XRootD loads plugins with <code>RTLD_LOCAL</code>, so a global variable or function
+defined in one plugin <code>.so</code> is invisible to another plugin loaded later. If
+your exthandler needs to access state owned by the OSS plugin (e.g. a global
+<code>g_statsManager</code>), it must have an explicit <code>DT_NEEDED</code> on that library.</p>
+<p>Use <code>-L</code>/<code>-l</code> in <code>target_link_options</code>, <strong>not</strong> <code>$&lt;TARGET_FILE:...&gt;</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c"># Correct: produces DT_NEEDED: libXrdBlackhole-5.so (bare name)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nb">add_dependencies</span><span class="p">(</span><span class="s">MyHandler-5</span><span class="w"> </span><span class="s">XrdBlackhole-5</span><span class="p">)</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nb">target_link_options</span><span class="p">(</span><span class="s">MyHandler-5</span><span class="w"> </span><span class="s">PRIVATE</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="s">-L</span><span class="o">$&lt;</span><span class="nv">TARGET_FILE_DIR:XrdBlackhole-5</span><span class="o">&gt;</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="s">-lXrdBlackhole-5</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c"># Wrong: embeds absolute build path in DT_NEEDED</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="c"># → dlopen fails with &quot;No such file or directory&quot; on installed systems</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="nb">target_link_options</span><span class="p">(</span><span class="s">MyHandler-5</span><span class="w"> </span><span class="s">PRIVATE</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">  </span><span class="o">$&lt;</span><span class="nv">TARGET_FILE:XrdBlackhole-5</span><span class="o">&gt;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="4-xrdversioninfo-is-required">4. <code>XrdVERSIONINFO</code> is required<a class="headerlink" href="#4-xrdversioninfo-is-required" title="Permanent link">&para;</a></h3>
+<p>Without the version macro the plugin may load silently but XRootD will
+emit a warning. Include it at file scope in the <code>.cc</code> file:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdVersion.hh&quot;</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">XrdVERSIONINFO</span><span class="p">(</span><span class="n">XrdHttpGetExtHandler</span><span class="p">,</span><span class="w"> </span><span class="n">MyPluginName</span><span class="p">);</span>
+</code></pre></div>
+<p>The second argument must be 1–15 characters. It appears in the XRootD log
+at load time.</p>
+<h3 id="5-matchespath-is-called-for-every-request-keep-it-o1">5. <code>MatchesPath</code> is called for every request — keep it O(1)<a class="headerlink" href="#5-matchespath-is-called-for-every-request-keep-it-o1" title="Permanent link">&para;</a></h3>
+<p><code>MatchesPath</code> is called on the hot path for every HTTP request, including
+high-frequency <code>xrdcp</code> and WebDAV operations. Use <code>strcmp</code> / prefix checks,
+not regex or map lookups.</p>
+<h3 id="6-init-is-called-before-matchespath-or-processreq">6. <code>Init</code> is called before <code>MatchesPath</code> or <code>ProcessReq</code><a class="headerlink" href="#6-init-is-called-before-matchespath-or-processreq" title="Permanent link">&para;</a></h3>
+<p>If <code>Init</code> returns non-zero, the plugin is unloaded and XRootD logs an error.
+Use <code>Init</code> to validate configuration and pre-allocate resources. Do not defer
+initialisation to <code>MatchesPath</code>.</p>
+<h3 id="7-processreq-must-always-send-a-response">7. <code>ProcessReq</code> must always send a response<a class="headerlink" href="#7-processreq-must-always-send-a-response" title="Permanent link">&para;</a></h3>
+<p>If <code>ProcessReq</code> returns without calling a <code>Send*</code> method, the client
+connection will hang. Always send a response — even on error paths:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kt">int</span><span class="w"> </span><span class="nf">MyHandler::ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">something_wrong</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Internal Server Error&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">                              </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span><span class="c1">// ...</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="8-private-headers-may-not-be-installed-by-default">8. Private headers may not be installed by default<a class="headerlink" href="#8-private-headers-may-not-be-installed-by-default" title="Permanent link">&para;</a></h3>
+<p><code>XrdHttpExtHandler.hh</code> is in the <code>private/</code> subdirectory of the XRootD
+include path. On some distributions or build configurations it may be absent
+even when <code>xrootd-server-devel</code> is installed. Always guard the build with a
+<code>find_path</code> check and skip the plugin gracefully if the header is missing.</p>
+<hr />
+<h2 id="checklist-for-a-new-exthandler-plugin">Checklist for a new exthandler plugin<a class="headerlink" href="#checklist-for-a-new-exthandler-plugin" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] Inherit from <code>XrdHttpExtHandler</code>; implement <code>MatchesPath</code>, <code>ProcessReq</code>, <code>Init</code></li>
+<li>[ ] Export <code>XrdHttpGetExtHandler</code> as <code>extern "C"</code></li>
+<li>[ ] Add <code>XrdVERSIONINFO(XrdHttpGetExtHandler, &lt;name&gt;)</code> at file scope</li>
+<li>[ ] Link against <code>XrdHttpUtils</code> (not <code>XrdHttp</code>)</li>
+<li>[ ] Use <code>find_path</code> + <code>find_library</code> guards; skip build gracefully if absent</li>
+<li>[ ] Set <code>INTERFACE_LINK_LIBRARIES ""</code> on the MODULE target</li>
+<li>[ ] Config directive omits <code>-5</code> suffix</li>
+<li>[ ] If sharing state with OSS plugin: use <code>-L/-l</code> DT_NEEDED, not <code>$&lt;TARGET_FILE:...&gt;</code></li>
+<li>[ ] <code>ProcessReq</code> always sends a response on all code paths</li>
+<li>[ ] Add <code>xrootd-server-devel</code> to <code>BuildRequires</code> in the RPM spec</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
