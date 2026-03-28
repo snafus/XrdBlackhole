@@ -156,6 +156,10 @@ rm -rf $RPM_BUILD_ROOT
 # Changelog
 #-------------------------------------------------------------------------------
 %changelog
+* Sat Mar 28 2026 James <james@snafus> - 0.3.5-1
+- Fix metrics plugin: link against libXrdHttp-5.so to resolve
+  XrdHttpExtReq::SendSimpleResp (undefined symbol at dlopen time)
+
 * Sat Mar 28 2026 James <james@snafus> - 0.3.4-1
 - Fix libXrdBlackholeMetrics DT_NEEDED: use -L/-l flags so the bare library
   name is recorded, not the absolute build path (caused dlopen ENOENT on

@@ -9,6 +9,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.3.5] - 2026-03-28
+
+### Fixed
+- `libXrdBlackholeMetrics` now links against `libXrdHttp-5.so`. `XrdHttpExtReq::SendSimpleResp`
+  is defined there and was not included in `XROOTD_LIBRARIES`, causing
+  `undefined symbol: _ZN13XrdHttpExtReq14SendSimpleRespEiPKcS1_S1_x` at load time.
+  `find_library(XRDHTTP_LIBRARY ...)` locates the library at configure time.
+
+---
+
 ## [0.3.4] - 2026-03-28
 
 ### Fixed
