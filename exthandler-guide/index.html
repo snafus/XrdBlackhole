@@ -434,10 +434,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-dispatch" class="md-nav__link">
+  <a href="#full-request-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Request dispatch
+        Full request pipeline
       
     </span>
   </a>
@@ -449,6 +449,200 @@
     <span class="md-ellipsis">
       
         Plugin loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication-and-authorisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication and Authorisation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Authentication and Authorisation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-happens-and-when" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What happens, and when
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unauthenticated-endpoints-eg-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unauthenticated endpoints (e.g. /metrics)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementing-authz-in-your-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementing authZ in your handler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-principle-deny-by-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design principle: deny by default
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matching-verbs-and-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching Verbs and Paths
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Matching Verbs and Paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matchespath-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MatchesPath contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching-verbs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching verbs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path-matching-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path matching strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance implications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sending-redirects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sending Redirects
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sending Redirects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#temporary-redirect-302" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temporary redirect (302)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permanent-redirect-301" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permanent redirect (301)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redirect-with-query-string-preservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redirect with query string preservation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redirect-with-authz-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redirect with authZ check
       
     </span>
   </a>
@@ -634,10 +828,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-matchespath-is-called-for-every-request-keep-it-o1" class="md-nav__link">
+  <a href="#5-matchespath-is-on-the-hot-path-keep-it-allocation-free" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. MatchesPath is called for every request — keep it O(1)
+        5. MatchesPath is on the hot path — keep it allocation-free
       
     </span>
   </a>
@@ -671,6 +865,28 @@
     <span class="md-ellipsis">
       
         8. Private headers may not be installed by default
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-ofs-authz-is-bypassed-you-own-access-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. OFS authZ is bypassed — you own access control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-unauthenticated-endpoints-require-a-separate-port-or-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Unauthenticated endpoints require a separate port or policy
       
     </span>
   </a>
@@ -805,10 +1021,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-dispatch" class="md-nav__link">
+  <a href="#full-request-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Request dispatch
+        Full request pipeline
       
     </span>
   </a>
@@ -820,6 +1036,200 @@
     <span class="md-ellipsis">
       
         Plugin loading
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication-and-authorisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication and Authorisation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Authentication and Authorisation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-happens-and-when" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What happens, and when
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unauthenticated-endpoints-eg-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unauthenticated endpoints (e.g. /metrics)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementing-authz-in-your-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementing authZ in your handler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-principle-deny-by-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design principle: deny by default
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matching-verbs-and-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching Verbs and Paths
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Matching Verbs and Paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matchespath-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MatchesPath contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching-verbs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching verbs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#path-matching-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path matching strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance implications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sending-redirects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sending Redirects
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sending Redirects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#temporary-redirect-302" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temporary redirect (302)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permanent-redirect-301" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permanent redirect (301)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redirect-with-query-string-preservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redirect with query string preservation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redirect-with-authz-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redirect with authZ check
       
     </span>
   </a>
@@ -1005,10 +1415,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-matchespath-is-called-for-every-request-keep-it-o1" class="md-nav__link">
+  <a href="#5-matchespath-is-on-the-hot-path-keep-it-allocation-free" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. MatchesPath is called for every request — keep it O(1)
+        5. MatchesPath is on the hot path — keep it allocation-free
       
     </span>
   </a>
@@ -1042,6 +1452,28 @@
     <span class="md-ellipsis">
       
         8. Private headers may not be installed by default
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-ofs-authz-is-bypassed-you-own-access-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. OFS authZ is bypassed — you own access control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-unauthenticated-endpoints-require-a-separate-port-or-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Unauthenticated endpoints require a separate port or policy
       
     </span>
   </a>
@@ -1085,8 +1517,9 @@
 
 
 <h1 id="xrootd-http-exthandler-plugin-guide">XRootD HTTP ExtHandler Plugin Guide<a class="headerlink" href="#xrootd-http-exthandler-plugin-guide" title="Permanent link">&para;</a></h1>
-<p>This guide covers what exthandler plugins are, how they work, how to build
-one correctly, and the gotchas discovered while building
+<p>This guide covers what exthandler plugins are, how they work, authentication
+and authorisation principles, path and verb matching, redirect responses,
+how to build one correctly, and the gotchas discovered while building
 <code>libXrdBlackholeMetrics</code>.</p>
 <hr />
 <h2 id="what-is-an-exthandler">What is an ExtHandler?<a class="headerlink" href="#what-is-an-exthandler" title="Permanent link">&para;</a></h2>
@@ -1120,6 +1553,10 @@ to handle the request exclusively.</p>
 <td>WebDAV extensions</td>
 <td>Custom <code>PROPFIND</code> handling</td>
 </tr>
+<tr>
+<td>Proxy / redirect</td>
+<td><code>GET /static/*</code> → 302 to nginx</td>
+</tr>
 </tbody>
 </table>
 <p>Without an exthandler, any HTTP <code>GET /metrics</code> would fall through to the OFS
@@ -1127,46 +1564,418 @@ layer, which tries to open <code>/metrics</code> as a file and returns
 <em>"Opening path '/metrics' is disallowed"</em>.</p>
 <hr />
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<h3 id="request-dispatch">Request dispatch<a class="headerlink" href="#request-dispatch" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>HTTP client
+<h3 id="full-request-pipeline">Full request pipeline<a class="headerlink" href="#full-request-pipeline" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>TCP connection
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    │
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    ▼
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>XrdHttpProtocol (libXrdHttp-5.so, loaded as xrd.protocol)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>TLS handshake  (if HTTPS)
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    │
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    ├── for each registered exthandler (declaration order):
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    │       if handler.MatchesPath(verb, path):
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    │           handler.ProcessReq(req)   ← your code runs here
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    │           return                    ← OFS never sees the request
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    │
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    └── fall-through → XrdOfs → XrdOss   ← normal file operations
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    ▼
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>HTTP request parsed
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    ▼
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>Security extraction  ← authN happens here
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    │  XrdHttpSecXtractor / SciTokens / macaroons / X.509
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    │  prot-&gt;SecEntity populated
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    │  Invalid or missing credentials → 401/403, request ends here
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    │
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    ▼
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>MatchesPath() called for each registered exthandler (declaration order)
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    │
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    ├── match found → ProcessReq()   ← your code runs here
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    │                   OFS authdb is NEVER consulted
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    │                   You are responsible for authZ
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    │
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    └── no match   → XrdOfs → XrdOss authdb → file operations
 </code></pre></div>
 <h3 id="plugin-loading">Plugin loading<a class="headerlink" href="#plugin-loading" title="Permanent link">&para;</a></h3>
 <p>XRootD loads the plugin via <code>http.exthandler</code> <strong>after</strong> <code>xrd.protocol XrdHttp</code>
 is active. The entry point <code>XrdHttpGetExtHandler</code> is resolved by <code>dlopen</code>.</p>
 <hr />
+<h2 id="authentication-and-authorisation">Authentication and Authorisation<a class="headerlink" href="#authentication-and-authorisation" title="Permanent link">&para;</a></h2>
+<h3 id="what-happens-and-when">What happens, and when<a class="headerlink" href="#what-happens-and-when" title="Permanent link">&para;</a></h3>
+<p>Understanding the distinction between authN and authZ — and exactly where
+each occurs relative to your plugin — is essential for writing a secure and
+correct exthandler.</p>
+<p><strong>Authentication (authN)</strong> — <em>who is this client?</em></p>
+<p>AuthN is handled by the XRootD security framework at the protocol layer,
+before any exthandler is consulted. For HTTP this is done by an
+<code>XrdHttpSecXtractor</code> plugin (e.g. SciTokens, macaroons, or GSI X.509). The
+outcome is a populated <code>XrdSecEntity</code> on <code>prot-&gt;SecEntity</code>, which the
+<code>XrdHttpExtReq</code> constructor copies into the request object.</p>
+<p>If the server is configured to require a valid credential (e.g.
+<code>sec.protocol scitokens</code>) and the client does not present one — or presents
+an invalid or expired token — the HTTP layer returns 401/403 and the
+request is terminated. <strong>Your exthandler is never called.</strong></p>
+<p>If the server permits anonymous access (or the credential is valid), your
+exthandler is called with <code>req.clientdn</code>, <code>req.clienthost</code>, and
+<code>req.GetSecEntity()</code> already populated.</p>
+<p><strong>Authorisation (authZ)</strong> — <em>is this client allowed to do this?</em></p>
+<p>XRootD's normal authZ layer (<code>acc.authdb</code> rules, managed by <code>XrdAcc</code>) is
+consulted only when the OFS layer opens a file or directory. Because an
+exthandler intercepts the request <em>before</em> OFS is called, <strong>OFS authZ is
+completely bypassed</strong> for any path your exthandler claims.</p>
+<p>This is intentional — exthandlers are designed to handle paths that have no
+filesystem backing — but it means <strong>you are solely responsible for authZ
+within your handler</strong>.</p>
+<h3 id="implications">Implications<a class="headerlink" href="#implications" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Handled by</th>
+<th>Bypassed by exthandler?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TLS / HTTPS</td>
+<td>XRootD connection layer</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Token / credential validation (authN)</td>
+<td><code>XrdHttpSecXtractor</code></td>
+<td>No</td>
+</tr>
+<tr>
+<td>OFS path access control (authZ)</td>
+<td><code>acc.authdb</code> / <code>XrdAcc</code></td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Your handler's own logic</td>
+<td>You</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+<p>The practical consequence: if your exthandler matches <code>/data/*</code>, any
+authenticated user can reach <code>ProcessReq</code> for those paths, regardless of
+what <code>acc.authdb</code> says about <code>/data</code>. You must enforce your own access
+policy.</p>
+<h3 id="unauthenticated-endpoints-eg-metrics">Unauthenticated endpoints (e.g. <code>/metrics</code>)<a class="headerlink" href="#unauthenticated-endpoints-eg-metrics" title="Permanent link">&para;</a></h3>
+<p>Prometheus scrapers and monitoring tools do not send SciTokens or X.509
+credentials. If the server requires authentication for all connections, the
+scraper will receive a 401 before reaching the exthandler.</p>
+<p>Approaches:</p>
+<p><strong>Option 1 — separate internal port without authN:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a># External port: full auth required
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>xrd.protocol XrdHttp:1094 libXrdHttp.so
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a># Internal monitoring port: no auth, bind to loopback only
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>xrd.protocol XrdHttp:1095 libXrdHttp.so
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a># (restrict access via firewall / network policy)
+</code></pre></div>
+<p><strong>Option 2 — configure the security extractor to allow anonymous access
+to specific paths.</strong> This is extractor-specific; consult the SciTokens or
+GSI documentation for the <code>authz.mapping</code> or equivalent directive.</p>
+<p><strong>Option 3 — check inside <code>ProcessReq</code> and return 401 if the credential
+is absent, rather than relying on the protocol layer to enforce it.</strong></p>
+<h3 id="implementing-authz-in-your-handler">Implementing authZ in your handler<a class="headerlink" href="#implementing-authz-in-your-handler" title="Permanent link">&para;</a></h3>
+<p>When your exthandler handles paths that require access control, use
+<code>req.GetSecEntity()</code> to inspect the authenticated identity:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">int</span><span class="w"> </span><span class="nf">MyHandler::ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">XrdSecEntity</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">GetSecEntity</span><span class="p">();</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="c1">// Check for a populated identity.</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">sec</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">sec</span><span class="p">.</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Unauthorized&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="s">&quot;WWW-Authenticate: Bearer</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="c1">// Example: restrict to a specific VO group.</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">sec</span><span class="p">.</span><span class="n">vorg</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">strcmp</span><span class="p">(</span><span class="n">sec</span><span class="p">.</span><span class="n">vorg</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;atlas&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Forbidden&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">  </span><span class="c1">// Check a specific role/capability from the token.</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">  </span><span class="c1">// sec.role is populated by the SciTokens extractor from the token&#39;s</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">  </span><span class="c1">// &quot;scope&quot; claim (e.g. &quot;storage.read:/&quot;).</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">sec</span><span class="p">.</span><span class="n">role</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">strstr</span><span class="p">(</span><span class="n">sec</span><span class="p">.</span><span class="n">role</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;storage.write&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Forbidden&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">  </span><span class="c1">// Authenticated and authorised — proceed.</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">  </span><span class="c1">// ...</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="p">}</span>
+</code></pre></div>
+<p><strong><code>XrdSecEntity</code> fields populated by SciTokens / X.509:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Source</th>
+<th>Typical content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>Token <code>sub</code> / DN common name</td>
+<td><code>"jsmith"</code> / <code>"/DC=org/CN=..."</code></td>
+</tr>
+<tr>
+<td><code>host</code></td>
+<td>Client IP / reverse DNS</td>
+<td><code>"client.example.com"</code></td>
+</tr>
+<tr>
+<td><code>vorg</code></td>
+<td>Token <code>wlcg.groups[0]</code> / VO</td>
+<td><code>"atlas"</code></td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>Token <code>scope</code></td>
+<td><code>"storage.read:/ storage.write:/upload"</code></td>
+</tr>
+<tr>
+<td><code>grps</code></td>
+<td>Token <code>wlcg.groups</code></td>
+<td><code>"/atlas /atlas/production"</code></td>
+</tr>
+<tr>
+<td><code>moninfo</code></td>
+<td>Full DN string</td>
+<td>Used for logging</td>
+</tr>
+<tr>
+<td><code>tident</code></td>
+<td>Trace identifier</td>
+<td>For log correlation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="design-principle-deny-by-default">Design principle: deny by default<a class="headerlink" href="#design-principle-deny-by-default" title="Permanent link">&para;</a></h3>
+<p>Structure your authZ checks so that any unexpected state results in a
+refusal, not a grant:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Good: explicitly enumerate what is allowed; deny everything else.</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kt">bool</span><span class="w"> </span><span class="nf">isAuthorised</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">XrdSecEntity</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sec</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">sec</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">sec</span><span class="p">.</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">sec</span><span class="p">.</span><span class="n">vorg</span><span class="p">)</span><span class="w">                         </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">sec</span><span class="p">.</span><span class="n">vorg</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;cms&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">      </span><span class="n">strcmp</span><span class="p">(</span><span class="n">sec</span><span class="p">.</span><span class="n">vorg</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;atlas&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">}</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1">// Bad: check for known-bad states; grant everything else.</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="kt">bool</span><span class="w"> </span><span class="nf">isAuthorised</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">XrdSecEntity</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sec</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sec</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w">   </span><span class="c1">// passes for empty string, unknown VOs, etc.</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="matching-verbs-and-paths">Matching Verbs and Paths<a class="headerlink" href="#matching-verbs-and-paths" title="Permanent link">&para;</a></h2>
+<h3 id="matchespath-contract"><code>MatchesPath</code> contract<a class="headerlink" href="#matchespath-contract" title="Permanent link">&para;</a></h3>
+<p><code>MatchesPath(verb, path)</code> is called <strong>for every HTTP request</strong> that arrives
+at the server, for each registered exthandler, until one returns <code>true</code>. It
+runs on the connection thread — the same thread that is reading from the
+socket. It must be:</p>
+<ul>
+<li><strong>Thread-safe</strong> — called concurrently from multiple connection threads.</li>
+<li><strong>Non-blocking</strong> — no I/O, no locks, no heap allocation.</li>
+<li><strong>Fast</strong> — see performance implications below.</li>
+</ul>
+<p>The <code>path</code> argument is the URL path component only, without the query string.
+Query parameters are available via <code>req.headers["xrd-http-query"]</code> inside
+<code>ProcessReq</code>.</p>
+<h3 id="matching-verbs">Matching verbs<a class="headerlink" href="#matching-verbs" title="Permanent link">&para;</a></h3>
+<p>Any HTTP method string can be matched. Common ones:</p>
+<table>
+<thead>
+<tr>
+<th>Verb</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td>Read, metrics, redirects</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td>Upload (bypassing OFS)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td>REST API</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td>Custom delete logic</td>
+</tr>
+<tr>
+<td><code>HEAD</code></td>
+<td>Existence / metadata check</td>
+</tr>
+<tr>
+<td><code>COPY</code></td>
+<td>Third-party copy (XrdHttpTPC)</td>
+</tr>
+<tr>
+<td><code>PROPFIND</code></td>
+<td>WebDAV directory listing</td>
+</tr>
+</tbody>
+</table>
+<p>Match multiple verbs explicitly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">bool</span><span class="w"> </span><span class="nf">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strncmp</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/api/&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">strcmp</span><span class="p">(</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;GET&quot;</span><span class="p">)</span><span class="w">  </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">         </span><span class="n">strcmp</span><span class="p">(</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;POST&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">         </span><span class="n">strcmp</span><span class="p">(</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;HEAD&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="path-matching-strategies">Path matching strategies<a class="headerlink" href="#path-matching-strategies" title="Permanent link">&para;</a></h3>
+<p><strong>Exact match</strong> — fastest; use for fixed endpoints like <code>/metrics</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">return</span><span class="w"> </span><span class="n">strcmp</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/metrics&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong>Prefix match</strong> — use <code>strncmp</code> for path hierarchies:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">return</span><span class="w"> </span><span class="n">strncmp</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/api/v1/&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong>Suffix match</strong> — useful for file-type routing:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">size_t</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">return</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">strcmp</span><span class="p">(</span><span class="n">path</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.json&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<p><strong>Regex</strong> — possible but expensive; see performance section:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;regex&gt;</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">regex</span><span class="w"> </span><span class="n">re</span><span class="p">(</span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s">^/data/[a-z]+/\d{4}/.*</span><span class="dl">)</span><span class="s">&quot;</span><span class="p">);</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">regex_match</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">re</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="performance-implications">Performance implications<a class="headerlink" href="#performance-implications" title="Permanent link">&para;</a></h3>
+<p>In a busy XRootD instance handling thousands of concurrent <code>xrdcp</code> streams,
+<code>MatchesPath</code> may be called tens of thousands of times per second. Each call
+is on the critical path between socket read and request dispatch.</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Cost</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>strcmp</code> / <code>strncmp</code></td>
+<td>O(n), ~ns</td>
+<td>Preferred for fixed strings</td>
+</tr>
+<tr>
+<td>Manual prefix/suffix</td>
+<td>O(n), ~ns</td>
+<td>Fine for most cases</td>
+</tr>
+<tr>
+<td><code>std::regex_match</code></td>
+<td>O(n·m), ~µs</td>
+<td>Avoid on hot path; compile once to <code>static const</code> at minimum</td>
+</tr>
+<tr>
+<td><code>std::string</code> construction</td>
+<td>heap alloc</td>
+<td>Avoid; use <code>strcmp</code> on the raw <code>const char*</code></td>
+</tr>
+<tr>
+<td>Map / set lookup</td>
+<td>O(log n)</td>
+<td>Acceptable for small sets of fixed paths</td>
+</tr>
+<tr>
+<td>Any lock acquisition</td>
+<td>variable</td>
+<td>Never; use atomics or lock-free structures</td>
+</tr>
+</tbody>
+</table>
+<p><strong>If you need regex</strong>, compile the pattern once into a <code>static const
+std::regex</code> inside <code>MatchesPath</code> (initialised on first call, thread-safe in
+C++11) and use <code>regex_match</code> rather than <code>regex_search</code> to anchor both ends:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kt">bool</span><span class="w"> </span><span class="nf">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;GET&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w">   </span><span class="c1">// fast pre-filter</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">regex</span><span class="w"> </span><span class="n">re</span><span class="p">(</span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s">^/run/\d+/file/\d+$</span><span class="dl">)</span><span class="s">&quot;</span><span class="p">);</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">regex_match</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">re</span><span class="p">);</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p">}</span>
+</code></pre></div>
+<p>The <code>strcmp</code> pre-filter on the verb eliminates non-GET requests before the
+regex engine is invoked.</p>
+<p><strong>Ordering exthandlers</strong> — register the most frequently matched (or most
+quickly rejected) handler first. If handler A claims <code>/metrics</code> (an exact
+match) and handler B claims <code>/data/*</code> (all file I/O), put A first; it will
+reject <code>/data/</code> requests in one <code>strcmp</code> call.</p>
+<hr />
+<h2 id="sending-redirects">Sending Redirects<a class="headerlink" href="#sending-redirects" title="Permanent link">&para;</a></h2>
+<p><code>SendSimpleResp</code> with a 301 or 302 status and a <code>Location:</code> header is all
+that is needed. The <code>Location</code> value is passed as part of the header string.</p>
+<h3 id="temporary-redirect-302">Temporary redirect (302)<a class="headerlink" href="#temporary-redirect-302" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kt">int</span><span class="w"> </span><span class="nf">MyHandler::ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="c1">// Build the target URL.  req.resource is the path; headers contain</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="c1">// the original Host so you can construct an absolute URL if needed.</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://cdn.example.com&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">resource</span><span class="p">;</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">hdr</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Location: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">;</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">302</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Found&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">hdr</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="permanent-redirect-301">Permanent redirect (301)<a class="headerlink" href="#permanent-redirect-301" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">hdr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Location: https://new.example.com&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">resource</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">;</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">301</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Moved Permanently&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">hdr</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="redirect-with-query-string-preservation">Redirect with query string preservation<a class="headerlink" href="#redirect-with-query-string-preservation" title="Permanent link">&para;</a></h3>
+<p>The query string is not in <code>req.resource</code> — it is in
+<code>req.headers["xrd-http-query"]</code>. Reconstruct the full URL if needed:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://backend.example.com&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">resource</span><span class="p">;</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">qit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">headers</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;xrd-http-query&quot;</span><span class="p">);</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">qit</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">headers</span><span class="p">.</span><span class="n">end</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">qit</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="n">target</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s">&quot;?&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">qit</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">;</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">hdr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Location: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">;</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">302</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Found&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">hdr</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="redirect-with-authz-check">Redirect with authZ check<a class="headerlink" href="#redirect-with-authz-check" title="Permanent link">&para;</a></h3>
+<p>Never redirect to a backend that trusts XRootD's authZ — the backend will
+receive an unauthenticated request. Either forward the original credential
+in a header, or check authZ before redirecting:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kt">int</span><span class="w"> </span><span class="nf">MyHandler::ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">XrdSecEntity</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">GetSecEntity</span><span class="p">();</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">sec</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">sec</span><span class="p">.</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Unauthorized&quot;</span><span class="p">,</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">      </span><span class="s">&quot;WWW-Authenticate: Bearer</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">  </span><span class="c1">// Forward the original Authorization header to the backend.</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">loc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Location: https://nginx.internal&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">resource</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">;</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">auth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">headers</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;authorization&quot;</span><span class="p">);</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">auth</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">headers</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">    </span><span class="n">loc</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s">&quot;X-Forwarded-Auth: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">auth</span><span class="o">-&gt;</span><span class="n">second</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">;</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">302</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Found&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">loc</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
 <h2 id="the-interface">The Interface<a class="headerlink" href="#the-interface" title="Permanent link">&para;</a></h2>
 <p>From <code>XrdHttp/XrdHttpExtHandler.hh</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">XrdHttpExtHandler</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">public</span><span class="o">:</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="c1">/// Return true if this handler owns the given verb+path combination.</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="c1">/// Handle the request. Send a response via req.SendSimpleResp() (or the</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="c1">/// chunked / streaming variants). Return 0 on success, non-zero on error.</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="c1">/// Called once at startup with the path of the xrootd config file.</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="c1">/// Return 0 on success, non-zero to abort loading.</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">Init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cfgfile</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">XrdHttpExtHandler</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">};</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">XrdHttpExtHandler</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">public</span><span class="o">:</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="c1">/// Return true if this handler owns the given verb+path combination.</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">  </span><span class="c1">/// Handle the request. Send a response via req.SendSimpleResp() (or the</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">  </span><span class="c1">/// chunked / streaming variants). Return 0 on success, non-zero on error.</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">  </span><span class="c1">/// Called once at startup with the path of the xrootd config file.</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">  </span><span class="c1">/// Return 0 on success, non-zero to abort loading.</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">Init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cfgfile</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">XrdHttpExtHandler</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="p">};</span>
 </code></pre></div>
 <h3 id="xrdhttpextreq-the-requestresponse-object"><code>XrdHttpExtReq</code> — the request/response object<a class="headerlink" href="#xrdhttpextreq-the-requestresponse-object" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Method</th>
+<th>Member / Method</th>
 <th>Purpose</th>
 </tr>
 </thead>
@@ -1218,119 +2027,120 @@ not in <code>libXrdHttp-5.so</code>. See <a href="#build-requirements">Build req
 <hr />
 <h2 id="complete-plugin-template">Complete Plugin Template<a class="headerlink" href="#complete-plugin-template" title="Permanent link">&para;</a></h2>
 <h3 id="header-myhandlerhh">Header — <code>MyHandler.hh</code><a class="headerlink" href="#header-myhandlerhh" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="cp">#pragma once</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdHttp/XrdHttpExtHandler.hh&quot;</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdSys/XrdSysError.hh&quot;</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyHandler</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">XrdHttpExtHandler</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">public</span><span class="o">:</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">MyHandler</span><span class="p">(</span><span class="n">XrdSysError</span><span class="w"> </span><span class="o">*</span><span class="n">log</span><span class="p">);</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="o">~</span><span class="n">MyHandler</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="nf">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="kt">int</span><span class="w">  </span><span class="nf">ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">  </span><span class="kt">int</span><span class="w">  </span><span class="nf">Init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cfgfile</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="k">private</span><span class="o">:</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">  </span><span class="n">XrdSysError</span><span class="w"> </span><span class="o">*</span><span class="n">m_log</span><span class="p">;</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="p">};</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="cp">#pragma once</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdHttp/XrdHttpExtHandler.hh&quot;</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdSys/XrdSysError.hh&quot;</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyHandler</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">XrdHttpExtHandler</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="k">public</span><span class="o">:</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">MyHandler</span><span class="p">(</span><span class="n">XrdSysError</span><span class="w"> </span><span class="o">*</span><span class="n">log</span><span class="p">);</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">  </span><span class="o">~</span><span class="n">MyHandler</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="nf">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">  </span><span class="kt">int</span><span class="w">  </span><span class="nf">ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">  </span><span class="kt">int</span><span class="w">  </span><span class="nf">Init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cfgfile</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="k">private</span><span class="o">:</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="w">  </span><span class="n">XrdSysError</span><span class="w"> </span><span class="o">*</span><span class="n">m_log</span><span class="p">;</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="p">};</span>
 </code></pre></div>
 <h3 id="implementation-myhandlercc">Implementation — <code>MyHandler.cc</code><a class="headerlink" href="#implementation-myhandlercc" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;MyHandler.hh&quot;</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdVersion.hh&quot;</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">// Required: declares ABI version used at compile time.</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1">// Second argument is a 1–15 character plugin identifier.</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">XrdVERSIONINFO</span><span class="p">(</span><span class="n">XrdHttpGetExtHandler</span><span class="p">,</span><span class="w"> </span><span class="n">MyHandler</span><span class="p">);</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">MyHandler</span><span class="o">::</span><span class="n">MyHandler</span><span class="p">(</span><span class="n">XrdSysError</span><span class="w"> </span><span class="o">*</span><span class="n">log</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">m_log</span><span class="p">(</span><span class="n">log</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="n">m_log</span><span class="o">-&gt;</span><span class="n">Say</span><span class="p">(</span><span class="s">&quot;myhandler: initialised&quot;</span><span class="p">);</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="kt">bool</span><span class="w"> </span><span class="n">MyHandler</span><span class="o">::</span><span class="n">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">  </span><span class="c1">// Called for every HTTP request — keep this fast.</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;GET&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/my-endpoint&quot;</span><span class="p">);</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="p">}</span>
-<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
-<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="kt">int</span><span class="w"> </span><span class="n">MyHandler</span><span class="o">::</span><span class="n">ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hello from MyHandler</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
-<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span>
-<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;OK&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="s">&quot;Content-Type: text/plain</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">    </span><span class="n">body</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span>
-<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">    </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">body</span><span class="p">.</span><span class="n">size</span><span class="p">()));</span>
-<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="p">}</span>
-<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>
-<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="kt">int</span><span class="w"> </span><span class="n">MyHandler</span><span class="o">::</span><span class="n">Init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cfgfile</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">  </span><span class="c1">// Parse plugin-specific directives from cfgfile if needed.</span>
-<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">  </span><span class="c1">// Return 0 on success, non-zero to abort.</span>
-<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="p">}</span>
-<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>
-<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="c1">// Plugin entry point — must have exactly this name.</span>
-<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="n">XrdHttpExtHandler</span><span class="w"> </span><span class="o">*</span>
-<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="n">XrdHttpGetExtHandler</span><span class="p">(</span><span class="n">XrdSysError</span><span class="w">  </span><span class="o">*</span><span class="n">eDest</span><span class="p">,</span>
-<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="w">                     </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w">   </span><span class="o">*</span><span class="w"> </span><span class="cm">/*confg*/</span><span class="p">,</span>
-<a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span class="w">                     </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w">   </span><span class="o">*</span><span class="w"> </span><span class="cm">/*parms*/</span><span class="p">,</span>
-<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a><span class="w">                     </span><span class="n">XrdOucEnv</span><span class="w">    </span><span class="o">*</span><span class="w"> </span><span class="cm">/*myEnv*/</span><span class="p">)</span>
-<a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a><span class="p">{</span>
-<a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">MyHandler</span><span class="p">(</span><span class="n">eDest</span><span class="p">);</span>
-<a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;MyHandler.hh&quot;</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdVersion.hh&quot;</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1">// Required: declares ABI version used at compile time.</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="c1">// Second argument is a 1–15 character plugin identifier.</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">XrdVERSIONINFO</span><span class="p">(</span><span class="n">XrdHttpGetExtHandler</span><span class="p">,</span><span class="w"> </span><span class="n">MyHandler</span><span class="p">);</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="n">MyHandler</span><span class="o">::</span><span class="n">MyHandler</span><span class="p">(</span><span class="n">XrdSysError</span><span class="w"> </span><span class="o">*</span><span class="n">log</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">m_log</span><span class="p">(</span><span class="n">log</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="w">  </span><span class="n">m_log</span><span class="o">-&gt;</span><span class="n">Say</span><span class="p">(</span><span class="s">&quot;myhandler: initialised&quot;</span><span class="p">);</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="p">}</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="kt">bool</span><span class="w"> </span><span class="n">MyHandler</span><span class="o">::</span><span class="n">MatchesPath</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="w">  </span><span class="c1">// Called for every HTTP request — keep this fast and allocation-free.</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">verb</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;GET&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">strcmp</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/my-endpoint&quot;</span><span class="p">);</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="p">}</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="kt">int</span><span class="w"> </span><span class="n">MyHandler</span><span class="o">::</span><span class="n">ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="w">  </span><span class="c1">// Always send a response on every code path.</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">body</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hello from MyHandler</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="w">    </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;OK&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a><span class="w">    </span><span class="s">&quot;Content-Type: text/plain</span><span class="se">\r\n</span><span class="s">&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="w">    </span><span class="n">body</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="w">    </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">body</span><span class="p">.</span><span class="n">size</span><span class="p">()));</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a><span class="p">}</span>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a><span class="kt">int</span><span class="w"> </span><span class="n">MyHandler</span><span class="o">::</span><span class="n">Init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cfgfile</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a><span class="w">  </span><span class="c1">// Parse plugin-specific directives from cfgfile if needed.</span>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a><span class="w">  </span><span class="c1">// Return 0 on success, non-zero to abort loading.</span>
+<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a><span class="p">}</span>
+<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a><span class="c1">// Plugin entry point — must have exactly this name.</span>
+<a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="n">XrdHttpExtHandler</span><span class="w"> </span><span class="o">*</span>
+<a id="__codelineno-16-35" name="__codelineno-16-35" href="#__codelineno-16-35"></a><span class="n">XrdHttpGetExtHandler</span><span class="p">(</span><span class="n">XrdSysError</span><span class="w">  </span><span class="o">*</span><span class="n">eDest</span><span class="p">,</span>
+<a id="__codelineno-16-36" name="__codelineno-16-36" href="#__codelineno-16-36"></a><span class="w">                     </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w">   </span><span class="o">*</span><span class="w"> </span><span class="cm">/*confg*/</span><span class="p">,</span>
+<a id="__codelineno-16-37" name="__codelineno-16-37" href="#__codelineno-16-37"></a><span class="w">                     </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w">   </span><span class="o">*</span><span class="w"> </span><span class="cm">/*parms*/</span><span class="p">,</span>
+<a id="__codelineno-16-38" name="__codelineno-16-38" href="#__codelineno-16-38"></a><span class="w">                     </span><span class="n">XrdOucEnv</span><span class="w">    </span><span class="o">*</span><span class="w"> </span><span class="cm">/*myEnv*/</span><span class="p">)</span>
+<a id="__codelineno-16-39" name="__codelineno-16-39" href="#__codelineno-16-39"></a><span class="p">{</span>
+<a id="__codelineno-16-40" name="__codelineno-16-40" href="#__codelineno-16-40"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">MyHandler</span><span class="p">(</span><span class="n">eDest</span><span class="p">);</span>
+<a id="__codelineno-16-41" name="__codelineno-16-41" href="#__codelineno-16-41"></a><span class="p">}</span>
 </code></pre></div>
 <hr />
 <h2 id="build-requirements">Build Requirements<a class="headerlink" href="#build-requirements" title="Permanent link">&para;</a></h2>
 <h3 id="cmake">CMake<a class="headerlink" href="#cmake" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c"># 1. Find the XrdHttp private headers (XrdHttpExtHandler.hh lives there).</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">find_path</span><span class="p">(</span><span class="s">XRDHTTP_INCLUDE_DIR</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">          </span><span class="s">NAMES</span><span class="w"> </span><span class="s">XrdHttp/XrdHttpExtHandler.hh</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">          </span><span class="s">HINTS</span><span class="w"> </span><span class="o">${</span><span class="nv">XROOTD_INCLUDE_DIR</span><span class="o">}</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">                </span><span class="o">${</span><span class="nv">XROOTD_INCLUDE_DIR</span><span class="o">}</span><span class="s">/private</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">                </span><span class="s">/usr/include/xrootd</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">                </span><span class="s">/usr/local/include/xrootd</span><span class="p">)</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="c"># 2. Find libXrdHttpUtils — the SHARED library that contains SendSimpleResp</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c">#    and all XrdHttpExt* implementations. Do NOT use libXrdHttp (the module).</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="nb">find_library</span><span class="p">(</span><span class="s">XRDHTTP_UTILS_LIBRARY</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">             </span><span class="s">NAMES</span><span class="w"> </span><span class="s">XrdHttpUtils</span>
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">             </span><span class="s">HINTS</span><span class="w"> </span><span class="s">/usr/lib64</span><span class="w"> </span><span class="s">/usr/local/lib64</span><span class="p">)</span>
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="nb">if</span><span class="p">(</span><span class="s">XRDHTTP_INCLUDE_DIR</span><span class="w"> </span><span class="s">AND</span><span class="w"> </span><span class="s">XRDHTTP_UTILS_LIBRARY</span><span class="p">)</span>
-<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">  </span><span class="nb">set</span><span class="p">(</span><span class="s">PLUGIN_VERSION</span><span class="w"> </span><span class="s">5</span><span class="p">)</span><span class="w">   </span><span class="c"># match your XRootD major version</span>
-<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">  </span><span class="nb">add_library</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span><span class="w"> </span><span class="s">MODULE</span>
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">    </span><span class="s">MyHandler.cc</span><span class="w"> </span><span class="s">MyHandler.hh</span><span class="p">)</span>
-<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
-<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">  </span><span class="nb">target_include_directories</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span>
-<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">    </span><span class="s">PRIVATE</span><span class="w"> </span><span class="o">${</span><span class="nv">XRDHTTP_INCLUDE_DIR</span><span class="o">}</span><span class="p">)</span>
-<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>
-<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">  </span><span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span>
-<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">    </span><span class="o">${</span><span class="nv">XROOTD_LIBRARIES</span><span class="o">}</span>
-<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">    </span><span class="o">${</span><span class="nv">XRDHTTP_UTILS_LIBRARY</span><span class="o">}</span><span class="p">)</span>
-<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>
-<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">  </span><span class="c"># Prevent CMake from propagating link dependencies to consumers.</span>
-<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">  </span><span class="nb">set_target_properties</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span><span class="w"> </span><span class="s">PROPERTIES</span>
-<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">    </span><span class="s">INTERFACE_LINK_LIBRARIES</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
-<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">    </span><span class="s">LINK_INTERFACE_LIBRARIES</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>
-<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">  </span><span class="nb">install</span><span class="p">(</span><span class="s">TARGETS</span><span class="w"> </span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span>
-<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="w">    </span><span class="s">LIBRARY</span><span class="w"> </span><span class="s">DESTINATION</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_INSTALL_LIBDIR</span><span class="o">}</span><span class="p">)</span>
-<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a>
-<a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="nb">endif</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c"># 1. Find the XrdHttp private headers (XrdHttpExtHandler.hh lives there).</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="nb">find_path</span><span class="p">(</span><span class="s">XRDHTTP_INCLUDE_DIR</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">          </span><span class="s">NAMES</span><span class="w"> </span><span class="s">XrdHttp/XrdHttpExtHandler.hh</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">          </span><span class="s">HINTS</span><span class="w"> </span><span class="o">${</span><span class="nv">XROOTD_INCLUDE_DIR</span><span class="o">}</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">                </span><span class="o">${</span><span class="nv">XROOTD_INCLUDE_DIR</span><span class="o">}</span><span class="s">/private</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">                </span><span class="s">/usr/include/xrootd</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">                </span><span class="s">/usr/local/include/xrootd</span><span class="p">)</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="c"># 2. Find libXrdHttpUtils — the SHARED library that contains SendSimpleResp</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="c">#    and all XrdHttpExt* implementations. Do NOT use libXrdHttp (the module).</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="nb">find_library</span><span class="p">(</span><span class="s">XRDHTTP_UTILS_LIBRARY</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="w">             </span><span class="s">NAMES</span><span class="w"> </span><span class="s">XrdHttpUtils</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="w">             </span><span class="s">HINTS</span><span class="w"> </span><span class="s">/usr/lib64</span><span class="w"> </span><span class="s">/usr/local/lib64</span><span class="p">)</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="nb">if</span><span class="p">(</span><span class="s">XRDHTTP_INCLUDE_DIR</span><span class="w"> </span><span class="s">AND</span><span class="w"> </span><span class="s">XRDHTTP_UTILS_LIBRARY</span><span class="p">)</span>
+<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>
+<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a><span class="w">  </span><span class="nb">set</span><span class="p">(</span><span class="s">PLUGIN_VERSION</span><span class="w"> </span><span class="s">5</span><span class="p">)</span><span class="w">   </span><span class="c"># match your XRootD major version</span>
+<a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a><span class="w">  </span><span class="nb">add_library</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span><span class="w"> </span><span class="s">MODULE</span>
+<a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a><span class="w">    </span><span class="s">MyHandler.cc</span><span class="w"> </span><span class="s">MyHandler.hh</span><span class="p">)</span>
+<a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a>
+<a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a><span class="w">  </span><span class="nb">target_include_directories</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span>
+<a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a><span class="w">    </span><span class="s">PRIVATE</span><span class="w"> </span><span class="o">${</span><span class="nv">XRDHTTP_INCLUDE_DIR</span><span class="o">}</span><span class="p">)</span>
+<a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a>
+<a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a><span class="w">  </span><span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span>
+<a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a><span class="w">    </span><span class="o">${</span><span class="nv">XROOTD_LIBRARIES</span><span class="o">}</span>
+<a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a><span class="w">    </span><span class="o">${</span><span class="nv">XRDHTTP_UTILS_LIBRARY</span><span class="o">}</span><span class="p">)</span>
+<a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a>
+<a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a><span class="w">  </span><span class="c"># Prevent CMake from propagating link dependencies to consumers.</span>
+<a id="__codelineno-17-29" name="__codelineno-17-29" href="#__codelineno-17-29"></a><span class="w">  </span><span class="nb">set_target_properties</span><span class="p">(</span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span><span class="w"> </span><span class="s">PROPERTIES</span>
+<a id="__codelineno-17-30" name="__codelineno-17-30" href="#__codelineno-17-30"></a><span class="w">    </span><span class="s">INTERFACE_LINK_LIBRARIES</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<a id="__codelineno-17-31" name="__codelineno-17-31" href="#__codelineno-17-31"></a><span class="w">    </span><span class="s">LINK_INTERFACE_LIBRARIES</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-17-32" name="__codelineno-17-32" href="#__codelineno-17-32"></a>
+<a id="__codelineno-17-33" name="__codelineno-17-33" href="#__codelineno-17-33"></a><span class="w">  </span><span class="nb">install</span><span class="p">(</span><span class="s">TARGETS</span><span class="w"> </span><span class="s">MyHandler-</span><span class="o">${</span><span class="nv">PLUGIN_VERSION</span><span class="o">}</span>
+<a id="__codelineno-17-34" name="__codelineno-17-34" href="#__codelineno-17-34"></a><span class="w">    </span><span class="s">LIBRARY</span><span class="w"> </span><span class="s">DESTINATION</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_INSTALL_LIBDIR</span><span class="o">}</span><span class="p">)</span>
+<a id="__codelineno-17-35" name="__codelineno-17-35" href="#__codelineno-17-35"></a>
+<a id="__codelineno-17-36" name="__codelineno-17-36" href="#__codelineno-17-36"></a><span class="nb">endif</span><span class="p">()</span>
 </code></pre></div>
 <h3 id="rpm-build-dependency">RPM build dependency<a class="headerlink" href="#rpm-build-dependency" title="Permanent link">&para;</a></h3>
 <p>The <code>XrdHttpExtHandler.hh</code> header ships in the <strong>private</strong> headers of
 <code>xrootd-server-devel</code>. Ensure it is listed in your spec's <code>BuildRequires</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="gh">BuildRequires</span><span class="p">:</span><span class="w"> </span>xrootd-server-devel
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="gh">BuildRequires</span><span class="p">:</span><span class="w"> </span>xrootd-server-devel
 </code></pre></div>
 <hr />
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a># Load the XrdHttp protocol on port 1094.
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>xrd.protocol XrdHttp:1094 libXrdHttp.so
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a># Register the exthandler.  XRootD auto-appends the version suffix (-5),
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a># so do NOT include it in the path.
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>http.exthandler myhandler /usr/lib64/libMyHandler.so
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a># Load the XrdHttp protocol on port 1094.
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>xrd.protocol XrdHttp:1094 libXrdHttp.so
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a># Register the exthandler.  XRootD auto-appends the version suffix (-5),
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a># so do NOT include it in the path.
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>http.exthandler myhandler /usr/lib64/libMyHandler.so
 </code></pre></div>
 <p>Multiple exthandlers can be registered; they are tested in declaration order.</p>
 <hr />
@@ -1348,11 +2158,11 @@ expected to link against it for the XrdHttpExt class implementations."</em></p>
 <p><code>XrdHttpTPC</code> — the canonical reference exthandler in the XRootD tree — links
 against <code>XrdHttpUtils</code>. Follow that pattern.</p>
 <h3 id="2-omit-the-5-version-suffix-from-httpexthandler">2. Omit the <code>-5</code> version suffix from <code>http.exthandler</code><a class="headerlink" href="#2-omit-the-5-version-suffix-from-httpexthandler" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a># Wrong — causes double-versioning: libMyHandler-5-5.so not found
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>http.exthandler myhandler /usr/lib64/libMyHandler-5.so
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a># Correct — XRootD appends -5 automatically
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>http.exthandler myhandler /usr/lib64/libMyHandler.so
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a># Wrong — causes double-versioning: libMyHandler-5-5.so not found
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>http.exthandler myhandler /usr/lib64/libMyHandler-5.so
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a># Correct — XRootD appends -5 automatically
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>http.exthandler myhandler /usr/lib64/libMyHandler.so
 </code></pre></div>
 <p>This applies to all plugin directives (<code>ofs.osslib</code>, <code>ofs.xattrlib</code>,
 <code>http.exthandler</code>).</p>
@@ -1362,29 +2172,29 @@ defined in one plugin <code>.so</code> is invisible to another plugin loaded lat
 your exthandler needs to access state owned by the OSS plugin (e.g. a global
 <code>g_statsManager</code>), it must have an explicit <code>DT_NEEDED</code> on that library.</p>
 <p>Use <code>-L</code>/<code>-l</code> in <code>target_link_options</code>, <strong>not</strong> <code>$&lt;TARGET_FILE:...&gt;</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c"># Correct: produces DT_NEEDED: libXrdBlackhole-5.so (bare name)</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nb">add_dependencies</span><span class="p">(</span><span class="s">MyHandler-5</span><span class="w"> </span><span class="s">XrdBlackhole-5</span><span class="p">)</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nb">target_link_options</span><span class="p">(</span><span class="s">MyHandler-5</span><span class="w"> </span><span class="s">PRIVATE</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="s">-L</span><span class="o">$&lt;</span><span class="nv">TARGET_FILE_DIR:XrdBlackhole-5</span><span class="o">&gt;</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="s">-lXrdBlackhole-5</span><span class="p">)</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c"># Wrong: embeds absolute build path in DT_NEEDED</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="c"># → dlopen fails with &quot;No such file or directory&quot; on installed systems</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="nb">target_link_options</span><span class="p">(</span><span class="s">MyHandler-5</span><span class="w"> </span><span class="s">PRIVATE</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">  </span><span class="o">$&lt;</span><span class="nv">TARGET_FILE:XrdBlackhole-5</span><span class="o">&gt;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c"># Correct: produces DT_NEEDED: libXrdBlackhole-5.so (bare name)</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="nb">add_dependencies</span><span class="p">(</span><span class="s">MyHandler-5</span><span class="w"> </span><span class="s">XrdBlackhole-5</span><span class="p">)</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="nb">target_link_options</span><span class="p">(</span><span class="s">MyHandler-5</span><span class="w"> </span><span class="s">PRIVATE</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span><span class="s">-L</span><span class="o">$&lt;</span><span class="nv">TARGET_FILE_DIR:XrdBlackhole-5</span><span class="o">&gt;</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">  </span><span class="s">-lXrdBlackhole-5</span><span class="p">)</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="c"># Wrong: embeds absolute build path in DT_NEEDED</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="c"># → dlopen fails with &quot;No such file or directory&quot; on installed systems</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="nb">target_link_options</span><span class="p">(</span><span class="s">MyHandler-5</span><span class="w"> </span><span class="s">PRIVATE</span>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">  </span><span class="o">$&lt;</span><span class="nv">TARGET_FILE:XrdBlackhole-5</span><span class="o">&gt;</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="4-xrdversioninfo-is-required">4. <code>XrdVERSIONINFO</code> is required<a class="headerlink" href="#4-xrdversioninfo-is-required" title="Permanent link">&para;</a></h3>
 <p>Without the version macro the plugin may load silently but XRootD will
 emit a warning. Include it at file scope in the <code>.cc</code> file:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdVersion.hh&quot;</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">XrdVERSIONINFO</span><span class="p">(</span><span class="n">XrdHttpGetExtHandler</span><span class="p">,</span><span class="w"> </span><span class="n">MyPluginName</span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;XrdVersion.hh&quot;</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">XrdVERSIONINFO</span><span class="p">(</span><span class="n">XrdHttpGetExtHandler</span><span class="p">,</span><span class="w"> </span><span class="n">MyPluginName</span><span class="p">);</span>
 </code></pre></div>
 <p>The second argument must be 1–15 characters. It appears in the XRootD log
 at load time.</p>
-<h3 id="5-matchespath-is-called-for-every-request-keep-it-o1">5. <code>MatchesPath</code> is called for every request — keep it O(1)<a class="headerlink" href="#5-matchespath-is-called-for-every-request-keep-it-o1" title="Permanent link">&para;</a></h3>
-<p><code>MatchesPath</code> is called on the hot path for every HTTP request, including
-high-frequency <code>xrdcp</code> and WebDAV operations. Use <code>strcmp</code> / prefix checks,
-not regex or map lookups.</p>
+<h3 id="5-matchespath-is-on-the-hot-path-keep-it-allocation-free">5. <code>MatchesPath</code> is on the hot path — keep it allocation-free<a class="headerlink" href="#5-matchespath-is-on-the-hot-path-keep-it-allocation-free" title="Permanent link">&para;</a></h3>
+<p><code>MatchesPath</code> is called for every HTTP request on the connection thread.
+Use <code>strcmp</code> / <code>strncmp</code> on the raw <code>const char*</code> arguments. Never construct
+<code>std::string</code>, acquire a lock, or call any blocking function here.</p>
 <h3 id="6-init-is-called-before-matchespath-or-processreq">6. <code>Init</code> is called before <code>MatchesPath</code> or <code>ProcessReq</code><a class="headerlink" href="#6-init-is-called-before-matchespath-or-processreq" title="Permanent link">&para;</a></h3>
 <p>If <code>Init</code> returns non-zero, the plugin is unloaded and XRootD logs an error.
 Use <code>Init</code> to validate configuration and pre-allocate resources. Do not defer
@@ -1392,19 +2202,30 @@ initialisation to <code>MatchesPath</code>.</p>
 <h3 id="7-processreq-must-always-send-a-response">7. <code>ProcessReq</code> must always send a response<a class="headerlink" href="#7-processreq-must-always-send-a-response" title="Permanent link">&para;</a></h3>
 <p>If <code>ProcessReq</code> returns without calling a <code>Send*</code> method, the client
 connection will hang. Always send a response — even on error paths:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kt">int</span><span class="w"> </span><span class="nf">MyHandler::ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">something_wrong</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Internal Server Error&quot;</span><span class="p">,</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">                              </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span><span class="c1">// ...</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="kt">int</span><span class="w"> </span><span class="nf">MyHandler::ProcessReq</span><span class="p">(</span><span class="n">XrdHttpExtReq</span><span class="w"> </span><span class="o">&amp;</span><span class="n">req</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">something_wrong</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">req</span><span class="p">.</span><span class="n">SendSimpleResp</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Internal Server Error&quot;</span><span class="p">,</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">                              </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">  </span><span class="c1">// ...</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="p">}</span>
 </code></pre></div>
 <h3 id="8-private-headers-may-not-be-installed-by-default">8. Private headers may not be installed by default<a class="headerlink" href="#8-private-headers-may-not-be-installed-by-default" title="Permanent link">&para;</a></h3>
 <p><code>XrdHttpExtHandler.hh</code> is in the <code>private/</code> subdirectory of the XRootD
 include path. On some distributions or build configurations it may be absent
 even when <code>xrootd-server-devel</code> is installed. Always guard the build with a
 <code>find_path</code> check and skip the plugin gracefully if the header is missing.</p>
+<h3 id="9-ofs-authz-is-bypassed-you-own-access-control">9. OFS authZ is bypassed — you own access control<a class="headerlink" href="#9-ofs-authz-is-bypassed-you-own-access-control" title="Permanent link">&para;</a></h3>
+<p>The <code>acc.authdb</code> rules are never evaluated for paths your exthandler claims.
+A client that passes authN (valid token) will reach <code>ProcessReq</code> regardless
+of what the authdb says about that path. Implement explicit authZ checks
+using <code>req.GetSecEntity()</code> for any handler that is not intentionally public.</p>
+<h3 id="10-unauthenticated-endpoints-require-a-separate-port-or-policy">10. Unauthenticated endpoints require a separate port or policy<a class="headerlink" href="#10-unauthenticated-endpoints-require-a-separate-port-or-policy" title="Permanent link">&para;</a></h3>
+<p>Prometheus scrapers, health checks, and similar tooling do not send tokens.
+If the server requires authentication globally, these clients will receive
+a 401 before your exthandler is invoked. The cleanest solution is a dedicated
+internal port bound to loopback, with no <code>sec.protocol</code> requirement, used
+only for monitoring traffic.</p>
 <hr />
 <h2 id="checklist-for-a-new-exthandler-plugin">Checklist for a new exthandler plugin<a class="headerlink" href="#checklist-for-a-new-exthandler-plugin" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1416,7 +2237,10 @@ even when <code>xrootd-server-devel</code> is installed. Always guard the build 
 <li>[ ] Set <code>INTERFACE_LINK_LIBRARIES ""</code> on the MODULE target</li>
 <li>[ ] Config directive omits <code>-5</code> suffix</li>
 <li>[ ] If sharing state with OSS plugin: use <code>-L/-l</code> DT_NEEDED, not <code>$&lt;TARGET_FILE:...&gt;</code></li>
+<li>[ ] <code>MatchesPath</code> is allocation-free, lock-free, and O(1) or O(n) string compare only</li>
 <li>[ ] <code>ProcessReq</code> always sends a response on all code paths</li>
+<li>[ ] AuthZ explicitly checked via <code>GetSecEntity()</code> for any non-public endpoint</li>
+<li>[ ] Unauthenticated endpoints use a dedicated port or explicit security policy</li>
 <li>[ ] Add <code>xrootd-server-devel</code> to <code>BuildRequires</code> in the RPM spec</li>
 </ul>
 
