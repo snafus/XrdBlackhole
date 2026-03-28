@@ -40,8 +40,8 @@
 //! write speed. The total bytes written are tracked so that the file appears
 //! with the correct size after close.
 //!
-//! Reads return a zero-filled buffer up to the file's registered size.
-//! AIO reads and vectored reads are not supported.
+//! Reads return a zero-filled or deterministic pseudo-random buffer up to the
+//! file's registered size.  AIO and vectored reads are both supported.
 //!
 //! Per-transfer statistics are accumulated during the Open→Close lifecycle
 //! and submitted to XrdBlackholeStatsManager on close.
@@ -74,8 +74,17 @@ private:
   // what the atomic counters below already provide.
   std::shared_ptr<Stub> m_stub;
   std::string  m_path;
-  size_t       m_size {0};   ///< Cached stub size; set once in Open(), read-only thereafter
+  size_t       m_size {0};              ///< Cached stub size; set once in Open(), read-only thereafter
   XrdBlackholeOss *m_bhOss;
+
+  // Cached at Open() — read-only on every I/O call thereafter.
+  bool   m_isRandom{false};            ///< true when stub read type is "random"
+  ino_t  m_ino{0};                     ///< stub inode number; LCG seed component for random reads
+  double m_throttleBytesPerUs{0.0};    ///< precomputed write throttle; 0.0 = unlimited
+
+  // Fill [buff, buff+blen) from the virtual file at [offset, offset+blen).
+  // Does not update atomic counters — callers are responsible for accounting.
+  ssize_t ReadInner(void *buff, off_t offset, size_t blen) const;
 
   // Timing — high-resolution clock for throttle / duration calculations.
   std::chrono::high_resolution_clock::time_point m_start;

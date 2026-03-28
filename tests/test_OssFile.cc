@@ -521,6 +521,87 @@ TEST_F(OssFileTest, RandomReadIsDeterministic) {
     g_blackholeFS.unlink(kRandPath);
 }
 
+TEST_F(OssFileTest, RandomReadLengthNotMultipleOf8) {
+    // Exercises the tail loop in the unrolled LCG: lengths 7 and 511 land
+    // entirely in the tail; 9 and 513 do one full 8-byte iteration plus tail.
+    static constexpr const char* kRandPath = "/test/rand_tail.root";
+    g_blackholeFS.seed(kRandPath, 4096, "random");
+
+    XrdBlackholeOssFile rf(s_oss);
+    XrdOucEnv renv;
+    ASSERT_EQ(XrdOssOK, rf.Open(kRandPath, O_RDONLY, 0, renv));
+
+    for (size_t len : {7u, 9u, 511u, 513u}) {
+        std::vector<char> buf(len, 0);
+        EXPECT_EQ(static_cast<ssize_t>(len),
+                  rf.Read(buf.data(), 0, len)) << "len=" << len;
+    }
+
+    rf.Close();
+    g_blackholeFS.unlink(kRandPath);
+}
+
+TEST_F(OssFileTest, RandomReadLCGConsistencyAcrossLengths) {
+    // A short read and the prefix of a longer read starting at the same offset
+    // must return identical bytes — i.e. the 8-byte unroll doesn't change the
+    // LCG output stream relative to the byte-at-a-time path.
+    static constexpr const char* kRandPath = "/test/rand_lcg.root";
+    g_blackholeFS.seed(kRandPath, 4096, "random");
+
+    auto doRead = [&](off_t offset, size_t len) {
+        XrdBlackholeOssFile rf(s_oss);
+        XrdOucEnv renv;
+        rf.Open(kRandPath, O_RDONLY, 0, renv);
+        std::vector<char> buf(len, '\0');
+        rf.Read(buf.data(), offset, len);
+        rf.Close();
+        return buf;
+    };
+
+    // 256-byte read and 8-byte read at offset 0: first 8 bytes must agree.
+    auto big   = doRead(0, 256);
+    auto small = doRead(0, 8);
+    EXPECT_EQ(small, std::vector<char>(big.begin(), big.begin() + 8));
+
+    // Same at a non-zero, non-multiple-of-8 offset.
+    auto big2   = doRead(13, 256);
+    auto small2 = doRead(13, 8);
+    EXPECT_EQ(small2, std::vector<char>(big2.begin(), big2.begin() + 8));
+
+    g_blackholeFS.unlink(kRandPath);
+}
+
+TEST_F(OssFileTest, ThrottledWriteReturnsBlen) {
+    // A private OSS configured at 1024 MiB/s: a 4 KiB write takes ~4 µs so
+    // the test stays fast while exercising the precomputed throttle path.
+    XrdBlackholeOss throttledOss(nullptr, XrdBlackholeEroute);
+    char tmp[] = "/tmp/bhtest_throttle_XXXXXX";
+    int fd = mkstemp(tmp);
+    const char* line = "blackhole.writespeedMiBps 1024\n";
+    write(fd, line, strlen(line));
+    close(fd);
+    throttledOss.Configure(tmp, XrdBlackholeEroute);
+    unlink(tmp);
+
+    static constexpr const char* kTPath = "/test/throttle.root";
+    XrdBlackholeOssFile tf(&throttledOss);
+    ASSERT_EQ(XrdOssOK, tf.Open(kTPath, O_WRONLY | O_CREAT, 0644, env));
+    char buf[4096]{};
+    EXPECT_EQ(static_cast<ssize_t>(sizeof(buf)), tf.Write(buf, 0, sizeof(buf)));
+    tf.Close();
+    g_blackholeFS.unlink(kTPath);
+}
+
+TEST_F(OssFileTest, ReadVWithNoOpenStubReturnsEINVAL) {
+    // Open() has never been called — stub is null; ReadV must not crash.
+    XrdOucIOVec vec[1];
+    char buf[64]{};
+    vec[0].data   = buf;
+    vec[0].offset = 0;
+    vec[0].size   = 64;
+    EXPECT_EQ(-EINVAL, f->ReadV(vec, 1));
+}
+
 // ---------------------------------------------------------------------------
 // cfg_seedfile — config directive parsing
 // ---------------------------------------------------------------------------
