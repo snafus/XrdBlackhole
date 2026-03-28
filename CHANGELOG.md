@@ -9,6 +9,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.3.4] - 2026-03-28
+
+### Fixed
+- `libXrdBlackholeMetrics` DT_NEEDED now contains the bare library name
+  `libXrdBlackhole-5.so` instead of the absolute build path. The previous
+  fix used `$<TARGET_FILE:...>` which embedded the build-tree path, causing
+  dlopen to fail with "No such file or directory" on installed systems even
+  though the `.so` was present. Fixed by using
+  `-L$<TARGET_FILE_DIR:...> -lXrdBlackhole-5` so the dynamic linker resolves
+  the symbol from the already-loaded XRootD process.
+
+---
+
 ## [0.3.3] - 2026-03-28
 
 ### Fixed

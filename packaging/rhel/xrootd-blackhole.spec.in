@@ -156,6 +156,11 @@ rm -rf $RPM_BUILD_ROOT
 # Changelog
 #-------------------------------------------------------------------------------
 %changelog
+* Sat Mar 28 2026 James <james@snafus> - 0.3.4-1
+- Fix libXrdBlackholeMetrics DT_NEEDED: use -L/-l flags so the bare library
+  name is recorded, not the absolute build path (caused dlopen ENOENT on
+  installed systems despite the .so being present)
+
 * Sat Mar 28 2026 James <james@snafus> - 0.3.3-1
 - Fix libXrdBlackholeMetrics undefined symbol g_statsManager: add explicit
   DT_NEEDED on libXrdBlackhole-5.so via target_link_options in CMake
