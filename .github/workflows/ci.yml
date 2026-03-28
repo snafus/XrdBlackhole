@@ -7,73 +7,17 @@ on:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Build: compile the plugin and verify it links correctly.
-  # ---------------------------------------------------------------------------
-  build:
-    name: Build / ${{ matrix.os }}
-    runs-on: ubuntu-latest
-    container:
-      image: ${{ matrix.image }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: rocky8
-            image: rockylinux:8
-            crb: powertools
-          - os: rocky9
-            image: rockylinux:9
-            crb: crb
-
-    steps:
-      - name: Install git
-        run: dnf -y install git
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-
-      # actions/checkout uses its bundled git to set safe.directory, writing to
-      # a config path that /usr/bin/git (dnf-installed) does not read.  Set it
-      # explicitly so genversion.sh and any other git calls work in later steps.
-      - name: Mark workspace as git safe directory
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: Install build dependencies
-        run: |
-          dnf -y update
-          dnf -y install dnf-plugins-core epel-release
-          dnf config-manager --set-enabled ${{ matrix.crb }}
-          dnf -y install \
-            gcc gcc-c++ make cmake git \
-            openssl-devel zlib-devel curl-devel libuuid-devel
-          curl -sSL https://xrootd.web.cern.ch/xrootd.repo \
-            -o /etc/yum.repos.d/xrootd.repo
-          dnf -y install \
-            xrootd-server-devel \
-            xrootd-private-devel \
-            xrootd-client-devel \
-            xrootd-libs
-
-      - name: Build
-        run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
-          cmake --build build -j$(nproc)
-
-      - name: Upload libraries
-        uses: actions/upload-artifact@v4
-        with:
-          name: libs-${{ matrix.os }}
-          path: build/**/*.so
-          retention-days: 7
-
-  # ---------------------------------------------------------------------------
-  # Test: build with ENABLE_TESTS=ON, fetch GoogleTest, run ctest.
-  # Runs in parallel with the build job (different cmake flags; independent).
+  # Test: build with ENABLE_TESTS=ON and run ctest.
+  #
+  # Matrix dimensions:
+  #   os            — target distribution
+  #   xrootd_channel — which XRootD repo channel to install from
+  #
+  # To test against additional XRootD channels (e.g. a pre-release), add an
+  # entry to the matrix below with the appropriate xrootd_repo_url.
   # ---------------------------------------------------------------------------
   test:
-    name: Test / ${{ matrix.os }}
+    name: Test / ${{ matrix.os }} / xrootd-${{ matrix.xrootd_channel }}
     runs-on: ubuntu-latest
     container:
       image: ${{ matrix.image }}
@@ -84,9 +28,19 @@ jobs:
           - os: rocky8
             image: rockylinux:8
             crb: powertools
+            xrootd_channel: stable
+            xrootd_repo_url: https://xrootd.web.cern.ch/xrootd.repo
           - os: rocky9
             image: rockylinux:9
             crb: crb
+            xrootd_channel: stable
+            xrootd_repo_url: https://xrootd.web.cern.ch/xrootd.repo
+          # Uncomment to test against the XRootD testing/pre-release channel:
+          # - os: rocky9
+          #   image: rockylinux:9
+          #   crb: crb
+          #   xrootd_channel: testing
+          #   xrootd_repo_url: https://xrootd.web.cern.ch/xrootd-testing.repo
 
     steps:
       - name: Install git
@@ -97,43 +51,43 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Mark workspace as git safe directory
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: ./.github/actions/setup-build
+        with:
+          crb: ${{ matrix.crb }}
+          xrootd_repo_url: ${{ matrix.xrootd_repo_url }}
 
-      - name: Install build dependencies
-        run: |
-          dnf -y update
-          dnf -y install dnf-plugins-core epel-release
-          dnf config-manager --set-enabled ${{ matrix.crb }}
-          dnf -y install \
-            gcc gcc-c++ make cmake git \
-            openssl-devel zlib-devel curl-devel libuuid-devel
-          curl -sSL https://xrootd.web.cern.ch/xrootd.repo \
-            -o /etc/yum.repos.d/xrootd.repo
-          dnf -y install \
-            xrootd-server-devel \
-            xrootd-private-devel \
-            xrootd-client-devel \
-            xrootd-libs
+      # Cache the GoogleTest FetchContent download (v1.14.0, keyed per OS).
+      # CMake skips the fetch when build/_deps is already populated.
+      - name: Cache GoogleTest
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: gtest-v1.14.0-${{ matrix.os }}
 
-      - name: Build with tests
+      - name: Build and test
         run: |
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Debug \
             -DENABLE_TESTS=ON
           cmake --build build -j$(nproc)
+          ctest --test-dir build --output-on-failure -j$(nproc)
 
-      - name: Run tests
-        run: ctest --test-dir build --output-on-failure -j$(nproc)
+      - name: Upload libraries
+        uses: actions/upload-artifact@v4
+        with:
+          name: libs-${{ matrix.os }}-xrootd-${{ matrix.xrootd_channel }}
+          path: build/**/*.so
+          retention-days: 7
 
   # ---------------------------------------------------------------------------
-  # RPM: build an SRPM via the packaging script then rebuild to binary RPMs.
-  # Runs only after both build and test jobs pass.
+  # RPM: build binary RPMs from a source RPM.
+  # Only runs against the stable XRootD channel.
+  # Runs after all test matrix entries pass.
   # ---------------------------------------------------------------------------
   rpm:
     name: RPM / ${{ matrix.os }}
     runs-on: ubuntu-latest
-    needs: [build, test]
+    needs: [test]
     container:
       image: ${{ matrix.image }}
     strategy:
@@ -143,9 +97,11 @@ jobs:
           - os: rocky8
             image: rockylinux:8
             crb: powertools
+            xrootd_repo_url: https://xrootd.web.cern.ch/xrootd.repo
           - os: rocky9
             image: rockylinux:9
             crb: crb
+            xrootd_repo_url: https://xrootd.web.cern.ch/xrootd.repo
 
     steps:
       - name: Install git
@@ -156,26 +112,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      # Same safe.directory fix as in the build job — see comment there.
-      - name: Mark workspace as git safe directory
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: Install build and RPM dependencies
-        run: |
-          dnf -y update
-          dnf -y install dnf-plugins-core epel-release
-          dnf config-manager --set-enabled ${{ matrix.crb }}
-          dnf -y install \
-            gcc gcc-c++ make cmake git which \
-            openssl-devel zlib-devel curl-devel libuuid-devel \
-            rpm-build rpmdevtools
-          curl -sSL https://xrootd.web.cern.ch/xrootd.repo \
-            -o /etc/yum.repos.d/xrootd.repo
-          dnf -y install \
-            xrootd-server-devel \
-            xrootd-private-devel \
-            xrootd-client-devel \
-            xrootd-libs
+      - uses: ./.github/actions/setup-build
+        with:
+          crb: ${{ matrix.crb }}
+          xrootd_repo_url: ${{ matrix.xrootd_repo_url }}
+          rpm_tools: 'true'
 
       - name: Set up RPM tree
         run: rpmdev-setuptree
@@ -204,34 +145,3 @@ jobs:
           name: rpms-${{ matrix.os }}
           path: /tmp/rpms/*.rpm
           retention-days: 30
-
-  # ---------------------------------------------------------------------------
-  # Release: attach RPM artifacts to the GitHub release.
-  # Runs only when CI is triggered by a vX.Y.Z tag push.
-  # ---------------------------------------------------------------------------
-  release:
-    name: Attach RPMs to release
-    runs-on: ubuntu-latest
-    needs: [rpm]
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-    steps:
-      - name: Download Rocky 8 RPMs
-        uses: actions/download-artifact@v4
-        with:
-          name: rpms-rocky8
-          path: release-rpms/
-
-      - name: Download Rocky 9 RPMs
-        uses: actions/download-artifact@v4
-        with:
-          name: rpms-rocky9
-          path: release-rpms/
-
-      - name: Upload to GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release upload "${{ github.ref_name }}" release-rpms/*.rpm \
-            --repo "${{ github.repository }}"

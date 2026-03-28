@@ -1,0 +1,45 @@
+name: 'Setup build environment'
+description: >
+  Configure git safe.directory, install compiler toolchain and XRootD
+  development headers.  Must be called after actions/checkout.
+
+inputs:
+  crb:
+    description: 'CRB repo name: "powertools" (el8) or "crb" (el9)'
+    required: true
+  xrootd_repo_url:
+    description: 'URL of the XRootD yum .repo file to install'
+    required: false
+    default: 'https://xrootd.web.cern.ch/xrootd.repo'
+  rpm_tools:
+    description: 'Set to "true" to also install rpm-build and rpmdevtools'
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Mark workspace as git safe directory
+      shell: bash
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+    - name: Install build dependencies
+      shell: bash
+      run: |
+        dnf -y install dnf-plugins-core epel-release
+        dnf config-manager --set-enabled ${{ inputs.crb }}
+        dnf -y install \
+          gcc gcc-c++ make cmake git which \
+          openssl-devel zlib-devel curl-devel libuuid-devel
+        curl -sSL '${{ inputs.xrootd_repo_url }}' \
+          -o /etc/yum.repos.d/xrootd.repo
+        dnf -y install \
+          xrootd-server-devel \
+          xrootd-private-devel \
+          xrootd-client-devel \
+          xrootd-libs
+
+    - name: Install RPM packaging tools
+      if: inputs.rpm_tools == 'true'
+      shell: bash
+      run: dnf -y install rpm-build rpmdevtools

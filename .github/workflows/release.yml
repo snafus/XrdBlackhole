@@ -24,9 +24,11 @@ jobs:
           - os: rocky8
             image: rockylinux:8
             crb: powertools
+            xrootd_repo_url: https://xrootd.web.cern.ch/xrootd.repo
           - os: rocky9
             image: rockylinux:9
             crb: crb
+            xrootd_repo_url: https://xrootd.web.cern.ch/xrootd.repo
 
     steps:
       - name: Install git
@@ -37,26 +39,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      # See ci.yml for the safe.directory rationale.
-      - name: Mark workspace as git safe directory
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: Install build and RPM dependencies
-        run: |
-          dnf -y update
-          dnf -y install dnf-plugins-core epel-release
-          dnf config-manager --set-enabled ${{ matrix.crb }}
-          dnf -y install \
-            gcc gcc-c++ make cmake git which \
-            openssl-devel zlib-devel curl-devel libuuid-devel \
-            rpm-build rpmdevtools
-          curl -sSL https://xrootd.web.cern.ch/xrootd.repo \
-            -o /etc/yum.repos.d/xrootd.repo
-          dnf -y install \
-            xrootd-server-devel \
-            xrootd-private-devel \
-            xrootd-client-devel \
-            xrootd-libs
+      - uses: ./.github/actions/setup-build
+        with:
+          crb: ${{ matrix.crb }}
+          xrootd_repo_url: ${{ matrix.xrootd_repo_url }}
+          rpm_tools: 'true'
 
       - name: Set up RPM tree
         run: rpmdev-setuptree
