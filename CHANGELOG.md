@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+---
+
+## [0.3.3] - 2026-03-28
+
 ### Fixed
 - `libXrdBlackholeMetrics` now links explicitly against `libXrdBlackhole-5.so`
   so that `g_statsManager` resolves when the metrics plugin is dlopen'd
