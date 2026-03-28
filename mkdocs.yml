@@ -38,6 +38,7 @@ nav:
   - Home: index.md
   - Configuration: configuration.md
   - Architecture: ARCHITECTURE.md
+  - ExtHandler Guide: exthandler-guide.md
   - Roadmap: ROADMAP.md
   - Changelog: changelog.md
 
