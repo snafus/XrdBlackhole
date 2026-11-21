@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -935,9 +935,10 @@ file and are prefixed with <code>blackhole.</code>.</p>
 <h2 id="loading-the-plugin">Loading the plugin<a class="headerlink" href="#loading-the-plugin" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>ofs.osslib  /usr/lib64/libXrdBlackhole.so
 </code></pre></div>
-<p>XRootD automatically appends the <code>-5</code> ABI version suffix when searching for
-the library. Do <strong>not</strong> include it in the directive — specifying
-<code>libXrdBlackhole-5.so</code> causes a double-versioned lookup failure.</p>
+<p>XRootD automatically appends its major version (<code>-5</code> for XRootD 5, <code>-6</code> for
+XRootD 6) when searching for the library. Do <strong>not</strong> include it in the
+directive — specifying <code>libXrdBlackhole-5.so</code> causes a double-versioned
+lookup failure.</p>
 <p>Optional xattr stub (all operations return <code>-ENOTSUP</code>; harmless to omit):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>ofs.xattrlib /usr/lib64/libXrdBlackholeXattr.so
 </code></pre></div>
@@ -1162,22 +1163,23 @@ endpoint is available at <code>GET http://&lt;host&gt;:1094/metrics</code>.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>libXrdBlackhole-5.so</code></td>
+<td><code>libXrdBlackhole-N.so</code></td>
 <td><code>ofs.osslib</code></td>
 <td>Main OSS plugin</td>
 </tr>
 <tr>
-<td><code>libXrdBlackholeXattr-5.so</code></td>
+<td><code>libXrdBlackholeXattr-N.so</code></td>
 <td><code>ofs.xattrlib</code></td>
 <td>XAttr stub (all no-ops)</td>
 </tr>
 <tr>
-<td><code>libXrdBlackholeMetrics-5.so</code></td>
+<td><code>libXrdBlackholeMetrics-N.so</code></td>
 <td><code>http.exthandler</code></td>
 <td>Prometheus <code>/metrics</code> endpoint</td>
 </tr>
 </tbody>
 </table>
+<p><code>N</code> is the major version of the XRootD the plugin was built against (<code>5</code> or <code>6</code>).</p>
 <h3 id="docker">Docker<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>xrootd-blackhole<span class="w"> </span>.
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-p<span class="w"> </span><span class="m">1094</span>:1094<span class="w"> </span>xrootd-blackhole<span class="w"> </span><span class="se">\</span>
@@ -1238,10 +1240,10 @@ endpoint is available at <code>GET http://&lt;host&gt;:1094/metrics</code>.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>
