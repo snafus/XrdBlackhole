@@ -14,6 +14,13 @@
 # Allow the metrics subpackage to be empty if XrdHttp headers were absent.
 %define _empty_manifest_terminate_build 0
 
+# Major version of the installed XRootD development package; empty when it is
+# not installed, as it may be when only the source package is made.
+%global xrd_major %(rpm -q --qf '%%{version}' xrootd-server-devel 2>/dev/null | grep -E '^[0-9]+[.]' | cut -d. -f1)
+%if 0%{?xrd_major} > 0
+%global xrd_next %(echo $((%{xrd_major} + 1)))
+%endif
+
 #-------------------------------------------------------------------------------
 # Package definitions
 #-------------------------------------------------------------------------------
@@ -52,6 +59,13 @@ BuildRequires: xrootd-client-libs%{?_isa}    >= 1:5.3.3
 Requires: xrootd-server-libs%{?_isa} >= 1:5.3.3
 Requires: xrootd-client-libs%{?_isa} >= 1:5.3.3
 Requires: xrootd-libs%{?_isa}        >= 1:5.3.3
+# The libraries are named for the major version of the XRootD they were built
+# against (libXrdBlackhole-6.so for XRootD 6) and are loaded only by a server
+# of that major version.
+%if 0%{?xrd_major} > 0
+Requires: xrootd-server-libs%{?_isa} >= 1:%{xrd_major}
+Requires: xrootd-server-libs%{?_isa} <  1:%{xrd_next}
+%endif
 
 %description
 The xrootd-blackhole is an OSS layer plug-in for the XRootD server for
@@ -120,17 +134,18 @@ popd
 
 # Generate the metrics file list: non-empty only if the library was built.
 # _empty_manifest_terminate_build 0 (set above) allows an empty list.
-rm -f %{_builddir}/metrics-filelist.txt
-if [ -f %{buildroot}%{_libdir}/libXrdBlackholeMetrics-5.so ]; then
-    echo "%{_libdir}/libXrdBlackholeMetrics-5.so" \
-         > %{_builddir}/metrics-filelist.txt
-    echo "metrics library packaged: %{_libdir}/libXrdBlackholeMetrics-5.so"
+# The metrics library is built only when the XrdHttp headers are found.
+: > %{_builddir}/metrics-filelist.txt
+for lib in %{buildroot}%{_libdir}/libXrdBlackholeMetrics-*.so; do
+    [ -f "$lib" ] || continue
+    echo "%{_libdir}/$(basename "$lib")" >> %{_builddir}/metrics-filelist.txt
+done
+if [ -s %{_builddir}/metrics-filelist.txt ]; then
+    echo "metrics library packaged: $(cat %{_builddir}/metrics-filelist.txt)"
 else
-    touch %{_builddir}/metrics-filelist.txt
-    echo "WARNING: libXrdBlackholeMetrics-5.so not built — metrics package will be empty"
+    echo "WARNING: libXrdBlackholeMetrics not built — metrics package will be empty"
     echo "  Check cmake configure output for 'XRDHTTP_INCLUDE_DIR' to diagnose"
 fi
-
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -140,8 +155,8 @@ rm -rf $RPM_BUILD_ROOT
 #-------------------------------------------------------------------------------
 %files
 %defattr(-,root,root,-)
-%{_libdir}/libXrdBlackhole-5.so
-%{_libdir}/libXrdBlackholeXattr-5.so
+%{_libdir}/libXrdBlackhole-*.so
+%{_libdir}/libXrdBlackholeXattr-*.so
 
 %files metrics -f %{_builddir}/metrics-filelist.txt
 %defattr(-,root,root,-)

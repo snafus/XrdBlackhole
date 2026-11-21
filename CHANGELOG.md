@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- The plugin libraries are named for the major version of the XRootD they are
+  built against: `libXrdBlackhole-6.so` for XRootD 6, `-5` for XRootD 5. The
+  build reads the version from the installed `XrdVersion.hh`; it was fixed at
+  `5`, which gave libraries an XRootD 6 server does not find. Set
+  `-DPLUGIN_VERSION=<major>` to override.
+- RPM: the spec no longer names the `-5` libraries, and each package requires
+  the XRootD major version it was built against.
+- CI builds, tests and packages against XRootD 5 (latest 5.x) and XRootD 6.2.1,
+  and can be started by hand on any branch.
+
 ---
 
 ## [0.3.6] - 2026-03-28

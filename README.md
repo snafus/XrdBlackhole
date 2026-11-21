@@ -279,12 +279,14 @@ This produces up to three shared libraries:
 
 | Library | Purpose |
 |---|---|
-| `libXrdBlackhole-5.so` | OSS plugin — load with `ofs.osslib` |
-| `libXrdBlackholeXattr-5.so` | XAttr plugin — load with `ofs.xattrlib` (all ops are no-ops) |
-| `libXrdBlackholeMetrics-5.so` | Prometheus HTTP handler — load with `http.exthandler` (optional; requires `xrootd-server-devel` with XrdHttp headers) |
+| `libXrdBlackhole-N.so` | OSS plugin — load with `ofs.osslib` |
+| `libXrdBlackholeXattr-N.so` | XAttr plugin — load with `ofs.xattrlib` (all ops are no-ops) |
+| `libXrdBlackholeMetrics-N.so` | Prometheus HTTP handler — load with `http.exthandler` (optional; requires `xrootd-server-devel` with XrdHttp headers) |
 
-The `5` suffix is the XRootD plugin ABI version. It is controlled by
-`PLUGIN_VERSION` in `cmake/XRootDDefaults.cmake`.
+`N` is the major version of the XRootD the plugin was built against: `5` for
+XRootD 5, `6` for XRootD 6. A server loads only the libraries of its own major
+version. The build reads it from the installed `XrdVersion.hh`; set
+`-DPLUGIN_VERSION=<major>` to override.
 
 ### Docker
 
