@@ -11,9 +11,10 @@ file and are prefixed with `blackhole.`.
 ofs.osslib  /usr/lib64/libXrdBlackhole.so
 ```
 
-XRootD automatically appends the `-5` ABI version suffix when searching for
-the library. Do **not** include it in the directive — specifying
-`libXrdBlackhole-5.so` causes a double-versioned lookup failure.
+XRootD automatically appends its major version (`-5` for XRootD 5, `-6` for
+XRootD 6) when searching for the library. Do **not** include it in the
+directive — specifying `libXrdBlackhole-5.so` causes a double-versioned
+lookup failure.
 
 Optional xattr stub (all operations return `-ENOTSUP`; harmless to omit):
 
@@ -217,9 +218,11 @@ make install
 
 | Library | Loaded via | Purpose |
 |---|---|---|
-| `libXrdBlackhole-5.so` | `ofs.osslib` | Main OSS plugin |
-| `libXrdBlackholeXattr-5.so` | `ofs.xattrlib` | XAttr stub (all no-ops) |
-| `libXrdBlackholeMetrics-5.so` | `http.exthandler` | Prometheus `/metrics` endpoint |
+| `libXrdBlackhole-N.so` | `ofs.osslib` | Main OSS plugin |
+| `libXrdBlackholeXattr-N.so` | `ofs.xattrlib` | XAttr stub (all no-ops) |
+| `libXrdBlackholeMetrics-N.so` | `http.exthandler` | Prometheus `/metrics` endpoint |
+
+`N` is the major version of the XRootD the plugin was built against (`5` or `6`).
 
 ### Docker
 
