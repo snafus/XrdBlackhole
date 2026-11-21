@@ -11,6 +11,12 @@ inputs:
     description: 'URL of the XRootD yum .repo file to install'
     required: false
     default: 'https://xrootd.web.cern.ch/xrootd.repo'
+  xrootd_version:
+    description: >
+      XRootD version to install from the repo, for example "6.2.1" or "5.*".
+      Empty (the default) installs the latest version the repo offers.
+    required: false
+    default: ''
   rpm_tools:
     description: 'Set to "true" to also install rpm-build and rpmdevtools'
     required: false
@@ -33,11 +39,22 @@ runs:
           openssl-devel zlib-devel curl-devel libuuid-devel
         curl -sSL '${{ inputs.xrootd_repo_url }}' \
           -o /etc/yum.repos.d/xrootd.repo
+        # The XRootD packages require each other at the same version, so
+        # naming the version on these four fixes it for all of them.
+        version='${{ inputs.xrootd_version }}'
+        suffix=${version:+-$version}
         dnf -y install \
-          xrootd-server-devel \
-          xrootd-private-devel \
-          xrootd-client-devel \
-          xrootd-libs
+          "xrootd-server-devel$suffix" \
+          "xrootd-private-devel$suffix" \
+          "xrootd-client-devel$suffix" \
+          "xrootd-libs$suffix"
+        # Keep that version: a later "dnf builddep" would otherwise replace
+        # it with the latest one the repo offers.
+        if [[ -n "$version" ]]; then
+          dnf -y install 'dnf-command(versionlock)'
+          dnf versionlock add 'xrootd*'
+        fi
+        rpm -q xrootd-server-devel
 
     - name: Install RPM packaging tools
       if: inputs.rpm_tools == 'true'
